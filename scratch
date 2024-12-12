@@ -1,0 +1,21 @@
+mineflayer bots are very hook-oriented
+they need:
+- a way to interact with each other
+    perhaps a ros-like communication protocol?
+
+- a way to interact with their environment
+    mineflayer provides this!
+
+- we also want a way to programmatically define behavior, and to hotswap
+this behavior - probably a controller class that sets hooks or something
+like that
+
+what is a behavior?
+- has a trigger (an event)
+- has world parameters (info associated with the trigger)
+- has internal parameters (info set by the program)
+- has a response (method affected by internal and external parameters)
+
+TIME:
+3h dec 5
+3h dec 6

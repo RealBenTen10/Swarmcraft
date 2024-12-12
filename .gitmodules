@@ -1,0 +1,3 @@
+[submodule "Evocraft-py"]
+	path = Evocraft-py
+	url = https://github.com/real-itu/Evocraft-py.git
