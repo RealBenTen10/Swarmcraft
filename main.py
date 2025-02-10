@@ -3,18 +3,11 @@ start server and control simulation here
 '''
 from time import sleep
 
-from javascript import require
-from agent import Agent
+from agent import Goto
+from world_interface.pooler import pooler
 
-mineflayer = require('mineflayer')
-
-bot = mineflayer.createBot({
-    "host": "localhost",
-    "port": "25565",
-    "username": "bot",
-})
-agent = Agent(bot)
+for i in range(0, 20):
+    pooler.create_agent(f'bot{i}', Goto)
 
 while True:
-    agent.update()
-    sleep(0.1)
+    pooler.update_all_agents()

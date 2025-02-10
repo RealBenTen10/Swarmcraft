@@ -15,7 +15,7 @@ class ControlNode(object):
         self.children.append(child)
         child.parent = self
 
-    def tick(self):
+    def tick(self) -> str:
         return 'success'
 
 # route ticks to children from left -> right until you find a child that has failed or is running
@@ -72,7 +72,7 @@ class ParallelNode(ControlNode):
 # tick must return success, running, or failure depending on the action state
 # and it should accomplish all its work in as little time as possible
 class ActionNode(object):
-    def tick(self):
+    def tick(self) -> str:
         # update yourself
         return 'success'
 
@@ -81,11 +81,26 @@ class ActionNode(object):
 # condition must return success, running, or failure depending on the condition state
 # and it should accomplish all its work in as little time as possible
 class ConditionNode(object):
-    def condition(self):
+    def condition(self) -> bool:
         # evaluate condition here
         return True
 
-    def tick(self):
+    def tick(self) -> str:
         if self.condition():
             return 'success'
         return 'failure'
+
+# BranchNodes evaluate a condition, then tick either one or another child node
+class BranchNode(object):
+    def __init__(self, if_node: ControlNode, else_node: ControlNode):
+        self.ifNode = if_node
+        self.elseNode = else_node
+
+    def condition(self) -> bool:
+        return True
+
+    def tick(self) -> str:
+        if self.condition():
+            return self.ifNode.tick()
+        else:
+            return self.elseNode.tick()

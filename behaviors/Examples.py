@@ -1,57 +1,14 @@
-import math
-import random
 from typing import override
 
-from btree.Nodes import ActionNode, ConditionNode
+from btree.Nodes import ActionNode, ConditionNode, FallbackNode, SequenceNode
 from util import dist_sqr
-from world_interface.actuation import Actuation
-from world_interface.sensing import Sensing
+from world_interface.pooler import pooler
 
 
 # some example behaviors
-
-# look in a random direction (not smoothed, agent head direction may not match actual look direction)
-class RandLook(ActionNode):
-    def __init__(self, actuation: Actuation):
-        super().__init__()
-        self.actuation = actuation
-
-    @override
-    def tick(self):
-        self.actuation.look((random.uniform(-2.0 * math.pi, 2.0 * math.pi), 0))
-        return 'success'
-
-# move forward until you're some distance from the point you were on when this behavior was first called
-class MoveForward(ActionNode):
-    def __init__(self, actuation: Actuation, sensing: Sensing, distance: float):
-        super().__init__()
-        self.actuation = actuation
-        self.sensing = sensing
-        self.distance = distance
-        self.origin = self.sensing.get_position()
-
-    @override
-    def tick(self):
-        if dist_sqr(self.origin, self.sensing.get_position()) < self.distance:
-            self.actuation.move('forward', 0.1)
-            return 'running'
-        else:
-            self.origin = self.sensing.get_position() # reset where we were running from
-            return 'success'
-
-# check if your health isn't full
-class CheckIfHurt(ConditionNode):
-    def __init__(self, sensing: Sensing):
-        super().__init__()
-        self.sensing = sensing
-
-    @override
-    def condition(self):
-        return self.sensing.get_health() != 20
-
 # say something in the chat
 class Say(ActionNode):
-    def __init__(self, actuation: Actuation, message: str):
+    def __init__(self, actuation, message: str):
         super().__init__()
         self.actuation = actuation
         self.message = message
@@ -61,5 +18,70 @@ class Say(ActionNode):
 
     @override
     def tick(self):
-        self.actuation.say(self.message)
+        pooler.send_message(self.actuation.agent, self.message)
         return 'success'
+
+class CheckIfAtPosition(ConditionNode):
+    def __init__(self, sensing, position):
+        super().__init__()
+        self.sensing = sensing
+        self.position = position
+
+    @override
+    def condition(self):
+        return self.sensing.get_position() == self.position
+
+class LookAtPosition(ActionNode):
+    def __init__(self, actuation, position):
+        super().__init__()
+        self.actuation = actuation
+        self.position = position
+
+    @override
+    def tick(self):
+        self.actuation.look_at(self.position)
+        return 'success'
+
+class KeyDown(ActionNode):
+    def __init__(self, actuation, direction):
+        super().__init__()
+        self.actuation = actuation
+        self.direction = direction
+
+    @override
+    def tick(self):
+        self.actuation.key_down(self.direction)
+        return 'success'
+
+class StopMove(ActionNode):
+    def __init__(self, actuation):
+        super().__init__()
+        self.actuation = actuation
+
+    @override
+    def tick(self):
+        self.actuation.stop()
+        return 'success'
+
+class MoveToPoint(ActionNode):
+    def __init__(self, sensing, actuation, goal):
+        super().__init__()
+        self.actuation = actuation
+        self.sensing = sensing
+        self.goal = goal
+
+    @override
+    def tick(self):
+        if dist_sqr(self.sensing.get_position(), self.goal) <= 1:
+            self.actuation.stop()
+            return 'success'
+        else:
+            self.actuation.look_at(self.goal)
+            self.actuation.key_down('forward')
+            return 'running'
+
+
+# do in sequence
+class GotoPoint(FallbackNode):
+    def __init__(self, sensing, actuation, point):
+        super().__init__([CheckIfAtPosition(sensing, point), MoveToPoint(sensing, actuation, point), StopMove(actuation)])

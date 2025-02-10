@@ -1,7 +1,7 @@
 # class for doing things with the world, asynchronously
 from time import sleep
-
 from javascript import require
+from world_interface.pooler import pooler
 
 Vec3 = require('vec3').Vec3
 
@@ -10,11 +10,26 @@ class Actuation(object):
         # agent parts
         self.agent = agent
 
+    # send a chat message to everyone
     def say(self, message: str):
         self.agent.bot.chat(message)
 
+    # send a chat message to one player, regardless of distance
     def whisper(self, message: str, recipient_name: str):
         self.agent.bot.whisper(recipient_name, message)
+
+    # chat methods using the pooler's chat - not rate-limited like the server
+    def send_message(self, message: str, recipient_name: str):
+        pooler.send_message(self.agent, message, recipient_name)
+
+    def send_message_ranged(self, message: str, recipient_name: str, distance: float):
+        pooler.send_message(self.agent, message, recipient_name, distance)
+
+    def send_global_message(self, message: str):
+        pooler.send_message(self.agent, message)
+
+    def send_global_message_ranged(self, message: str, distance: float):
+        pooler.send_message(self.agent, message, None, distance)
 
     # jump once
     def jump(self):
@@ -25,6 +40,12 @@ class Actuation(object):
     def move(self, direction: str, t: float):
         self.agent.bot.setControlState(direction, True)
         sleep(t)
+        self.agent.bot.setControlState(direction, False)
+
+    def key_down(self, direction: str):
+        self.agent.bot.setControlState(direction, True)
+
+    def key_up(self, direction: str):
         self.agent.bot.setControlState(direction, False)
 
     # stop all movement

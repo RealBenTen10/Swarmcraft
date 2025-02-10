@@ -32,6 +32,7 @@ class Sensing(object):
         @On(self.bot, "end") # when you disconnect
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
+            print(reason)
         @On(self.bot, "error") # when something breaks
         def on_error(this, err, *args): # this should push to an error queue
             self.error_queue.append(("error", err))
@@ -72,7 +73,7 @@ class Sensing(object):
     def get_food(self):
         return self.bot.food
 
-    def get_name(self):
+    def get_username(self):
         return self.bot.username
 
     def get_held_item(self):
