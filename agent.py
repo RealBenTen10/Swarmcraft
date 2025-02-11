@@ -1,6 +1,6 @@
 from typing import override
 
-from behaviors.Examples import RandLook, MoveForward, CheckIfHurt, Say, GotoPoint
+from behaviors.Examples import Say, GotoPoint
 from btree.Nodes import SequenceNode
 from world_interface.actuation import Actuation
 from world_interface.sensing import Sensing
@@ -16,17 +16,9 @@ class Agent(object):
         # tick behavior trees, etc, etc
         pass
 
-class HeadlessChicken(Agent):
-    def __init__(self, bot, internalid):
-        super().__init__(bot, internalid)
-        # example behavior
-        self.if_hurt_run = SequenceNode([CheckIfHurt(self.sensing),
-                                         MoveForward(self.actuation, self.sensing, 5),
-                                         Say(self.actuation, "Ow!"),
-                                         RandLook(self.actuation)])
-    @override
-    def update(self):
-        status = self.if_hurt_run.tick()
+    def reset(self):
+        # called by the pooler when this agent is killed/removed from the simulation and placed back into the inactive pool
+        pass
 
 class Goto(Agent):
     def __init__(self, bot, internalid):

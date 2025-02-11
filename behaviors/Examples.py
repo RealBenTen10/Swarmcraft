@@ -4,7 +4,6 @@ from btree.Nodes import ActionNode, ConditionNode, FallbackNode, SequenceNode
 from util import dist_sqr
 from world_interface.pooler import pooler
 
-
 # some example behaviors
 # say something in the chat
 class Say(ActionNode):
@@ -63,6 +62,8 @@ class StopMove(ActionNode):
         self.actuation.stop()
         return 'success'
 
+# this must receive continuous ticks in order to work
+# should always be somehow backed up/followed by a call to stop all movement
 class MoveToPoint(ActionNode):
     def __init__(self, sensing, actuation, goal):
         super().__init__()
