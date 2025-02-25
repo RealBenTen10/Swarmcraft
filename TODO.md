@@ -4,7 +4,7 @@
 
 ## Small bits
 - [ ] logging
-- [ ] scale
+- [x] scale (mostly done via pooler)
 - [ ] programmatic environments
 - [x] local communication
 

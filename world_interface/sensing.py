@@ -27,12 +27,12 @@ class Sensing(object):
         def on_whisper(this, username, message, *args): # this should push to a whisper queue
             self.whisper_queue.append({"username": username, "message": message})
         @On(self.bot, "spawn") # your spawn. probably wait for this before doing anything
-        def on_spawn(this, *args): # this can be a method: get_connected()
+        def on_spawn(this, *args):
             self.connected = True
         @On(self.bot, "end") # when you disconnect
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
-            print(reason)
+            print("Agent disconnected! (" + reason + ")")
         @On(self.bot, "error") # when something breaks
         def on_error(this, err, *args): # this should push to an error queue
             self.error_queue.append(("error", err))
@@ -62,7 +62,7 @@ class Sensing(object):
         # state variables
         # remember python goes by reference, so these don't need getter/setters
         self.connected = False
-        while not self.connected: pass # wait until we connect before we return control
+        #while not self.connected: pass # wait until we connect before we return control
 
     def get_health(self):
         return self.bot.health

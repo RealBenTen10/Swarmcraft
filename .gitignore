@@ -4,5 +4,6 @@ node_modules
 package-lock.json
 package.json
 venv
+.venv
 scratch
-Evocraft-py
+.mixin.out

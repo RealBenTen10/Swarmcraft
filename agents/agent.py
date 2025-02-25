@@ -1,16 +1,16 @@
 from typing import override
 
 from behaviors.Examples import Say, GotoPoint
-from btree.Nodes import SequenceNode
 from world_interface.actuation import Actuation
 from world_interface.sensing import Sensing
 
+# example agent
 class Agent(object):
-    def __init__(self, bot, id):
+    def __init__(self, bot, uid):
         self.bot = bot
         self.sensing = Sensing(self)
         self.actuation = Actuation(self)
-        self.id = id # internal id
+        self.id = uid # internal id
 
     def update(self):
         # tick behavior trees, etc, etc
