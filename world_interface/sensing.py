@@ -1,3 +1,7 @@
+"""
+agent sensing class
+like a robot sensor suite - every agent gets one of these
+"""
 from collections import deque
 from javascript import On
 

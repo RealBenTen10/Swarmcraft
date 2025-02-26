@@ -1,10 +1,18 @@
+"""
+interface for starting/stopping the minecraft server
+test_evocraft_py does provide functionality for this, but they don't let you hook into io streams
+having the streams is nice because it lets you send server commands from the console
+
+also initializes and provides the evocraft-py client
+as well as wrappers for the latter's fillcubes and spawnblocks methods
+"""
 import os
-import sys
 import warnings
 import subprocess
 
 import grpc
-from test_evocraft_py import minecraft_pb2_grpc, start_server_interactive
+from test_evocraft_py import minecraft_pb2_grpc, FillCubeRequest, Point, Cube, AIR, BlockType, Blocks, NORTH, Block
+
 
 class Server:
     def __init__(self):
@@ -62,5 +70,29 @@ class Server:
             return
         self.svproc.stdin.write(f'{command}\n'.encode())
         self.svproc.stdin.flush()
+
+    def fill_cube(self, origin: tuple[float, float, float], corner: tuple[float, float, float], block: BlockType):
+        self.evocraft_client.fillCube(FillCubeRequest(
+            cube=Cube(
+                min=Point(x=origin[0], y=origin[1], z=origin[2]),
+                max=Point(x=corner[0], y=corner[1], z=corner[2]),
+            ),
+            type=block
+        ))
+
+    def spawn_block(self, pos: tuple[float, float, float], block: BlockType, orientation=NORTH):
+        self.evocraft_client.spawnBlocks(Blocks(blocks=[
+            Block(position=Point(x=pos[0], y=pos[1], z=pos[2]), type=block, orientation=orientation)
+        ]))
+
+    # this is fast.
+    # if you're spawning many things at once, best use this
+    def spawn_blocks(self, positions: list[tuple[float, float, float]], blocks: list[BlockType], orientations: list[int]=None):
+        b = []
+        if orientations is None:
+            orientations = [NORTH] * len(positions)
+        for pos, block, orientation in zip(positions, blocks, orientations):
+            b.append(Block(position=Point(x=pos[0], y=pos[1], z=pos[2]), type=block, orientation=orientation))
+        self.evocraft_client.spawnBlocks(Blocks(blocks=b))
 
 server = Server()

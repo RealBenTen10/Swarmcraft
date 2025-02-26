@@ -1,4 +1,7 @@
-# class for doing things with the world, asynchronously
+"""
+agent actuation class
+like a robot actuator suite - every agent gets one of these
+"""
 from time import sleep
 from javascript import require
 from world_interface.pooler import pooler

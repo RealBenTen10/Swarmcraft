@@ -1,4 +1,7 @@
-# class for pooling agents, and maintaining lists of active and ready agents
+"""
+agent pooling class
+reduces spinup time for agents by maintaining pools of active/inactive agents, and provides methods for moving agents between these pools
+"""
 import operator
 from typing import Callable, Any
 from javascript import require
@@ -13,7 +16,7 @@ log_chat = True
 
 WORLD_CENTER = (0, 4, 0)
 pooling_location = WORLD_CENTER
-default_init_location = tuple(map(operator.add, WORLD_CENTER, (10, 0, 10)))
+default_init_location = tuple(map(operator.add, WORLD_CENTER, (1, 0, 1)))
 
 class Pooler:
     def __init__(self):
@@ -47,6 +50,7 @@ class Pooler:
             "username": str(uname),
         })
         a = agent_template(b, uname)
+        while not a.sensing.connected: pass
         self.agents_pool.append(a)
         self.reset_agent(a)
         return a
