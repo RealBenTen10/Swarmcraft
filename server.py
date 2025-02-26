@@ -30,9 +30,11 @@ class Server:
         # me hook into the io streams
         self.svproc = subprocess.Popen(['java', '-jar', 'spongevanilla-1.12.2-7.3.0.jar'],
                                        cwd=os.path.join(os.getcwd(), '.venv/lib/python3.13/site-packages/test_evocraft_py/data'),
-                                       stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+                                       stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         print("Started server process")
         # need a loop here to check if the server is up
+        # this is pretty ugly
+        # must be a better way!
         while True:
             line = self.svproc.stdout.readline()
             line = line.decode()
@@ -58,7 +60,6 @@ class Server:
         self.svproc.terminate() # stop the process
         self.svproc.stdin.close() # and close its associated streams
         self.svproc.stdout.close()
-        self.svproc.stderr.close()
         self.running = False
         self.svproc = None
         self.evocraft_client = None
@@ -94,5 +95,10 @@ class Server:
         for pos, block, orientation in zip(positions, blocks, orientations):
             b.append(Block(position=Point(x=pos[0], y=pos[1], z=pos[2]), type=block, orientation=orientation))
         self.evocraft_client.spawnBlocks(Blocks(blocks=b))
+
+    def read_cube(self, pos: tuple[float, float, float], corner: tuple[float, float, float]):
+        return self.evocraft_client.readCube(Cube(min=Point(x=pos[0], y=pos[1], z=pos[2]),
+                                    max=Point(x=corner[0], y=corner[1], z=corner[2]),
+                                    ))
 
 server = Server()

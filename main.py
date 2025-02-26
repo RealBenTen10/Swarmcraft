@@ -9,6 +9,7 @@ from test_evocraft_py import BRICK_BLOCK, AIR, DIAMOND_BLOCK, GOLD_BLOCK, GRASS
 
 from agents.agent import Goto
 from environments.environment import MazeEnv
+from environments.forage_env import ForageEnvironment
 from server import server
 from util import add_tuples
 from world_interface.pooler import pooler, WORLD_CENTER
@@ -42,10 +43,12 @@ def main():
                 if act is not None:
                     print("Activated " + str(act.id))
             elif ipt[0] == "run" or ipt[0] == "r" or ipt[0] == "start" or ipt[0] == "s":
-                # load a maze demo environment
-                m = MazeEnv((10, 4, 10), (int(ipt[1]), 50, int(ipt[2])))
-                m.reset()
-                m.initialize()
+                f = ForageEnvironment((10, 4, 10), (int(ipt[1]), 50, int(ipt[2])), 5, 10, int(ipt[3]))
+                f.reset()
+                f.initialize()
+                #m = MazeEnv((10, 4, 10), (int(ipt[1]), 50, int(ipt[2])))
+                #m.reset()
+                #m.initialize()
             elif ipt[0] == "clear":
                 server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(ipt[1]), int(ipt[2]), int(ipt[3]))), AIR)
             elif ipt[0] == "cmd":

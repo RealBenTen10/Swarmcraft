@@ -2,7 +2,7 @@ from typing import override
 
 from mazelib import Maze
 from mazelib.generate.Wilsons import Wilsons
-from test_evocraft_py import AIR, GRASS, BRICK_BLOCK, DIAMOND_BLOCK, GOLD_BLOCK
+from test_evocraft_py import AIR, GRASS, BRICK_BLOCK, DIAMOND_BLOCK, GOLD_BLOCK, FENCE
 
 from util import add_tuples
 from world_interface.pooler import WORLD_CENTER, pooler
@@ -13,8 +13,6 @@ class Environment(object):
     def __init__(self, origin: tuple[int, int, int]=WORLD_CENTER, size: tuple[int, int, int]=(20, 20, 20)):
         self.origin = origin
         self.size = size
-        self.entrance = None
-        self.exit = None
 
     # reset the environment
     # by default, clears all blocks and spawns a ground plane at the bottom of the environment
@@ -23,12 +21,24 @@ class Environment(object):
         server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
 
     # set the environment to an initial state
-    # by default does nothing
+    # by default just builds a fence around the edge
     def initialize(self):
-        pass
+        blocks = []
+        positions = []
+        for x in range(self.size[0]):
+            for y in range(self.size[2]):
+                if x == 0 or x == self.size[0] - 1 or y == 0 or y == self.size[2] - 1:
+                    blocks.append(FENCE)
+                    positions.append(add_tuples(self.origin, (x, 1, y)))
+        server.spawn_blocks(positions, blocks)
 
 # example maze environment
 class MazeEnv(Environment):
+    def __init__(self, origin: tuple[int, int, int]=WORLD_CENTER, size: tuple[int, int, int]=(20, 20, 20)):
+        super().__init__(origin, size)
+        self.entrance = None
+        self.exit = None
+
     @override
     def initialize(self):
         m = Maze()
