@@ -1,11 +1,11 @@
 ## Big picture
 - [ ] scaling tests
-- [ ] foraging demo
+- [ ] foraging demo (or some kind of demo)
 
 ## Small bits
 - [ ] logging
 - [x] scale (mostly done via pooler)
-- [ ] programmatic environments
+- [x] programmatic environments
 - [x] local communication
 
 ### Local communication

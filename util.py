@@ -1,7 +1,7 @@
 """
 utility functions
 """
-
+import operator
 from typing import Any
 
 import numpy as np
@@ -17,3 +17,6 @@ def dist_sqr(a, b) -> floating[Any]:
 
 def dist(a, b) -> float:
     return np.sqrt(dist_sqr(a, b))
+
+def add_tuples(a, b):
+    return tuple(map(operator.add, a, b))

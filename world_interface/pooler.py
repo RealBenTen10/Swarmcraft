@@ -53,6 +53,7 @@ class Pooler:
         while not a.sensing.connected: pass
         self.agents_pool.append(a)
         self.reset_agent(a)
+        self.deactivate_agent(a)
         return a
 
     # activate the next available agent in the pool
@@ -66,7 +67,7 @@ class Pooler:
         self.active_agents.append(a)
         return a
 
-    # deactivate an agent, reset them, and return them to the pool
+    # reset an agent's stats
     def reset_agent(self, agent):
         agent.reset() # reset the agent
         # reset them serverside too
@@ -77,10 +78,10 @@ class Pooler:
 
     def deactivate_agent(self, agent):
         if agent in self.active_agents:
-            server.send_command(
-                f'/tp {agent.sensing.get_username()} {pooling_location[0]} {pooling_location[1]} {pooling_location[2]}')  # send them back to the pooling area
             self.active_agents.remove(agent)
             self.agents_pool.append(agent)
+        server.send_command(
+            f'/tp {agent.sensing.get_username()} {pooling_location[0]} {pooling_location[1]} {pooling_location[2]}')  # send them back to the pooling area
 
     def update_active_agents(self):
         for agent in self.active_agents:
