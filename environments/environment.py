@@ -6,7 +6,7 @@ from test_evocraft_py import AIR, GRASS, BRICK_BLOCK, DIAMOND_BLOCK, GOLD_BLOCK,
 
 from util import add_tuples
 from world_interface.pooler import WORLD_CENTER, pooler
-from server import server
+from server.server import server
 
 
 class Environment(object):

@@ -20,6 +20,9 @@ class Agent(object):
         # called by the pooler when this agent is killed/removed from the simulation and placed back into the inactive pool
         pass
 
+    def __str__(self):
+        return "ID " + str(self.id) + " uname " + str(self.bot.username) + (" connected" if self.sensing.connected else " disconnected")
+
 class Goto(Agent):
     def __init__(self, bot, internalid):
         super().__init__(bot, internalid)

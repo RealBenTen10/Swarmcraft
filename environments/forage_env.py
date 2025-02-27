@@ -5,7 +5,7 @@ from typing import override
 
 from test_evocraft_py import DIAMOND_BLOCK
 
-from server import server
+from server.server import server
 from environments.environment import Environment
 from util import add_tuples
 from world_interface.pooler import WORLD_CENTER

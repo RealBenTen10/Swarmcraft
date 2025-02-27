@@ -5,10 +5,14 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import On
 
+from world_interface.pooler import pooler
+
+
 class Sensing(object):
     def __init__(self, agent):
         # agent parts
         self.bot = agent.bot
+        self.agent = agent
 
         # event queues
         self.events_queue = deque() # event queue - as asynchronous events happen on the server they are added to this queue
@@ -20,6 +24,8 @@ class Sensing(object):
         self.error_queue = deque()
         self.sounds_queue = deque()
         self.window_stack = deque()
+
+        self.connected = True
 
         # register all listeners for world events (which can't be accessed through bot state vars)
         # these hooks fire whenever an event happens and push the info for that event into the event queue
@@ -36,6 +42,8 @@ class Sensing(object):
         @On(self.bot, "end") # when you disconnect
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
+            pooler.deactivate_agent(self.agent) # when you disconnect, also deactivate yourself
+            pooler.remove_agent(self.agent) # and remove yourself from the pool
             print("Agent disconnected! (" + reason + ")")
         @On(self.bot, "error") # when something breaks
         def on_error(this, err, *args): # this should push to an error queue
@@ -62,11 +70,6 @@ class Sensing(object):
         @On(self.bot, "wake")
         def on_wake(this, *args):
             self.awake = True
-
-        # state variables
-        # remember python goes by reference, so these don't need getter/setters
-        self.connected = False
-        #while not self.connected: pass # wait until we connect before we return control
 
     def get_health(self):
         return self.bot.health
