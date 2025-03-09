@@ -1,8 +1,8 @@
 from typing import override
 
-from btree.Nodes import ActionNode, ConditionNode, FallbackNode, SequenceNode
+from btree.Nodes import ActionNode, ConditionNode, FallbackNode
+from server.message_server import message_server
 from util import dist_sqr
-from world_interface.pooler import pooler
 
 # some example behaviors
 # say something in the chat
@@ -17,7 +17,7 @@ class Say(ActionNode):
 
     @override
     def tick(self):
-        pooler.send_message(self.actuation.agent, self.message)
+        message_server.send(self.actuation.agent, self.message)
         return 'success'
 
 class CheckIfAtPosition(ConditionNode):

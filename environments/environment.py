@@ -5,8 +5,8 @@ from mazelib.generate.Wilsons import Wilsons
 from test_evocraft_py import AIR, GRASS, BRICK_BLOCK, DIAMOND_BLOCK, GOLD_BLOCK, FENCE
 
 from util import add_tuples
-from world_interface.pooler import WORLD_CENTER, pooler
-from server.server import server
+from server.pooler import WORLD_CENTER, pooler
+from server.minecraft_server import minecraft_server
 
 
 class Environment(object):
@@ -17,8 +17,8 @@ class Environment(object):
     # reset the environment
     # by default, clears all blocks and spawns a ground plane at the bottom of the environment
     def reset(self):
-        server.fill_cube(self.origin, add_tuples(add_tuples(self.origin, self.size), (-1, -1, -1)), AIR)
-        server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
+        minecraft_server.fill_cube(self.origin, add_tuples(add_tuples(self.origin, self.size), (-1, -1, -1)), AIR)
+        minecraft_server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
 
     # set the environment to an initial state
     # by default just builds a fence around the edge
@@ -30,7 +30,7 @@ class Environment(object):
                 if x == 0 or x == self.size[0] - 1 or y == 0 or y == self.size[2] - 1:
                     blocks.append(FENCE)
                     positions.append(add_tuples(self.origin, (x, 1, y)))
-        server.spawn_blocks(positions, blocks)
+        minecraft_server.spawn_blocks(positions, blocks)
 
 # example maze environment
 class MazeEnv(Environment):
@@ -72,5 +72,4 @@ class MazeEnv(Environment):
         ])
         self.entrance = add_tuples(self.origin, (m.start[0], 1, m.start[1]))
         self.exit = add_tuples(self.origin, (m.end[0], 1, m.end[1]))
-        server.spawn_blocks(positions, blocks)
-        pooler.activate_agent(init_location=self.entrance)
+        minecraft_server.spawn_blocks(positions, blocks)

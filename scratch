@@ -1,21 +1,12 @@
-mineflayer bots are very hook-oriented
-they need:
-- a way to interact with each other
-    perhaps a ros-like communication protocol?
+Agents are an abstraction over bots
+Agents are managed by the user
+Bots are managed by the pooler
 
-- a way to interact with their environment
-    mineflayer provides this!
+When the simulator starts up, the pooler should create some number of bots. This is the bot pool
 
-- we also want a way to programmatically define behavior, and to hotswap
-this behavior - probably a controller class that sets hooks or something
-like that
+Whenever the user creates an agent, they should at some point ask the pooler to bind a bot to it.
+The pooler should check the bot pool for a free bot. If a free bot exists, the pooler should bind that bot and return success.
+    If there is no free bot available, the pooler should return failure.
 
-what is a behavior?
-- has a trigger (an event)
-- has world parameters (info associated with the trigger)
-- has internal parameters (info set by the program)
-- has a response (method affected by internal and external parameters)
-
-TIME:
-3h dec 5
-3h dec 6
+Whenever the user is done with an agent (not necessarily when they die!), they should ask the pooler to unbind that agent's bot.
+The pooler should set the agent's bot to None, return that bot to the pool, and reset that bot's inventory, health, hunger, etc.

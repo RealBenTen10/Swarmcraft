@@ -14,7 +14,7 @@ import grpc
 from test_evocraft_py import minecraft_pb2_grpc, FillCubeRequest, Point, Cube, AIR, BlockType, Blocks, NORTH, Block
 
 
-class Server:
+class MinecraftServer:
     def __init__(self):
         self.executablepath = '/home/moltmanns/Documents/swarmcraft/Evocraft-py/spongevanilla-1.12.2-7.3.0.jar'
         self.svproc = None
@@ -101,4 +101,4 @@ class Server:
                                     max=Point(x=corner[0], y=corner[1], z=corner[2]),
                                     ))
 
-server = Server()
+minecraft_server = MinecraftServer()

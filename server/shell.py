@@ -4,12 +4,11 @@ from typing import Any
 import javascript.connection
 from test_evocraft_py import AIR
 
-from agents.agent import Agent
 from environments.environment import MazeEnv
-from environments.forage_env import ForageEnvironment
+from experiments.experiment import ExampleExperiment
 from util import add_tuples
-from world_interface.pooler import pooler, WORLD_CENTER
-from server.server import server
+from server.pooler import pooler, WORLD_CENTER
+from server.minecraft_server import minecraft_server
 
 
 class ServerShell(cmd.Cmd):
@@ -22,53 +21,50 @@ class ServerShell(cmd.Cmd):
             super().cmdloop(intro)
         except Exception as e:
             print(e)
+            super().cmdloop('')
             #self.do_quit([])
 
-    def do_lsagents(self, args):
-        """List all active and pooled agents"""
-        print("Active agents:")
-        for a in pooler.active_agents:
-            print("\t" + str(a))
-        print("Pooled agents:")
-        for a in pooler.agents_pool:
-            print("\t" + str(a))
+    def do_lsbots(self, args):
+        """List all bound and free bots"""
+        print(f'Bound bots ({len(pooler.bound_bots)}):')
+        for b in pooler.bound_bots:
+            print("\t" + b.username)
+        print(f'Free bots ({len(pooler.free_bots)}):')
+        for b in pooler.free_bots:
+            print("\t" + b.username)
 
-    def do_addagent(self, args):
-        """Add one or n new agents"""
+    def do_addbot(self, args):
+        """Add a new free bot"""
         at = args.split()
         if at:
             for i in range(int(at[0])):
-                pooler.create_agent(Agent) # TODO: user-configurable agent constructors
+                pooler.create_bot()
         else:
-            pooler.create_agent(Agent)
+            pooler.create_bot()
 
-    def do_activateagent(self, args):
-        """Activate one or n pooled agents"""
-        at = args.split()
-        if at:
-            for i in range(int(at[0])):
-                act = pooler.activate_agent()
-                if act is not None:
-                    print("Activated " + str(act))
-        else:
-            act = pooler.activate_agent()
-            if act is not None:
-                print("Activated " + str(act))
+    def do_resetbots(self, args):
+        """Reset all free bots"""
+        for b in pooler.free_bots:
+            pooler.reset_bot_stats(b)
+            pooler.reset_bot_position(b)
 
-    # TODO: user-selectable resets
-    def do_resetagents(self, args):
-        """Reset and deactivate every agent"""
-        while len(pooler.active_agents) > 0:
-            pooler.reset_agent(pooler.active_agents[0])
-            pooler.deactivate_agent(pooler.active_agents[0])
+    def do_prunebots(self, args):
+        """Remove all free bots"""
+        while len(pooler.free_bots) > 0:
+            b = pooler.free_bots.pop()
+            b.quit()
 
     # TODO: user-selectable experiments
     def do_run(self, args):
         """Run an experiment"""
         at = args.split()
-        f = ForageEnvironment((10, 4, 10), (int(at[0]), 50, int(at[1])), 5, 10, int(at[2]))
+        """f = ForageEnvironment((10, 4, 10), (int(at[0]), 50, int(at[1])), 5, 10, int(at[2]))
         f.reset()
-        f.initialize()
+        f.initialize()"""
+        ex = ExampleExperiment(int(at[0]))
+        ex.initialize()
+        ex.run()
+        ex.cleanup()
 
     def do_mazegen(self, args):
         """Generate an nxn maze"""
@@ -80,21 +76,21 @@ class ServerShell(cmd.Cmd):
     def do_clear(self, args):
         """Clear an area"""
         at = args.split()
-        server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(at[0]), int(at[1]), int(at[2]))), AIR)
+        minecraft_server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(at[0]), int(at[1]), int(at[2]))), AIR)
 
     def do_cmd(self, args):
         """Send a command to the server"""
-        server.send_command(args)
+        minecraft_server.send_command(args)
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
         print("Server going down...")
         """Stop the server and exit"""
-        for a in pooler.active_agents:
-            a.bot.quit()
-        for a in pooler.agents_pool:
-            a.bot.quit()
-        server.stop()
+        for b in pooler.bound_bots:
+            b.quit()
+        for b in pooler.free_bots:
+            b.quit()
+        minecraft_server.stop()
         javascript.connection.stop()
         print("Server is DOWN!")
         return True

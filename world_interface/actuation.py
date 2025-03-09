@@ -4,7 +4,8 @@ like a robot actuator suite - every agent gets one of these
 """
 from time import sleep
 from javascript import require
-from world_interface.pooler import pooler
+
+from server.message_server import message_server
 
 Vec3 = require('vec3').Vec3
 
@@ -18,21 +19,22 @@ class Actuation(object):
         self.agent.bot.chat(message)
 
     # send a chat message to one player, regardless of distance
+    # this method should be avoided!
     def whisper(self, message: str, recipient_name: str):
         self.agent.bot.whisper(recipient_name, message)
 
     # chat methods using the pooler's chat - not rate-limited like the server
-    def send_message(self, message: str, recipient_name: str):
-        pooler.send_message(self.agent, message, recipient_name)
+    def send_message(self, message: str, recipient_id: str):
+        message_server.send(self.agent, message, recipient_id)
 
-    def send_message_ranged(self, message: str, recipient_name: str, distance: float):
-        pooler.send_message(self.agent, message, recipient_name, distance)
+    def send_message_ranged(self, message: str, recipient_id: str, distance: float):
+        message_server.send(self.agent, message, recipient_id, distance)
 
     def send_global_message(self, message: str):
-        pooler.send_message(self.agent, message)
+        message_server.send(self.agent, message)
 
     def send_global_message_ranged(self, message: str, distance: float):
-        pooler.send_message(self.agent, message, None, distance)
+        message_server.send(self.agent, message, None, distance)
 
     # jump once
     def jump(self):

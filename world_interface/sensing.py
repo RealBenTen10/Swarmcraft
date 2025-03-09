@@ -5,7 +5,7 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import On
 
-from world_interface.pooler import pooler
+from server.pooler import pooler
 
 
 class Sensing(object):
@@ -19,8 +19,8 @@ class Sensing(object):
         self.pending_actions = [] # promises for actions which have been initialized but not yet taken
 
         # state queues
-        self.chat_queue = deque()
-        self.whisper_queue = deque()
+        self.chat_queue = deque() # messages which have been sent to everyone
+        self.whisper_queue = deque() # messages which have been whispered to you
         self.error_queue = deque()
         self.sounds_queue = deque()
         self.window_stack = deque()
@@ -42,9 +42,9 @@ class Sensing(object):
         @On(self.bot, "end") # when you disconnect
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
-            pooler.deactivate_agent(self.agent) # when you disconnect, also deactivate yourself
-            pooler.remove_agent(self.agent) # and remove yourself from the pool
-            print("Agent disconnected! (" + reason + ")")
+            if self.agent.bot is not None: # if your are still bound to a bot, unbind from it
+                pooler.unbind_bot(self.agent)
+                print("Agent disconnected! (" + reason + ")")
         @On(self.bot, "error") # when something breaks
         def on_error(this, err, *args): # this should push to an error queue
             self.error_queue.append(("error", err))

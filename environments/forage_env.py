@@ -5,10 +5,10 @@ from typing import override
 
 from test_evocraft_py import DIAMOND_BLOCK
 
-from server.server import server
+from server.minecraft_server import minecraft_server
 from environments.environment import Environment
 from util import add_tuples
-from world_interface.pooler import WORLD_CENTER
+from server.pooler import WORLD_CENTER
 
 
 class ForageEnvironment(Environment):
@@ -36,4 +36,4 @@ class ForageEnvironment(Environment):
                     positions.append(add_tuples(self.origin, (x + x_off, 1, y + y_off)))
                     blocks.append(DIAMOND_BLOCK)
                     positions.append(add_tuples(self.origin, (x + x_off, 2, y + y_off)))
-        server.spawn_blocks(positions, blocks)
+        minecraft_server.spawn_blocks(positions, blocks)
