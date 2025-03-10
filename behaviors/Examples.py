@@ -5,7 +5,7 @@ from server.message_server import message_server
 from util import dist_sqr
 
 # some example behaviors
-# say something in the chat
+# say something in the ingame chat
 class Say(ActionNode):
     def __init__(self, actuation, message: str):
         super().__init__()

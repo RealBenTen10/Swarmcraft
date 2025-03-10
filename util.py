@@ -20,3 +20,6 @@ def dist(a, b) -> float:
 
 def add_tuples(a, b):
     return tuple(map(operator.add, a, b))
+
+def multiply_tuples(a, b):
+    return tuple(map(operator.mul, a, b))

@@ -10,19 +10,23 @@ from server.minecraft_server import minecraft_server
 
 
 class Environment(object):
-    def __init__(self, origin: tuple[int, int, int]=WORLD_CENTER, size: tuple[int, int, int]=(20, 20, 20)):
+    def __init__(self, origin: tuple[int, int, int], size: tuple[int, int, int]):
         self.origin = origin
         self.size = size
 
     # reset the environment
     # by default, clears all blocks and spawns a ground plane at the bottom of the environment
     def reset(self):
-        minecraft_server.fill_cube(self.origin, add_tuples(add_tuples(self.origin, self.size), (-1, -1, -1)), AIR)
-        minecraft_server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
+        """Resets the environment
+        Clears all blocks"""
+        minecraft_server.fill_cube(self.origin, add_tuples(self.origin, self.size), AIR)
 
     # set the environment to an initial state
     # by default just builds a fence around the edge
     def initialize(self):
+        """Set the environment to an initial state
+        Builds a fence around the edge and spawns a ground plane at the bottom"""
+        minecraft_server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
         blocks = []
         positions = []
         for x in range(self.size[0]):
@@ -34,7 +38,7 @@ class Environment(object):
 
 # example maze environment
 class MazeEnv(Environment):
-    def __init__(self, origin: tuple[int, int, int]=WORLD_CENTER, size: tuple[int, int, int]=(20, 20, 20)):
+    def __init__(self, origin: tuple[int, int, int], size: tuple[int, int, int]):
         super().__init__(origin, size)
         self.entrance = None
         self.exit = None

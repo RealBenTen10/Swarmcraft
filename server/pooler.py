@@ -20,7 +20,6 @@ log_chat = True
 
 WORLD_CENTER = (0, 4, 0)
 pooling_location = WORLD_CENTER
-default_init_location = tuple(map(operator.add, WORLD_CENTER, (1, 0, 1)))
 connect_timeout = 5 # amount of time to wait for a bot to connect when creating a bot
 
 class Pooler:
@@ -28,14 +27,14 @@ class Pooler:
         self.bound_bots = []
         self.free_bots = []
 
-    def create_bot(self, uid=None, host='localhost', port='25565'):
+    def create_bot(self, username=None, host='localhost', port='25565'):
         """Create a bot and add it to the pool"""
-        if uid is None:
-            uid = shortuuid.ShortUUID().random(length=8)
+        if username is None:
+            username = shortuuid.ShortUUID().random(length=8)
         b = mineflayer.createBot({
             "host": host,
             "port": port,
-            "username": str(uid),
+            "username": str(username),
         })
         # wait for the bot to connect
         start = time.time()

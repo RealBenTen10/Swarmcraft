@@ -6,6 +6,7 @@ from test_evocraft_py import AIR
 
 from environments.environment import MazeEnv
 from experiments.experiment import ExampleExperiment
+from experiments.forage_exp import ForageExperiment
 from util import add_tuples
 from server.pooler import pooler, WORLD_CENTER
 from server.minecraft_server import minecraft_server
@@ -21,8 +22,8 @@ class ServerShell(cmd.Cmd):
             super().cmdloop(intro)
         except Exception as e:
             print(e)
-            super().cmdloop('')
-            #self.do_quit([])
+            #super().cmdloop('')
+            self.do_quit([])
 
     def do_lsbots(self, args):
         """List all bound and free bots"""
@@ -61,7 +62,7 @@ class ServerShell(cmd.Cmd):
         """f = ForageEnvironment((10, 4, 10), (int(at[0]), 50, int(at[1])), 5, 10, int(at[2]))
         f.reset()
         f.initialize()"""
-        ex = ExampleExperiment(int(at[0]))
+        ex = ForageExperiment(int(at[0]))
         ex.initialize()
         ex.run()
         ex.cleanup()
