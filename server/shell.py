@@ -81,7 +81,7 @@ class ServerShell(cmd.Cmd):
 
     def do_cmd(self, args):
         """Send a command to the server"""
-        minecraft_server.send_command(args)
+        print(minecraft_server.send_command(args))
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
@@ -95,3 +95,15 @@ class ServerShell(cmd.Cmd):
         javascript.connection.stop()
         print("Server is DOWN!")
         return True
+
+    def do_readcube(self, args):
+        """Read a cube and print the results to console"""
+        at = args.split()
+        blocks = minecraft_server.read_cube((int(at[0]), int(at[1]), int(at[2])), (int(at[3]), int(at[4]), int(at[5])))
+        print(blocks)
+
+    def do_readblock(self, args):
+        """Read a block and print the results to console"""
+        at = args.split()
+        block = minecraft_server.read_block((int(at[0]), int(at[1]), int(at[2])))
+        print(block)

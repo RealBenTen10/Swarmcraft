@@ -6,6 +6,7 @@ agents must ask the pooler to be removed when they disconnect
 """
 import operator
 import time
+from time import sleep
 from typing import Callable, Any
 from javascript import require
 
@@ -36,13 +37,17 @@ class Pooler:
             "port": port,
             "username": str(username),
         })
-        # wait for the bot to connect
+        # wait for the bot to connect and load in
         start = time.time()
-        while b.player is None and time.time() - start < connect_timeout:
+        while (b.player is None or b.entity is None) and time.time() - start < connect_timeout:
             pass
         if time.time() - start > connect_timeout:
             print("Unable to create bot (check server player limit?)")
         else:
+            sleep(1) # give the bot a little time to settle - not sure if there's a better way to do this
+            # this wait seems to reduce the incidence of bots not working right, but doesn't totally eliminate it
+            # values below 1 are even less reliable
+            # problem also seems to occur when teleporting
             self.free_bots.append(b)
 
     def bind_bot(self, agent):
@@ -60,9 +65,10 @@ class Pooler:
     def unbind_bot(self, agent):
         """Unbind an agent from its bot and return the bot to the pool"""
         b = agent.bot
-        agent.bot = None
+        agent.bot = None # remove the bot from the agent
         self.bound_bots.remove(b)
         self.free_bots.append(b)
+        self.reset_bot_control(b)
         self.reset_bot_stats(b)
         self.reset_bot_position(b)
 
@@ -76,5 +82,8 @@ class Pooler:
         minecraft_server.send_command(
             f'/tp {bot.username} {pooling_location[0]} {pooling_location[1]} {pooling_location[2]}'
         )
+
+    def reset_bot_control(self, bot):
+        bot.clearControlStates()
 
 pooler = Pooler()

@@ -10,3 +10,13 @@ The pooler should check the bot pool for a free bot. If a free bot exists, the p
 
 Whenever the user is done with an agent (not necessarily when they die!), they should ask the pooler to unbind that agent's bot.
 The pooler should set the agent's bot to None, return that bot to the pool, and reset that bot's inventory, health, hunger, etc.
+
+what about logging??
+- whenever an experiment runs, we can log at every tick/every nth tick/whatever
+- we have to log agents and environments
+- logging agents is easy: take a snapshot of agent state at startup, then log deltas at every log tick
+- logging environment is a little harder
+    - easiest option would be to limit agents to a given area, snapshot every block in the area at startup, then log deltas every tick
+    - what about things like chests with stuff in them, mobs?
+
+- mcrcon seems to be better than evocraft - lets us actually send commands and get their output easily

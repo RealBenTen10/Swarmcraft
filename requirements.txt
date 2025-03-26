@@ -4,6 +4,6 @@ numpy==2.2.3
 pip
 protobuf==3.20.0 # very important! this cannot be a newer version!
 typing-extensions==4.12.2
-test_evocraft_py==0.1.7 # way we're doing things atm is pretty hacky.
 shortuuid
 mazelib
+mcrcon

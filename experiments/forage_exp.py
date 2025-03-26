@@ -1,4 +1,5 @@
 import random
+import time
 from time import sleep
 from typing import override
 
@@ -33,11 +34,14 @@ class ForageExperiment(Experiment):
             a = ForageAgent(f'forager_{i}', START_LOCATION, self.environment)
             a.reset()
             self.agents.append(a)
+            sleep(0.5) # whenever you create a new agent, you should sleep for at least 0.5, possibly more
+            # this prevents a whole bunch of weird bugs
         minecraft_server.send_command('say initialized foraging agents')
 
     @override
     def run(self):
-        while True: #not self.done:
+        start_time = time.time()
+        while time.time() - start_time < 30: #not self.done:
             for a in self.agents:
                 a.update()
 

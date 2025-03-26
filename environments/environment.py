@@ -45,6 +45,7 @@ class MazeEnv(Environment):
 
     @override
     def initialize(self):
+        super().initialize()
         m = Maze()
         # sizing is weird
         # odd environment sizes deliver mazes which fill the space
