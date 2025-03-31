@@ -18,7 +18,6 @@ class Agent(object):
 
     def update(self):
         """Tick this agent's behavior trees, or perform other work"""
-        # FIXME: weird bug in update or something, sometimes agents get stuck
         pass
 
     def reset(self):

@@ -14,15 +14,13 @@ generates two logfiles:
     - the block log consists of two portions:
         - a compressed snapshot of the server's region folder (containing all the .mca files)
 """
+import math
 import os
 import warnings
 import subprocess
-from threading import Thread
 from queue import Queue, Empty
 
-import grpc
 from mcrcon import MCRcon, MCRconException
-from test_evocraft_py import minecraft_pb2_grpc, FillCubeRequest, Point, Cube, AIR, BlockType, Blocks, NORTH, Block
 
 
 def enqueue_output(out, queue):
@@ -90,37 +88,33 @@ class MinecraftServer:
             warnings.warn("Server is not running")
             return
         return self.mcr.command(command)
-'''
-    def fill_cube(self, origin: tuple[float, float, float], corner: tuple[float, float, float], block: BlockType):
-        self.evocraft_client.fillCube(FillCubeRequest(
-            cube=Cube(
-                min=Point(x=origin[0], y=origin[1], z=origin[2]),
-                max=Point(x=corner[0], y=corner[1], z=corner[2]),
-            ),
-            type=block
-        ))
 
-    def spawn_block(self, pos: tuple[float, float, float], block: BlockType, orientation=NORTH):
-        self.evocraft_client.spawnBlocks(Blocks(blocks=[
-            Block(position=Point(x=pos[0], y=pos[1], z=pos[2]), type=block, orientation=orientation)
-        ]))
+    def spawn_block(self, pos: tuple[float, float, float], block_id: str = 'stone'):
+        return self.mcr.command(f'setblock {pos[0]} {pos[1]} {pos[2]} {block_id}')
 
-    # this is fast.
-    # if you're spawning many things at once, best use this
-    def spawn_blocks(self, positions: list[tuple[float, float, float]], blocks: list[BlockType], orientations: list[int]=None):
-        b = []
-        if orientations is None:
-            orientations = [NORTH] * len(positions)
-        for pos, block, orientation in zip(positions, blocks, orientations):
-            b.append(Block(position=Point(x=pos[0], y=pos[1], z=pos[2]), type=block, orientation=orientation))
-        self.evocraft_client.spawnBlocks(Blocks(blocks=b))
+    # so chunk the input volume into smaller ones
+    def fill_cube(self, origin: tuple[float, float, float], size: tuple[float, float, float], block_id: str = 'stone'):
+        process = [(origin, size)] # origins, sizes
+        while len(process) != 0:
+            o, s = process.pop() # volume origin, volume size
+            vol_size = s[0] * s[1] * s[2] # calculate the volume's size
+            if vol_size > 32768 or any(s_ < 0 for s_ in s): # if it's too big or any values were negative, halve it along its largest axis and append resulting volumes to the process queue
+                # split the volume along its largest axis into two new volumes
+                # append those to the volume queue
+                greatest_index = s.index(max(s))
+                first_size = list(s)
+                second_size = list(s)
+                second_origin = list(o)
+                first_size[greatest_index] = int(math.ceil(s[greatest_index] / 2)) # size of the first block
+                second_size[greatest_index] = int(math.floor(s[greatest_index] / 2)) # size of the second block
+                second_origin[greatest_index] = int(o[greatest_index] + first_size[greatest_index]) # origin of the second block
+                first_block = (o, tuple(first_size))
+                second_block = (second_origin, tuple(second_size))
+                # then the other half is all components of the old volume, except along the axis we split at - there we take
+                process.append(first_block)
+                process.append(second_block)
+            else: # if it isn't too big, fill it
+                print(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
+                self.mcr.command(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
 
-    def read_cube(self, pos: tuple[float, float, float], corner: tuple[float, float, float]):
-        return self.evocraft_client.readCube(Cube(min=Point(x=pos[0], y=pos[1], z=pos[2]),
-                                    max=Point(x=corner[0], y=corner[1], z=corner[2]),
-                                    ))
-
-    def read_block(self, pos: tuple[float, float, float]):
-        return self.evocraft_client.readCube(Cube(min=Point(x=pos[0], y=pos[1], z=pos[2]), max=Point(x=pos[0], y=pos[1], z=pos[2])))
-'''
 minecraft_server = MinecraftServer()

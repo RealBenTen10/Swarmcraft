@@ -3,8 +3,6 @@
 import random
 from typing import override
 
-from test_evocraft_py import DIAMOND_BLOCK
-
 from server.minecraft_server import minecraft_server
 from environments.environment import Environment
 from util import add_tuples
@@ -34,9 +32,7 @@ class ForageEnvironment(Environment):
                     b_pos = add_tuples(self.origin, (x + x_off, 1, y + y_off))
                     if self.origin[0] + self.size[0] - 1 > b_pos[0] > self.origin[0] + 1 and self.origin[2] + self.size[2] - 1 > \
                             b_pos[2] > self.origin[2] + 1:
-                        blocks.append(DIAMOND_BLOCK)
-                        positions.append(b_pos)
-        minecraft_server.spawn_blocks(positions, blocks)
+                        minecraft_server.spawn_block(b_pos, 'diamond_block')
 
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.size[0] - 1), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.size[2] - 1)

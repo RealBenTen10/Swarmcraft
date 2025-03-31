@@ -18,5 +18,3 @@ what about logging??
 - logging environment is a little harder
     - easiest option would be to limit agents to a given area, snapshot every block in the area at startup, then log deltas every tick
     - what about things like chests with stuff in them, mobs?
-
-- mcrcon seems to be better than evocraft - lets us actually send commands and get their output easily

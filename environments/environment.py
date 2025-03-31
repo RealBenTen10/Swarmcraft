@@ -2,10 +2,8 @@ from typing import override
 
 from mazelib import Maze
 from mazelib.generate.Wilsons import Wilsons
-from test_evocraft_py import AIR, GRASS, BRICK_BLOCK, DIAMOND_BLOCK, GOLD_BLOCK, FENCE
 
 from util import add_tuples
-from server.pooler import WORLD_CENTER, pooler
 from server.minecraft_server import minecraft_server
 
 
@@ -19,22 +17,18 @@ class Environment(object):
     def reset(self):
         """Resets the environment
         Clears all blocks"""
-        minecraft_server.fill_cube(self.origin, add_tuples(self.origin, self.size), AIR)
+        minecraft_server.fill_cube(self.origin, self.size, 'air')
 
     # set the environment to an initial state
     # by default just builds a fence around the edge
     def initialize(self):
         """Set the environment to an initial state
         Builds a fence around the edge and spawns a ground plane at the bottom"""
-        minecraft_server.fill_cube(self.origin, (self.origin[0] + self.size[0] - 1, self.origin[1], self.origin[2] + self.size[2] - 1), GRASS)
-        blocks = []
-        positions = []
+        minecraft_server.fill_cube(self.origin, (self.size[0], 0, self.size[2]), 'grass')
         for x in range(self.size[0]):
             for y in range(self.size[2]):
                 if x == 0 or x == self.size[0] - 1 or y == 0 or y == self.size[2] - 1:
-                    blocks.append(FENCE)
-                    positions.append(add_tuples(self.origin, (x, 1, y)))
-        minecraft_server.spawn_blocks(positions, blocks)
+                    minecraft_server.spawn_block(add_tuples(self.origin, (x, 1, y)), 'fence')
 
 # example maze environment
 class MazeEnv(Environment):
@@ -57,24 +51,19 @@ class MazeEnv(Environment):
         m.generate()
         m.generate_entrances()
         print(m)
-        blocks = []
-        positions = []
         for x in range(len(m.grid)):
             for y in range(len(m.grid[x])):
                 if m.grid[x][y] == 1:
-                    blocks.extend([BRICK_BLOCK, BRICK_BLOCK])
+                    minecraft_server.spawn_block(add_tuples(self.origin, (x, 1, y)), 'brick_block')
+                    minecraft_server.spawn_block(add_tuples(self.origin, (x, 2, y)), 'brick_block')
                 else:
-                    blocks.extend([AIR, AIR])
-                positions.extend([add_tuples(self.origin, (x, 1, y)), add_tuples(self.origin, (x, 2, y))])
-        blocks.extend([GOLD_BLOCK, AIR, AIR, DIAMOND_BLOCK, AIR, AIR])
-        positions.extend([
-            add_tuples(self.origin, (m.start[0], 0, m.start[1])),
-            add_tuples(self.origin, (m.start[0], 1, m.start[1])),
-            add_tuples(self.origin, (m.start[0], 2, m.start[1])),
-            add_tuples(self.origin, (m.end[0], 0, m.end[1])),
-            add_tuples(self.origin, (m.end[0], 1, m.end[1])),
-            add_tuples(self.origin, (m.end[0], 2, m.end[1])),
-        ])
+                    minecraft_server.spawn_block(add_tuples(self.origin, (x, 1, y)), 'air')
+                    minecraft_server.spawn_block(add_tuples(self.origin, (x, 2, y)), 'air')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.start[0], 0, m.start[1])), 'gold_block')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.start[0], 1, m.start[1])), 'air')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.start[0], 2, m.start[1])), 'air')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.end[0], 0, m.end[1])), 'diamond_block')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.end[0], 1, m.end[1])), 'air')
+        minecraft_server.spawn_block(add_tuples(self.origin, (m.end[0], 2, m.end[1])), 'air')
         self.entrance = add_tuples(self.origin, (m.start[0], 1, m.start[1]))
         self.exit = add_tuples(self.origin, (m.end[0], 1, m.end[1]))
-        minecraft_server.spawn_blocks(positions, blocks)

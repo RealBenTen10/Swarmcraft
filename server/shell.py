@@ -1,11 +1,10 @@
 import cmd
+import traceback
 from typing import Any
 
 import javascript.connection
-from test_evocraft_py import AIR
 
 from environments.environment import MazeEnv
-from experiments.experiment import ExampleExperiment
 from experiments.forage_exp import ForageExperiment
 from util import add_tuples
 from server.pooler import pooler, WORLD_CENTER
@@ -22,6 +21,7 @@ class ServerShell(cmd.Cmd):
             super().cmdloop(intro)
         except Exception as e:
             print(e)
+            traceback.print_tb(e.__traceback__)
             #super().cmdloop('')
             self.do_quit([])
 
@@ -77,7 +77,7 @@ class ServerShell(cmd.Cmd):
     def do_clear(self, args):
         """Clear an area"""
         at = args.split()
-        minecraft_server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(at[0]), int(at[1]), int(at[2]))), AIR)
+        print(minecraft_server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(at[0]), int(at[1]), int(at[2]))), 'air'))
 
     def do_cmd(self, args):
         """Send a command to the server"""
