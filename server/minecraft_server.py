@@ -16,6 +16,8 @@ generates two logfiles:
 """
 import math
 import os
+import socket
+import sys
 import warnings
 import subprocess
 from queue import Queue, Empty
@@ -25,6 +27,8 @@ def enqueue_output(out, queue):
         queue.put(line)
     out.close()
 
+HOST = '0.0.0.0'
+PORT = 25576
 
 class MinecraftServer:
     def __init__(self):
@@ -32,36 +36,32 @@ class MinecraftServer:
         self.svproc = None
         self.running = False
         self.evocraft_client = None
+        self.cmdsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_output_queue = Queue()
-
-        #self.mcr = MCRcon('127.0.0.1', 'changeme')
 
     def start(self):
         if self.running:
             warnings.warn("Server is already running")
             return
-        print("Starting server")
-        # while test_evocraft_py does provide its own startup/shutdown methods, starting the server this way lets
-        # me hook into the io streams
-        self.svproc = subprocess.Popen(['java', '-jar', 'spigot-1.21.4.jar' '-nogui'],
+        print("Starting spigot")
+        # start spigot
+        # this will also start up the command server socket (at 0.0.0.0:25576)
+        self.svproc = subprocess.Popen(['java', '-jar', 'spigot-1.21.4.jar', '--nogui'],
                                        cwd=os.path.join(os.getcwd(), 'server'),
-                                       stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        print("Started server process")
+                                       stdout=sys.stdout, stdin=subprocess.PIPE)
+        print("Spigot is up")
         self.running = True
+        print("Connecting to command server (at %s:%d)" % (HOST, PORT))
         # need a loop here to check if the server is up
         # this is pretty ugly
         # must be a better way!
         while True:
-            line = self.svproc.stdout.readline()
-            line = line.decode()
-            print(line, end='')
-            if line and line.find('RCON running') != -1:
-                break
-            elif line and (line.find('Failed to start the minecraft server') != -1 or line.find('Stopping server') != -1):
-                self.stop()
-                exit(1)
-        #self.mcr.connect()
-        print("rcon connection is up")
+            try:
+                self.cmdsock.connect((HOST, PORT))
+            except socket.error as e:
+                continue
+            break
+        print("Connected to command server (at %s:%d)" % (HOST, PORT))
 
     # this should really get registered to an exit handler
     def stop(self):
@@ -73,8 +73,6 @@ class MinecraftServer:
         #except MCRconException: pass
         self.svproc.terminate() # stop the process
         self.svproc.stdin.close() # and close its associated streams
-        self.svproc.stdout.close()
-        #self.mcr.disconnect()
         self.running = False
         print("server stopped")
 
@@ -84,12 +82,25 @@ class MinecraftServer:
     def send_command(self, command: str):
         if not self.running:
             warnings.warn("Server is not running")
-            return
+            return None
 
-        return self.mcr.command(command)
+        header = len(command).to_bytes(2, byteorder='big', signed=False)
+        self.cmdsock.send(header + command.encode('utf-8'))
+        data = b''
+        count = 0
+        while count < 2:
+            piece = self.cmdsock.recv(2)
+            if not piece:
+                self.cmdsock.close()
+                return None
+            data += piece
+            count += len(piece)
+        length = int.from_bytes(data, byteorder='big', signed=False)
+        return self.cmdsock.recv(length).decode('utf-8')
+
 
     def spawn_block(self, pos: tuple[float, float, float], block_id: str = 'stone'):
-        return self.mcr.command(f'setblock {pos[0]} {pos[1]} {pos[2]} {block_id}')
+        return self.send_command(f'setblock {pos[0]} {pos[1]} {pos[2]} {block_id}')
 
     # so chunk the input volume into smaller ones
     def fill_cube(self, origin: tuple[float, float, float], size: tuple[float, float, float], block_id: str = 'stone'):
@@ -114,6 +125,6 @@ class MinecraftServer:
                 process.append(second_block)
             else: # if it isn't too big, fill it
                 print(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
-                self.mcr.command(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
+                self.send_command(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
 
 minecraft_server = MinecraftServer()

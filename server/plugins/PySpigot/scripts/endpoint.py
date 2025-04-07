@@ -1,10 +1,14 @@
 import socket
 import struct
 import pyspigot as ps
+import methods
 
 # remember jython is only python 2!
 
 HOST, PORT = '0.0.0.0', 25576
+
+def ping(*args):
+    return 'pong'
 
 def encode(msg):
     header = struct.pack('>H', len(msg))
@@ -26,7 +30,8 @@ def handle(conn, addr):
             count += len(piece)
         try:
             length = struct.unpack('>H', data) # unpack bytestring into a big-endian unsigned short
-        except struct.error:
+        except struct.error as e:
+            print(e)
             conn.send(encode('ERROR (INTERNAL) check server console for more information'))
             continue
 
@@ -37,10 +42,12 @@ def handle(conn, addr):
         args = spl[1:]
         print("%s: %s" % (addr, payload))
         # process the command
-        if cmd == 'ping':
-            conn.send(encode('pong'))
-        else:
-            conn.send(encode('Unknown command: ' + cmd + ' ' + ' '.join(args)))
+        try:
+            conn.send(encode(str(getattr(methods, cmd)(*args)))) # look up any function with the name sent in the local symbol table and run it
+        except Exception as e:
+            print(e)
+            conn.send(encode('ERROR (INTERNAL) check server console for more information'))
+            continue
 
 def wait_for_client(sock):
     sock.bind((HOST, PORT))
@@ -52,7 +59,7 @@ def wait_for_client(sock):
         print("%s disconnected" % str(a))
         c.close()
 
-# doesn't run if the script crashes!
+# doesn't run if the script crashes! (but otherwise is called on exit)
 def stop():
     ps.scheduler.stopTask(t)
     s.close()
