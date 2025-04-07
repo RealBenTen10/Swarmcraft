@@ -20,9 +20,6 @@ import warnings
 import subprocess
 from queue import Queue, Empty
 
-from mcrcon import MCRcon, MCRconException
-
-
 def enqueue_output(out, queue):
     for line in iter(out.readline, b''):
         queue.put(line)
@@ -37,7 +34,7 @@ class MinecraftServer:
         self.evocraft_client = None
         self.server_output_queue = Queue()
 
-        self.mcr = MCRcon('127.0.0.1', 'changeme')
+        #self.mcr = MCRcon('127.0.0.1', 'changeme')
 
     def start(self):
         if self.running:
@@ -46,7 +43,7 @@ class MinecraftServer:
         print("Starting server")
         # while test_evocraft_py does provide its own startup/shutdown methods, starting the server this way lets
         # me hook into the io streams
-        self.svproc = subprocess.Popen(['java', '-jar', 'server.jar', 'nogui'],
+        self.svproc = subprocess.Popen(['java', '-jar', 'spigot-1.21.4.jar' '-nogui'],
                                        cwd=os.path.join(os.getcwd(), 'server'),
                                        stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         print("Started server process")
@@ -63,7 +60,7 @@ class MinecraftServer:
             elif line and (line.find('Failed to start the minecraft server') != -1 or line.find('Stopping server') != -1):
                 self.stop()
                 exit(1)
-        self.mcr.connect()
+        #self.mcr.connect()
         print("rcon connection is up")
 
     # this should really get registered to an exit handler
@@ -71,12 +68,13 @@ class MinecraftServer:
         if not self.running:
             warnings.warn("Server is already stopped")
             return
-        try: self.send_command('say got call to stop from console, going down NOW!')
-        except MCRconException: pass
+        #try:
+        self.send_command('say got call to stop from console, going down NOW!')
+        #except MCRconException: pass
         self.svproc.terminate() # stop the process
         self.svproc.stdin.close() # and close its associated streams
         self.svproc.stdout.close()
-        self.mcr.disconnect()
+        #self.mcr.disconnect()
         self.running = False
         print("server stopped")
 
@@ -87,6 +85,7 @@ class MinecraftServer:
         if not self.running:
             warnings.warn("Server is not running")
             return
+
         return self.mcr.command(command)
 
     def spawn_block(self, pos: tuple[float, float, float], block_id: str = 'stone'):
