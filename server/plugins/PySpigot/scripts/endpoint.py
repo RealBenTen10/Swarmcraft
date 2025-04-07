@@ -36,6 +36,7 @@ def handle(conn, addr):
             continue
 
         # get the command
+        # commands are split along spaces
         payload = conn.recv(length).decode('utf-8')
         spl = payload.split(' ')
         cmd = spl[0]

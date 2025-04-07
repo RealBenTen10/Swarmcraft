@@ -23,14 +23,8 @@ def receive(s):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 s.connect(('0.0.0.0', 25576))
-s.send(encode("this command is pretty super long. in fact, it's even super mega long!"))
+s.send(encode("getblocks x 10 10 y 4 5 z 10 10"))
 print(receive(s))
-s.send(encode("getblock 10 4 10"))
+s.send(encode("setblocks x 10 10 y 4 5 z 10 10 id diamond_block diamond_block"))
 print(receive(s))
-s.send(encode("setblock 10 5 10 gold_block"))
-print(receive(s))
-while True:
-    sleep(random.random() * 2)
-    s.send(encode('ping'))
-    print(receive(s))
 s.close()
