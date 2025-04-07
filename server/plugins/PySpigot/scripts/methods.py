@@ -9,11 +9,12 @@ import pyspigot as ps
 from org.bukkit import Bukkit, Location, Material
 
 world = Bukkit.getWorld('world')
+server = Bukkit.getServer()
 
 def ping(*args):
     return 'pong'
 
-# get the block at a given coordinate
+# get the id of one block
 def getblock(*args):
     x = int(args[0])
     y = int(args[1])
@@ -21,7 +22,7 @@ def getblock(*args):
     b = world.getBlockAt(x, y, z).getBlockData().getAsString()
     return str(b)
 
-# something like:
+# get ids of many blocks
 # getblocks x 10 10 10 y 2 4 5 z -3 4 4
 def getblocks(*args):
     xs = []
@@ -42,6 +43,8 @@ def getblocks(*args):
         res.append({'pos': (x, y, z), 'id': getblock(x, y, z)})
     return str(res)
 
+# set many blocks
+# setblocks x 10 10 10 y 2 4 5 z -3 4 4 id dirt diamond_block gold
 def setblocks(*args):
     xs = []
     ys = []
@@ -68,6 +71,8 @@ def setblocks(*args):
     ps.scheduler.runTask(sbs, xs, ys, zs, ds)
     return None
 
+# set one block
+# setblock 10 4 10 diamond_block
 def setblock(*args):
     x = int(args[0])
     y = int(args[1])
@@ -78,4 +83,12 @@ def setblock(*args):
     def sb(block, data):
         block.setBlockData(data)
     ps.scheduler.runTask(sb, b, d)
+    return None
+
+# for running commands on the server
+# command tp player 0 0 0
+def command(*args):
+    def disp(cmd):
+        server.dispatchCommand(server.getConsoleSender(), cmd)
+    ps.scheduler.runTask(disp, ' '.join(args))
     return None
