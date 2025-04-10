@@ -23,10 +23,10 @@ def receive(s):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 s.connect(('0.0.0.0', 25576))
-s.send(encode("getblocks x 10 10 y 4 5 z 10 10"))
+s.send(encode('getinventory waterbox1824'))
 print(receive(s))
-s.send(encode("setblocks x 10 10 y 4 5 z 10 10 id diamond_block diamond_block"))
+s.send(encode('setinventory waterbox1824 id diamond_block diamond_sword count 25 1'))
 print(receive(s))
-s.send(encode('command tp waterbox1824 10 60 10'))
+s.send(encode('clearinventory waterbox1824'))
 print(receive(s))
 s.close()

@@ -7,13 +7,13 @@ def main():
     minecraft_server.start()
 
     # create and initialize the initial bot pool
-    for _ in range(10):
+    '''for _ in range(10):
         pooler.create_bot()
     for b in pooler.free_bots:
         pooler.reset_bot_stats(b)
-        pooler.reset_bot_position(b)
+        pooler.reset_bot_position(b)'''
 
-    minecraft_server.send_command('say Ready')
+    minecraft_server.send_command('command say Ready')
     print("Ready")
     ServerShell().cmdloop()
 

@@ -81,7 +81,7 @@ class ServerShell(cmd.Cmd):
 
     def do_cmd(self, args):
         """Send a command to the server"""
-        print(minecraft_server.send_command(args))
+        print(minecraft_server.send_command(str('command ' + args)))
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
