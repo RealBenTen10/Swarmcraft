@@ -1,9 +1,6 @@
-grpcio==1.70.0
 javascript==1!1.2.2
 numpy==2.2.3
 pip
-protobuf==3.20.0 # very important! this cannot be a newer version!
 typing-extensions==4.12.2
 shortuuid
 mazelib
-mcrcon

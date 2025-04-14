@@ -7,6 +7,7 @@ If you do need to run things in a new (or sync) thread, use the pyspigot schedul
 
 import pyspigot as ps
 from org.bukkit import Bukkit, Location, Material
+import logging
 
 world = Bukkit.getWorld('world')
 server = Bukkit.getServer()
@@ -62,7 +63,6 @@ def setblocks(*args):
             zs.append(int(a))
         elif state == 'id':
             ds.append(a)
-    print(xs, ys, zs, ds)
     def sbs(xs_, ys_, zs_, ids_):
         for x, y, z, id in zip(xs_, ys_, zs_, ids_):
             b = world.getBlockAt(x, y, z)
@@ -92,3 +92,8 @@ def command(*args):
         server.dispatchCommand(server.getConsoleSender(), cmd)
     ps.scheduler.runTask(disp, ' '.join(args))
     return None
+
+# for setting the directory to which the server will write logfiles
+# these server logs are for all the block records (break/place, chest inventory change)
+def setlogdir(*args):
+    logging.log_dir = args[0] # expect an absolute path!
