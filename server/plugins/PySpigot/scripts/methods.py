@@ -62,7 +62,6 @@ def setblocks(*args):
             zs.append(int(a))
         elif state == 'id':
             ds.append(a)
-    print(xs, ys, zs, ds)
     def sbs(xs_, ys_, zs_, ids_):
         for x, y, z, id in zip(xs_, ys_, zs_, ids_):
             b = world.getBlockAt(x, y, z)
