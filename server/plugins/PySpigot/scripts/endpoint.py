@@ -7,9 +7,6 @@ import methods
 
 HOST, PORT = '0.0.0.0', 25576
 
-def ping(*args):
-    return 'pong'
-
 def encode(msg):
     header = struct.pack('>H', len(msg))
     return header + msg.encode('utf-8')
@@ -41,7 +38,7 @@ def handle(conn, addr):
         spl = payload.split(' ')
         cmd = spl[0]
         args = spl[1:]
-        print("%s: %s" % (addr, payload))
+        #print("%s: %s" % (addr, payload))
         # process the command
         try:
             conn.send(encode(str(getattr(methods, cmd)(*args)))) # look up any function with the name sent in the local symbol table and run it

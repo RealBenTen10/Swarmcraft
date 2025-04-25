@@ -1,5 +1,6 @@
 """
 Block and inventory change callbacks for logging purposes
+Only logs actions taken by players on the server - not actions taken by the server itself
 """
 import time
 
@@ -11,6 +12,7 @@ import os.path
 
 # block place is org.bukkit.event.block.BlockPlaceEvent
 # block break event is org.bukkit.event.block.BlockDropItemEvent
+# FIXME this will only fire when blocks are placed/broken by players!
 def block_change(event):
     block = event.getBlock()
     x = block.getX()
@@ -21,6 +23,7 @@ def block_change(event):
 
 # player changing an inventory is org.bukkit.event.inventory.InventoryCloseEvent
 # should check if the closed inventory is a chest
+# FIXME ditto as for block_change - this will only fire if a player interacts with the inventory!
 def inventory_close(event):
     inv = event.getInventory()
     if inv.getType() is not CHEST:
@@ -39,6 +42,17 @@ def inventory_close(event):
             else:
                 contents_dict[name] += count
     chests_logfile.write(str(time.time()) + ',' + str((holder_pos_x, holder_pos_y, holder_pos_z)) + ',' + str(contents_dict) + '\n')
+
+def stop():
+    block_logfile.close()
+    chests_logfile.close()
+    ps.listener.unregisterListener(bpl)
+    ps.listener.unregisterListener(bbl)
+    ps.listener.unregisterListener(icl)
+
+def flush_logs():
+    block_logfile.flush()
+    chests_logfile.flush()
 
 bpl = ps.listener.registerListener(block_change, BlockPlaceEvent)
 bbl = ps.listener.registerListener(block_change, BlockDropItemEvent)
@@ -59,7 +73,3 @@ chests_logfile.write('start time ' + str(time.time()) + '\n')
 chests_logfile.write('time,position,contents\n')
 
 print('Serverside swarmcraft logging to ' + str(log_dir))
-
-def stop():
-    block_logfile.close()
-    chests_logfile.close()

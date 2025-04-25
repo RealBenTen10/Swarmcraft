@@ -13,7 +13,7 @@ def main():
         pooler.reset_bot_stats(b)
         pooler.reset_bot_position(b)'''
 
-    minecraft_server.send_command('command say Ready')
+    minecraft_server.do('command say Ready')
     print("Ready")
     ServerShell().cmdloop()
 

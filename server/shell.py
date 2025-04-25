@@ -77,11 +77,18 @@ class ServerShell(cmd.Cmd):
     def do_clear(self, args):
         """Clear an area"""
         at = args.split()
-        print(minecraft_server.fill_cube(WORLD_CENTER, add_tuples(WORLD_CENTER, (int(at[0]), int(at[1]), int(at[2]))), 'air'))
+        res = minecraft_server.do('setcube ' + str(WORLD_CENTER[0]) + ' ' + str(WORLD_CENTER[1]) + ' ' + str(WORLD_CENTER[2]) + ' ' + args)
+        if res is not None: print(res)
 
     def do_cmd(self, args):
-        """Send a command to the server"""
-        print(minecraft_server.send_command(str('command ' + args)))
+        """Send a minecraft command to the server"""
+        res = minecraft_server.do('command ' + str(args))
+        if res is not None: print(res)
+
+    def do_do(self, args):
+        """Send a swarmcraft command to the server"""
+        res = minecraft_server.do(str(args))
+        if res is not None: print(res)
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
@@ -99,11 +106,11 @@ class ServerShell(cmd.Cmd):
     def do_readcube(self, args):
         """Read a cube and print the results to console"""
         at = args.split()
-        blocks = minecraft_server.read_cube((int(at[0]), int(at[1]), int(at[2])), (int(at[3]), int(at[4]), int(at[5])))
-        print(blocks)
+        blocks = minecraft_server.do('getcube ' + args)
+        if blocks is not None: print(blocks)
 
     def do_readblock(self, args):
         """Read a block and print the results to console"""
         at = args.split()
-        block = minecraft_server.read_block((int(at[0]), int(at[1]), int(at[2])))
-        print(block)
+        block = minecraft_server.do('getblock ' + args)
+        if block is not None: print(block)

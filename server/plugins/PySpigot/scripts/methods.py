@@ -64,12 +64,12 @@ def setblocks(*args):
             zs.append(int(a))
         elif state == 'id':
             ds.append(a)
-    print(xs, ys, zs, ds)
     def sbs(xs_, ys_, zs_, ids_):
         for x, y, z, id in zip(xs_, ys_, zs_, ids_):
             b = world.getBlockAt(x, y, z)
             d = Material.matchMaterial(id).createBlockData()
             b.setBlockData(d)
+            logging.log_server_block_change((x, y, z), d)
     ps.scheduler.runTask(sbs, xs, ys, zs, ds)
     return None
 
@@ -84,8 +84,41 @@ def setblock(*args):
     # wacky little workaround for sync block set
     def sb(block, data):
         block.setBlockData(data)
+        logging.log_server_block_change((x, y, z), d)
     ps.scheduler.runTask(sb, b, d)
     return None
+
+def setcube(*args):
+    x_o = int(args[0])
+    y_o = int(args[1])
+    z_o = int(args[2])
+    x_s = int(args[3])
+    y_s = int(args[4])
+    z_s = int(args[5])
+    d = Material.matchMaterial(args[6]).createBlockData()
+    def sc(xo, yo, zo, xs, ys, zs, dat):
+        for x in range(xo, xs):
+            for y in range(yo, ys):
+                for z in range(zo, zs):
+                    b = world.getBlockAt(x, y, z)
+                    b.setBlockData(dat)
+                    logging.log_server_block_change((x, y, z), d)
+    ps.scheduler.runTask(sc, x_o, y_o, z_o, x_s, y_s, z_s, d)
+    return None
+
+def getcube(*args):
+    x_o = int(args[0])
+    y_o = int(args[1])
+    z_o = int(args[2])
+    x_s = int(args[3])
+    y_s = int(args[4])
+    z_s = int(args[5])
+    res = []
+    for x in range(x_o, x_s):
+        for y in range(y_o, y_s):
+            for z in range(z_o, z_s):
+                res.append({'pos': (x, y, z), 'id': getblock(x, y, z)})
+    return str(res)
 
 # for running commands on the server
 # command tp player 0 0 0
@@ -235,3 +268,6 @@ def clearinventory(*args):
 # these server logs are for all the block records (break/place, chest inventory change)
 def setlogdir(*args):
     logging.log_dir = args[0] # expect an absolute path!
+
+def getlogdir(*args):
+    return logging.log_dir

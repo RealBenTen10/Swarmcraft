@@ -19,7 +19,7 @@ mineflayer = require('mineflayer')
 
 log_chat = True
 
-WORLD_CENTER = (0, 4, 0)
+WORLD_CENTER = (0, -60, 0)
 pooling_location = WORLD_CENTER
 connect_timeout = 5 # amount of time to wait for a bot to connect when creating a bot
 
@@ -73,13 +73,13 @@ class Pooler:
         self.reset_bot_position(b)
 
     def reset_bot_stats(self, bot):
-        minecraft_server.send_command(f'/clear {bot.username}') # reset bot's inventory
-        minecraft_server.send_command(f'/effect clear {bot.username}') # clear all status effects
-        minecraft_server.send_command(f'/effect {bot.username} instant_health 1 255') # reset bot's health
-        minecraft_server.send_command(f'/effect {bot.username} saturation 1 255') # reset bot's hunger
+        minecraft_server.do(f'/clear {bot.username}') # reset bot's inventory
+        minecraft_server.do(f'/effect clear {bot.username}') # clear all status effects
+        minecraft_server.do(f'/effect {bot.username} instant_health 1 255') # reset bot's health
+        minecraft_server.do(f'/effect {bot.username} saturation 1 255') # reset bot's hunger
 
     def reset_bot_position(self, bot):
-        minecraft_server.send_command(
+        minecraft_server.do(
             f'/tp {bot.username} {pooling_location[0]} {pooling_location[1]} {pooling_location[2]}'
         )
 

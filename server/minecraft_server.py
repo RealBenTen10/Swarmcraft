@@ -32,11 +32,9 @@ PORT = 25576
 
 class MinecraftServer:
     def __init__(self):
-        self.log_dir_path = 'logs'
-        self.svproc = None
-        self.running = False
-        self.evocraft_client = None
-        self.cmdsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.svproc = None # minecraft server process
+        self.running = False # are we running?
+        self.cmdsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # socket through which to send commands to the server
         self.server_output_queue = Queue()
 
     def start(self):
@@ -46,22 +44,17 @@ class MinecraftServer:
         print("Starting spigot")
         # start spigot
         # this will also start up the command server socket (at 0.0.0.0:25576)
-        self.svproc = subprocess.Popen(['java', '-jar', 'spigot-1.21.4.jar', '--nogui'],
+        self.svproc = subprocess.Popen(['java', '-jar', 'spigot-1.21.4.jar'],
                                        cwd=os.path.join(os.getcwd(), 'server'),
-                                       stdout=sys.stdout, stdin=subprocess.PIPE)
-        print("Spigot is up")
+                                       stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         self.running = True
         print("Connecting to command server (at %s:%d)" % (HOST, PORT))
-        # need a loop here to check if the server is up
-        # this is pretty ugly
-        # must be a better way!
         while True:
             try:
                 self.cmdsock.connect((HOST, PORT))
             except socket.error as e:
                 continue
             break
-        print("Connected to command server (at %s:%d)" % (HOST, PORT))
 
     # this should really get registered to an exit handler
     def stop(self):
@@ -69,17 +62,16 @@ class MinecraftServer:
             warnings.warn("Server is already stopped")
             return
         #try:
-        self.send_command('say got call to stop from console, going down NOW!')
-        #except MCRconException: pass
+        self.do('command say got call to stop from console, going down NOW!')
         self.svproc.terminate() # stop the process
         self.svproc.stdin.close() # and close its associated streams
         self.running = False
         print("server stopped")
 
-    # how to get stuff back out of here??
-    # somehow svproc.stdout.read
-    # what if more than one line?
-    def send_command(self, command: str):
+    """
+    see server/plugins/PySpigot/scripts/methods.py for a list of available commands
+    """
+    def do(self, command: str):
         if not self.running:
             warnings.warn("Server is not running")
             return None
@@ -98,12 +90,8 @@ class MinecraftServer:
         length = int.from_bytes(data, byteorder='big', signed=False)
         return self.cmdsock.recv(length).decode('utf-8')
 
-
-    def spawn_block(self, pos: tuple[float, float, float], block_id: str = 'stone'):
-        return self.send_command(f'setblock {pos[0]} {pos[1]} {pos[2]} {block_id}')
-
     # so chunk the input volume into smaller ones
-    def fill_cube(self, origin: tuple[float, float, float], size: tuple[float, float, float], block_id: str = 'stone'):
+    '''def fill_cube(self, origin: tuple[float, float, float], size: tuple[float, float, float], block_id: str = 'stone'):
         process = [(origin, size)] # origins, sizes
         while len(process) != 0:
             o, s = process.pop() # volume origin, volume size
@@ -125,6 +113,6 @@ class MinecraftServer:
                 process.append(second_block)
             else: # if it isn't too big, fill it
                 print(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
-                self.send_command(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')
+                self.send_command(f'fill {o[0]} {o[1]} {o[2]} {o[0] + s[0]} {o[1] + s[1]} {o[2] + s[2]} {block_id}')'''
 
 minecraft_server = MinecraftServer()

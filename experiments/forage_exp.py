@@ -25,7 +25,7 @@ class ForageExperiment(Experiment):
         super().initialize()
         self.environment.reset()
         self.environment.initialize()
-        minecraft_server.send_command('say initialized foraging environment')
+        minecraft_server.do('say initialized foraging environment')
 
         self.agents = []
         for i in range(self.num_agents):
@@ -36,7 +36,7 @@ class ForageExperiment(Experiment):
             self.agents.append(a)
             sleep(0.5) # whenever you create a new agent, you should sleep for at least 0.5, possibly more
             # this prevents a whole bunch of weird bugs
-        minecraft_server.send_command('say initialized foraging agents')
+        minecraft_server.do('say initialized foraging agents')
 
     @override
     def run(self):
