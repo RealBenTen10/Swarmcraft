@@ -1,20 +1,4 @@
-Agents are an abstraction over bots
-Agents are managed by the user
-Bots are managed by the pooler
+Gets all pissy sometimes if node is installed via nvm
+If you run into issues that sound like "failed to start bridge!" try installing node directly instead of with nvm
 
-When the simulator starts up, the pooler should create some number of bots. This is the bot pool
-
-Whenever the user creates an agent, they should at some point ask the pooler to bind a bot to it.
-The pooler should check the bot pool for a free bot. If a free bot exists, the pooler should bind that bot and return success.
-    If there is no free bot available, the pooler should return failure.
-
-Whenever the user is done with an agent (not necessarily when they die!), they should ask the pooler to unbind that agent's bot.
-The pooler should set the agent's bot to None, return that bot to the pool, and reset that bot's inventory, health, hunger, etc.
-
-what about logging??
-- whenever an experiment runs, we can log at every tick/every nth tick/whatever
-- we have to log agents and environments
-- logging agents is easy: take a snapshot of agent state at startup, then log deltas at every log tick
-- logging environment is a little harder
-    - easiest option would be to limit agents to a given area, snapshot every block in the area at startup, then log deltas every tick
-    - what about things like chests with stuff in them, mobs?
+Have to use spigot 1.21.1! otherwise you get protocol version errors with mineflayer

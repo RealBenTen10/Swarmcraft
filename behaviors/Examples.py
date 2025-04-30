@@ -1,7 +1,6 @@
 from typing import override
 
-from btree.Nodes import ActionNode, ConditionNode, FallbackNode
-from server.message_server import message_server
+from swarmcraft.btree.Nodes import ActionNode, ConditionNode, FallbackNode
 from util import dist_sqr
 
 # some example behaviors
@@ -17,7 +16,7 @@ class Say(ActionNode):
 
     @override
     def tick(self):
-        message_server.send(self.actuation.agent, self.message)
+        self.actuation.send(self.actuation.agent, self.message)
         return 'success'
 
 class CheckIfAtPosition(ConditionNode):

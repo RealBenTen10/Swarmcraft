@@ -1,10 +1,9 @@
 import random
 
 from behaviors.Examples import GotoPoint
-from agents.agent import Agent
-from server.minecraft_server import minecraft_server
-from server.pooler import pooler
-from util import add_tuples
+from swarmcraft.agent import Agent
+from swarmcraft.minecraft.server import minecraft_server
+from swarmcraft.pooler import pooler
 
 
 # find an object, and then bring it back to a place
@@ -33,7 +32,7 @@ class ForageAgent(Agent):
                 self.wander_behavior = GotoPoint(self.sensing, self.actuation, self.env.get_point_in_environment())
 
     def reset(self):
-        minecraft_server.do(
+        minecraft_server.send(
             f'tp {self.sensing.get_username()} {self.start_location[0] + random.randint(0, 5)} {self.start_location[1]} {self.start_location[2] + random.randint(0, 5)}')
         pooler.reset_bot_stats(self.bot)
         pass

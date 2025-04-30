@@ -69,7 +69,7 @@ def setblocks(*args):
             b = world.getBlockAt(x, y, z)
             d = Material.matchMaterial(id).createBlockData()
             b.setBlockData(d)
-            logging.log_server_block_change((x, y, z), d)
+            #logging.log_server_block_change((x, y, z), d)
     ps.scheduler.runTask(sbs, xs, ys, zs, ds)
     return None
 
@@ -84,7 +84,7 @@ def setblock(*args):
     # wacky little workaround for sync block set
     def sb(block, data):
         block.setBlockData(data)
-        logging.log_server_block_change((x, y, z), d)
+        #logging.log_server_block_change((x, y, z), d)
     ps.scheduler.runTask(sb, b, d)
     return None
 
@@ -102,7 +102,7 @@ def setcube(*args):
                 for z in range(zo, zs):
                     b = world.getBlockAt(x, y, z)
                     b.setBlockData(dat)
-                    logging.log_server_block_change((x, y, z), d)
+                    #logging.log_server_block_change((x, y, z), d)
     ps.scheduler.runTask(sc, x_o, y_o, z_o, x_s, y_s, z_s, d)
     return None
 

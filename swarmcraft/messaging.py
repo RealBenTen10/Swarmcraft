@@ -1,6 +1,5 @@
 import util
 
-
 log_chat = True
 
 class MessageServer:
@@ -32,5 +31,3 @@ class MessageServer:
 
     def deregister(self, client_agent):
         self.clients.remove(client_agent)
-
-message_server = MessageServer()

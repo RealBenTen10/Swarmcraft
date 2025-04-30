@@ -5,8 +5,6 @@ like a robot actuator suite - every agent gets one of these
 from time import sleep
 from javascript import require
 
-from server.message_server import message_server
-
 Vec3 = require('vec3').Vec3
 
 class Actuation(object):
@@ -25,16 +23,16 @@ class Actuation(object):
 
     # chat methods using the pooler's chat - not rate-limited like the server
     def send_message(self, message: str, recipient_id: str):
-        message_server.send(self.agent, message, recipient_id)
+        self.agent.message_server.send(self.agent, message, recipient_id)
 
     def send_message_ranged(self, message: str, recipient_id: str, distance: float):
-        message_server.send(self.agent, message, recipient_id, distance)
+        self.agent.message_server.send(self.agent, message, recipient_id, distance)
 
     def send_global_message(self, message: str):
-        message_server.send(self.agent, message)
+        self.agent.message_server.send(self.agent, message)
 
     def send_global_message_ranged(self, message: str, distance: float):
-        message_server.send(self.agent, message, None, distance)
+        self.agent.message_server.send(self.agent, message, None, distance)
 
     # jump once
     def jump(self):

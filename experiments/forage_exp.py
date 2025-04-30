@@ -1,14 +1,13 @@
-import random
 import time
 from time import sleep
 from typing import override
 
 from agents.forage import ForageAgent
 from environments.forage_env import ForageEnvironment
-from experiments.experiment import Experiment
-from server.minecraft_server import minecraft_server
-from server.pooler import pooler
-from util import add_tuples, multiply_tuples
+from swarmcraft.experiment import Experiment
+from swarmcraft.minecraft.server import minecraft_server
+from swarmcraft.pooler import pooler
+from util import add_tuples
 
 ORIGIN = (10, 4, 10)
 SIZE = (100, 10, 100)
@@ -25,7 +24,7 @@ class ForageExperiment(Experiment):
         super().initialize()
         self.environment.reset()
         self.environment.initialize()
-        minecraft_server.do('say initialized foraging environment')
+        minecraft_server.send('say initialized foraging environment')
 
         self.agents = []
         for i in range(self.num_agents):
@@ -36,7 +35,7 @@ class ForageExperiment(Experiment):
             self.agents.append(a)
             sleep(0.5) # whenever you create a new agent, you should sleep for at least 0.5, possibly more
             # this prevents a whole bunch of weird bugs
-        minecraft_server.do('say initialized foraging agents')
+        minecraft_server.send('say initialized foraging agents')
 
     @override
     def run(self):

@@ -5,9 +5,6 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import On
 
-from server.pooler import pooler
-
-
 class Sensing(object):
     def __init__(self, agent):
         # agent parts
@@ -43,7 +40,7 @@ class Sensing(object):
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
             if self.agent.bot is not None: # if your are still bound to a bot, unbind from it
-                pooler.unbind_bot(self.agent)
+                self.agent.pooler.unbind_bot(self.agent)
                 print("Agent disconnected! (" + reason + ")")
         @On(self.bot, "error") # when something breaks
         def on_error(this, err, *args): # this should push to an error queue

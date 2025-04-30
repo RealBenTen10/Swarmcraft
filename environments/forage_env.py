@@ -3,10 +3,10 @@
 import random
 from typing import override
 
-from server.minecraft_server import minecraft_server
-from environments.environment import Environment
+from swarmcraft.minecraft.server import minecraft_server
+from swarmcraft.environment import Environment
 from util import add_tuples
-from server.pooler import WORLD_CENTER
+from swarmcraft.pooler import WORLD_CENTER
 
 
 class ForageEnvironment(Environment):

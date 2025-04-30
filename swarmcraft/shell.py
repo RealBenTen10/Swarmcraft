@@ -4,17 +4,18 @@ from typing import Any
 
 import javascript.connection
 
-from environments.environment import MazeEnv
-from experiments.forage_exp import ForageExperiment
-from util import add_tuples
-from server.pooler import pooler, WORLD_CENTER
-from server.minecraft_server import minecraft_server
-
+from experiment import ExampleExperiment
 
 class ServerShell(cmd.Cmd):
     intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\n"
     prompt = "swarmcraft > "
     file = None
+
+    def __init__(self, server, pooler, messenger):
+        super(ServerShell, self).__init__()
+        self.server = server
+        self.pooler = pooler
+        self.messenger = messenger
 
     def cmdloop(self, intro: Any | None = None):
         try:
@@ -27,11 +28,11 @@ class ServerShell(cmd.Cmd):
 
     def do_lsbots(self, args):
         """List all bound and free bots"""
-        print(f'Bound bots ({len(pooler.bound_bots)}):')
-        for b in pooler.bound_bots:
+        print(f'Bound bots ({len(self.pooler.bound_bots)}):')
+        for b in self.pooler.bound_bots:
             print("\t" + b.username)
-        print(f'Free bots ({len(pooler.free_bots)}):')
-        for b in pooler.free_bots:
+        print(f'Free bots ({len(self.pooler.free_bots)}):')
+        for b in self.pooler.free_bots:
             print("\t" + b.username)
 
     def do_addbot(self, args):
@@ -39,66 +40,56 @@ class ServerShell(cmd.Cmd):
         at = args.split()
         if at:
             for i in range(int(at[0])):
-                pooler.create_bot()
+                self.pooler.create_bot()
         else:
-            pooler.create_bot()
+            self.pooler.create_bot()
 
     def do_resetbots(self, args):
         """Reset all free bots"""
-        for b in pooler.free_bots:
-            pooler.reset_bot_stats(b)
-            pooler.reset_bot_position(b)
+        for b in self.pooler.free_bots:
+            self.pooler.reset_bot_stats(b)
+            self.pooler.reset_bot_position(b)
 
     def do_prunebots(self, args):
         """Remove all free bots"""
-        while len(pooler.free_bots) > 0:
-            b = pooler.free_bots.pop()
+        while len(self.pooler.free_bots) > 0:
+            b = self.pooler.free_bots.pop()
             b.quit()
 
     # TODO: user-selectable experiments
     def do_run(self, args):
         """Run an experiment"""
         at = args.split()
-        """f = ForageEnvironment((10, 4, 10), (int(at[0]), 50, int(at[1])), 5, 10, int(at[2]))
-        f.reset()
-        f.initialize()"""
-        ex = ForageExperiment(int(at[0]))
-        ex.initialize()
-        ex.run()
-        ex.cleanup()
-
-    def do_mazegen(self, args):
-        """Generate an nxn maze"""
-        at = args.split()
-        m = MazeEnv((10, 4, 10), (int(at[0]), 10, int(at[1])))
-        m.reset()
-        m.initialize()
+        exp = ExampleExperiment(self.pooler, self.server, self.messenger, int(at[0]))
+        exp.initialize()
+        exp.run()
+        exp.cleanup()
 
     def do_clear(self, args):
         """Clear an area"""
         at = args.split()
-        res = minecraft_server.do('setcube ' + str(WORLD_CENTER[0]) + ' ' + str(WORLD_CENTER[1]) + ' ' + str(WORLD_CENTER[2]) + ' ' + args)
+        res = self.server.send('setcube ' + str(self.pooler.WORLD_CENTER[0]) + ' ' + str(self.pooler.WORLD_CENTER[1]) + ' ' + str(self.pooler.WORLD_CENTER[2]) + ' ' + args)
         if res is not None: print(res)
 
     def do_cmd(self, args):
         """Send a minecraft command to the server"""
-        res = minecraft_server.do('command ' + str(args))
+        res = self.server.send('command ' + str(args))
         if res is not None: print(res)
 
     def do_do(self, args):
         """Send a swarmcraft command to the server"""
-        res = minecraft_server.do(str(args))
+        res = self.server.send(str(args))
         if res is not None: print(res)
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
         print("Server going down...")
         """Stop the server and exit"""
-        for b in pooler.bound_bots:
+        for b in self.pooler.bound_bots:
             b.quit()
-        for b in pooler.free_bots:
+        for b in self.pooler.free_bots:
             b.quit()
-        minecraft_server.stop()
+        self.server.stop()
         javascript.connection.stop()
         print("Server is DOWN!")
         return True
@@ -106,11 +97,11 @@ class ServerShell(cmd.Cmd):
     def do_readcube(self, args):
         """Read a cube and print the results to console"""
         at = args.split()
-        blocks = minecraft_server.do('getcube ' + args)
+        blocks = self.server.send('getcube ' + args)
         if blocks is not None: print(blocks)
 
     def do_readblock(self, args):
         """Read a block and print the results to console"""
         at = args.split()
-        block = minecraft_server.do('getblock ' + args)
+        block = self.server.send('getblock ' + args)
         if block is not None: print(block)
