@@ -33,12 +33,11 @@ class Pooler:
             "port": port,
             "username": str(username),
         })
+        sleep(self.connect_timeout)
         # wait for the bot to connect and load in
-        start = time.time()
-        while (b.player is None or b.entity is None) and time.time() - start < self.connect_timeout:
-            pass
-        if time.time() - start > self.connect_timeout:
-            print("Unable to create bot - check server player limit or increase connect_timeout in swarmcraft/pooler.py")
+        if b.player is None or b.entity is None:
+            print("Unable to create bot - check server player limit or increase connect_timeout")
+            return
         self.free_bots.append(b)
 
     def bind_bot(self, agent):

@@ -3,10 +3,11 @@ from typing import override
 from mazelib import Maze
 from mazelib.generate.Wilsons import Wilsons
 
-from util import add_tuples
+from swarmcraft.minecraft.server import MinecraftServer
+from swarmcraft.util import add_tuples
 
 class Environment(object):
-    def __init__(self, minecraft_server, origin: tuple[int, int, int], size: tuple[int, int, int]):
+    def __init__(self, minecraft_server: MinecraftServer, origin: tuple[int, int, int], size: tuple[int, int, int]):
         self.origin = origin
         self.size = size
         self.minecraft_server = minecraft_server

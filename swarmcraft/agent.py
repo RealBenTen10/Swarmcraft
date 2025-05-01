@@ -2,11 +2,13 @@ from typing import override
 
 from behaviors.Examples import GotoPoint
 from swarmcraft.actuation import Actuation
+from swarmcraft.messaging import MessageServer
+from swarmcraft.pooler import Pooler
 from swarmcraft.sensing import Sensing
 
 # base agent class
 class Agent(object):
-    def __init__(self, pooler, message_server, uid):
+    def __init__(self, pooler: Pooler, message_server: MessageServer, uid):
         self.bot = None
         self.pooler = pooler
         self.message_server = message_server

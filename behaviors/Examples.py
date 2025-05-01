@@ -1,7 +1,7 @@
 from typing import override
 
 from swarmcraft.btree.Nodes import ActionNode, ConditionNode, FallbackNode
-from util import dist_sqr
+from swarmcraft.util import dist_sqr
 
 # some example behaviors
 # say something in the ingame chat

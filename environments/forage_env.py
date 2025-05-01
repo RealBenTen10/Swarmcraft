@@ -3,16 +3,14 @@
 import random
 from typing import override
 
-from swarmcraft.minecraft.server import minecraft_server
 from swarmcraft.environment import Environment
-from util import add_tuples
-from swarmcraft.pooler import WORLD_CENTER
+from swarmcraft.util import add_tuples
 
 
 class ForageEnvironment(Environment):
-    def __init__(self, origin: tuple[int, int, int]=WORLD_CENTER, size: tuple[int, int, int]=(100, 100, 100),
+    def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(100, 100, 100),
                  resource_min_size=1, resource_max_size=2, resource_count=1):
-        super().__init__(origin, size)
+        super().__init__(minecraft_server, origin, size)
         self.resource_min_size = resource_min_size
         self.resource_max_size = resource_max_size
         self.resource_count = resource_count
@@ -32,7 +30,7 @@ class ForageEnvironment(Environment):
                     b_pos = add_tuples(self.origin, (x + x_off, 1, y + y_off))
                     if self.origin[0] + self.size[0] - 1 > b_pos[0] > self.origin[0] + 1 and self.origin[2] + self.size[2] - 1 > \
                             b_pos[2] > self.origin[2] + 1:
-                        minecraft_server.spawn_block(b_pos, 'diamond_block')
+                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:diamond_block')
 
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.size[0] - 1), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.size[2] - 1)

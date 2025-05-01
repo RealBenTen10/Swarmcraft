@@ -2,8 +2,6 @@ import random
 
 from behaviors.Examples import GotoPoint
 from swarmcraft.agent import Agent
-from swarmcraft.minecraft.server import minecraft_server
-from swarmcraft.pooler import pooler
 
 
 # find an object, and then bring it back to a place

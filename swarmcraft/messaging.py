@@ -1,4 +1,4 @@
-import util
+from swarmcraft import util
 
 log_chat = True
 
