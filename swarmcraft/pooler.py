@@ -20,7 +20,7 @@ class Pooler:
         self.bound_bots = []
         self.free_bots = []
         self.pooling_location = (0, -60, 0)
-        self.connect_timeout = 5  # amount of time to wait for a bot to connect when creating a bot
+        self.connect_timeout = 5  # amount of time to wait for a bot to connect when creating a bot - should be at least 5 seconds!
         self.server = server
 
     def create_bot(self, username=None, host='localhost', port='25565'):
@@ -35,15 +35,10 @@ class Pooler:
         })
         # wait for the bot to connect and load in
         start = time.time()
-        while (b.player is None or b.entity is None):# and time.time() - start < self.connect_timeout:
+        while (b.player is None or b.entity is None) and time.time() - start < self.connect_timeout:
             pass
-        #if time.time() - start > self.connect_timeout:
-            #print("Unable to create bot (check server player limit?)")
-        #else:
-        sleep(5) # give the bot a little time to settle - not sure if there's a better way to do this
-        # this wait seems to reduce the incidence of bots not working right, but doesn't totally eliminate it
-        # values below 1 are even less reliable
-        # problem also seems to occur when teleporting - think this is related to server speed, as it seems to happen more often on slower computers
+        if time.time() - start > self.connect_timeout:
+            print("Unable to create bot - check server player limit or increase connect_timeout in swarmcraft/pooler.py")
         self.free_bots.append(b)
 
     def bind_bot(self, agent):
