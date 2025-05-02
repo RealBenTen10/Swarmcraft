@@ -26,24 +26,3 @@ class Experiment:
         for a in self.agents:
             a.log()
             a.destroy()
-
-
-class ExampleExperiment(Experiment):
-    """Example experiment (does not use behavior trees)"""
-    def __init__(self, pooler, minecraft_server, message_server, num_agents):
-        super().__init__(pooler, minecraft_server, message_server)
-        self.num_agents = num_agents
-
-    @override
-    def initialize(self):
-        for i in range(self.num_agents):
-            self.pooler.create_bot()
-        for i in range(self.num_agents):
-            a = GotoAgent(self.pooler, self.message_server, f'agent_{i}')
-            a.reset()
-            self.agents.append(a)
-
-    @override
-    def run(self):
-        for a in self.agents:
-            a.actuation.say(f'My username is {a.sensing.get_username()}, and my identifier is {a.id}')

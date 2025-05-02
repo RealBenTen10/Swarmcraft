@@ -2,7 +2,7 @@ import time
 from typing import override
 
 from agents.forage import ForageAgent
-from environments.forage_env import ForageEnvironment
+from environments.forage import ForageEnvironment
 from swarmcraft.experiment import Experiment
 
 ORIGIN = (10, -60, 10)
@@ -10,9 +10,9 @@ SIZE = (100, 10, 100)
 START_LOCATION = (55, 5, 55)
 
 class ForageExperiment(Experiment):
-    def __init__(self, num_agents, pooler, minecraft_server, message_server):
+    def __init__(self, pooler, minecraft_server, message_server, *args):
         super().__init__(pooler, minecraft_server, message_server)
-        self.num_agents = num_agents
+        self.num_agents = int(args[0])
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 2, 5, 20)
 
     @override
@@ -46,4 +46,3 @@ class ForageExperiment(Experiment):
     def done(self):
         blocks = self.minecraft_server.send(f'getcube {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]} {SIZE[0]} {SIZE[1]} {SIZE[2]}')
         return not 'DIAMOND_BLOCK' in str(blocks) # done if the environment contains no more diamond blocks
-

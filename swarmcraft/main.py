@@ -25,9 +25,7 @@ def main():
     server.send("command say Ready")
     print("User agents directory:", USER_AGENTS_DIR)
     print("User behaviors directory:", USER_BEHAVIORS_DIR)
-    print("User environments directory:", USER_ENVS_DIR)
-    print("User experiments directory:", USER_EXPS_DIR)
-    ServerShell(server, pooler, messenger).cmdloop()
+    ServerShell(server, pooler, messenger, USER_ENVS_DIR, USER_EXPS_DIR).cmdloop()
 
 if __name__ == '__main__':
     main()
