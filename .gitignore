@@ -1,10 +1,5 @@
-/**
-!/.gitignore
-!/agents
-!/behaviors
-!/environments
-!/experiments
-!/swarmcraft
-!/README.md
-!/requirements.txt
-!/TODO.md
+.venv
+package-lock.json
+package.json
+scratch
+node_modules
