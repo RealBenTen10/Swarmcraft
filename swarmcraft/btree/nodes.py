@@ -10,6 +10,7 @@ class ControlNode(object):
             children = []
         self.children = children
         self.parent = parent
+        self.halt_requested = False
 
     def add_child(self, child):
         self.children.append(child)
@@ -17,6 +18,9 @@ class ControlNode(object):
 
     def tick(self) -> str:
         return 'success'
+
+    def halt(self):
+        self.halt_requested = True
 
 # route ticks to children from left -> right until you find a child that has failed or is running
 # returns success if all children succeeded
@@ -29,6 +33,9 @@ class SequenceNode(ControlNode):
         for child in self.children:
             status = child.tick()
             if status == 'running' or status == 'failure':
+                if status == 'running' and self.halt_requested:
+                    child.halt()
+                    self.halt_requested = False
                 return status
         return 'success'
 
@@ -43,6 +50,9 @@ class FallbackNode(ControlNode):
         for child in self.children:
             status = child.tick()
             if status == 'running' or status == 'success':
+                if status == 'running' and self.halt_requested:
+                    child.halt()
+                    self.halt_requested = False
                 return status
         return 'failure'
 
@@ -61,6 +71,9 @@ class ParallelNode(ControlNode):
         statuses = []
         for child in self.children:
             statuses.append(child.tick())
+            if self.halt_requested:
+                child.halt()
+                self.halt_requested = False
         if statuses.count('success') > self.m:
             return 'success'
         if statuses.count('failure') > len(self.children) - self.m:
@@ -70,11 +83,18 @@ class ParallelNode(ControlNode):
 # ActionNodes do things whenever they're ticked
 # to create your own action, inherit this class and override tick
 # tick must return success, running, or failure depending on the action state
-# and it should accomplish all its work in as little time as possible
+# when node.halt() is called, asynchronous nodes (those which take more than 1 tick to accomplish their action)
+# must stop doing whatever it is they're doing as quickly as possible
 class ActionNode(object):
+    def __init__(self):
+        self.halt_requested = False
+
     def tick(self) -> str:
         # update yourself
         return 'success'
+
+    def halt(self):
+        self.halt_requested = True
 
 # ConditionNodes evaluate a condition whenever they're ticked
 # to create your own condition, inherit this class and override condition()
@@ -91,6 +111,7 @@ class ConditionNode(object):
         return 'failure'
 
 # BranchNodes evaluate a condition, then tick either one or another child node
+# you could also implement these with the nodes given above, but this is nicer to have
 class BranchNode(object):
     def __init__(self, if_node: ControlNode, else_node: ControlNode):
         self.ifNode = if_node

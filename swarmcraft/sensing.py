@@ -115,3 +115,7 @@ class Sensing(object):
     # is the given block in this bot's fov?
     def is_visible(self, block):
         return self.bot.canSeeBlock(block)
+
+    # is the given control direction (forward, back, left, right, jump, sprint, sneak) active?
+    def control_is_toggled(self, direction):
+        return self.bot.getControlState(direction)

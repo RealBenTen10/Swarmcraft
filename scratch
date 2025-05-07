@@ -1,4 +1,23 @@
-Gets all pissy sometimes if node is installed via nvm
-If you run into issues that sound like "failed to start bridge!" try installing node directly instead of with nvm
+Agent stdlib
+what do we need?
+Remember these all need to be btrees
 
-Have to use spigot 1.21.1! otherwise you get protocol version errors with mineflayer
+At very least - go places, get/set blocks in your surroundings, get/modify chests in your surroundings
+Messaging as well, but that's mostly a done deal (one action node to send a message, one action node to pop from the message receive queue)
+
+Go places
+- start moving, stop moving
+- know when you're somewhere
+- what to do if the movement is interrupted (eg ticks are redirected out of the movement node for some reason)
+- what to do if the movement is blocked/stuck somehow? try to jump over the block? how to detect that?
+- is it reasonable to use mineflayer pathfinding here? is that something that we can turn on/off at high freq?
+- look in a given direction
+- look at a given block
+
+Get/set blocks in your surroundings
+- get block you're looking at
+- get blocks around you
+
+Movement (something like gotoblock)
+- is an asynchronous action
+- needs to be cancelable

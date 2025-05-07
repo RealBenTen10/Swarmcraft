@@ -1,6 +1,6 @@
 from typing import override
 
-from swarmcraft.btree.Nodes import ActionNode, ConditionNode, FallbackNode
+from swarmcraft.btree.nodes import ActionNode, ConditionNode, FallbackNode
 from swarmcraft.util import dist_sqr
 
 # some example behaviors
@@ -48,7 +48,7 @@ class KeyDown(ActionNode):
 
     @override
     def tick(self):
-        self.actuation.key_down(self.direction)
+        self.actuation.start_move(self.direction)
         return 'success'
 
 class StopMove(ActionNode):
@@ -77,7 +77,7 @@ class MoveToPoint(ActionNode):
             return 'success'
         else:
             self.actuation.look_at(self.goal)
-            self.actuation.key_down('forward')
+            self.actuation.start_move('forward')
             return 'running'
 
 

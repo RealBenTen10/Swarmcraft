@@ -128,7 +128,8 @@ class ServerShell(cmd.Cmd):
         if res is not None: print(res)
 
     def do_cmd(self, args):
-        """Send a minecraft command to the server"""
+        """Send a minecraft command to the server
+        See swarmcraft/minecraft/plugins/PySpigot/scripts/methods.py for available methods"""
         res = self.server.send('command ' + str(args))
         if res is not None: print(res)
 

@@ -40,15 +40,16 @@ class Actuation(object):
         self.agent.bot.setControlState('jump', False)
 
     # hold down a movement direction key for a given amount of time
+    # this is a little janky! probably best eschewed
     def move(self, direction: str, t: float):
         self.agent.bot.setControlState(direction, True)
         sleep(t)
         self.agent.bot.setControlState(direction, False)
 
-    def key_down(self, direction: str):
+    def start_move(self, direction: str):
         self.agent.bot.setControlState(direction, True)
 
-    def key_up(self, direction: str):
+    def stop_move(self, direction: str):
         self.agent.bot.setControlState(direction, False)
 
     # stop all movement
