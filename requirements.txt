@@ -1,6 +1,4 @@
-javascript==1!1.2.2
-numpy==2.2.3
-pip
-typing-extensions==4.12.2
-shortuuid
-mazelib
+numpy~=2.2.3
+javascript~=1!1.2.2
+shortuuid~=1.0.13
+mazelib~=0.9.16
