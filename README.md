@@ -41,7 +41,7 @@ swarmcraft
 └── swarmcraft
 ```
 The folders `agents`, `behaviors`, `environments` and `experiments` are where user-defined agents, agent behaviors, environments and experiments should be placed, respectively.
-These folders are pre-populated with an example foraging experiment.
+These folders are pre-populated with an example foraging experiment, and each folder contains a further README about its functionality.
 
 `swarmcraft` contains the simulator internals.
 
@@ -73,8 +73,6 @@ After being registered on the message server, agents can send messages globally,
 `swarmcraft/swarmcraft` contains the simulator internals, as well as the launch point `main.py`.
 Running `main.py` will start the minecraft server and swarmcraft shell.
 Once the server has started, users can connect and watch on the host system by launching minecraft and connecting to the multiplayer server at `127.0.0.1`.
-
-More documentation is on the way!
 
 ## Acknowledgements
 - [PySpigot](https://github.com/magicmq/pyspigot)
