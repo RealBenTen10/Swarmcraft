@@ -19,8 +19,6 @@ class ForageEnvironment(Environment):
     def initialize(self):
         super().initialize()
         # generate the resource chunks
-        blocks = []
-        positions = []
         for _ in range(self.resource_count):
             w = random.randint(self.resource_min_size, self.resource_max_size)
             x_off = random.randint(1, self.size[0] - 2)

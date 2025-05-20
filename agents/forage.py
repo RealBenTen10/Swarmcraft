@@ -17,8 +17,8 @@ from swarmcraft.agent import Agent
 # if you don't find one, resume your random wander
 
 class ForageAgent(Agent):
-    def __init__(self, uid, start_location, env):
-        super().__init__(uid)
+    def __init__(self, pooler, message_server, uid, start_location, env):
+        super().__init__(pooler, message_server, uid)
         self.start_location = start_location
         self.state = 'wander'
         self.env = env
@@ -30,7 +30,6 @@ class ForageAgent(Agent):
                 self.wander_behavior = GotoPoint(self.sensing, self.actuation, self.env.get_point_in_environment())
 
     def reset(self):
-        minecraft_server.send(
-            f'tp {self.sensing.get_username()} {self.start_location[0] + random.randint(0, 5)} {self.start_location[1]} {self.start_location[2] + random.randint(0, 5)}')
-        pooler.reset_bot_stats(self.bot)
-        pass
+        self.pooler.reset_bot_stats(self.bot)
+        self.pooler.reset_bot_control(self.bot)
+        self.pooler.reset_bot_position(self.bot)

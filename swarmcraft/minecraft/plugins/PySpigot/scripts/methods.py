@@ -74,13 +74,15 @@ def setblocks(*args):
     return None
 
 # set one block
-# setblock 10 4 10 diamond_block
+# setblock 10 4 10 minecraft:diamond_block
 def setblock(*args):
     x = int(args[0])
     y = int(args[1])
     z = int(args[2])
     b = world.getBlockAt(x, y, z)
     d = Material.matchMaterial(args[3]).createBlockData()
+    if d is None:
+        return 'unknown block type'
     # wacky little workaround for sync block set
     def sb(block, data):
         block.setBlockData(data)
@@ -96,10 +98,12 @@ def setcube(*args):
     y_s = int(args[4])
     z_s = int(args[5])
     d = Material.matchMaterial(args[6]).createBlockData()
+    if d is None:
+        return 'unknown block type'
     def sc(xo, yo, zo, xs, ys, zs, dat):
-        for x in range(xo, xs):
-            for y in range(yo, ys):
-                for z in range(zo, zs):
+        for x in range(xo, xo + xs):
+            for y in range(yo, yo + ys):
+                for z in range(zo, zo + zs):
                     b = world.getBlockAt(x, y, z)
                     b.setBlockData(dat)
                     #logging.log_server_block_change((x, y, z), d)
@@ -114,9 +118,9 @@ def getcube(*args):
     y_s = int(args[4])
     z_s = int(args[5])
     res = []
-    for x in range(x_o, x_s):
-        for y in range(y_o, y_s):
-            for z in range(z_o, z_s):
+    for x in range(x_o, x_o + x_s):
+        for y in range(y_o, y_o + y_s):
+            for z in range(z_o, z_o + z_s):
                 res.append({'pos': (x, y, z), 'id': getblock(x, y, z)})
     return str(res)
 
