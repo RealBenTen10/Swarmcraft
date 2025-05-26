@@ -67,9 +67,6 @@ class Sensing(object):
         @On(self.bot, "wake")
         def on_wake(this, *args):
             self.awake = True
-        @On(self.bot, "diggingCompleted")
-        def on_digging_complete(this, *args):
-            self.agent.sensing.__reset_dig__()
 
     def get_health(self):
         return self.bot.health
@@ -122,3 +119,7 @@ class Sensing(object):
     # is the given control direction (forward, back, left, right, jump, sprint, sneak) active?
     def control_is_toggled(self, direction):
         return self.bot.getControlState(direction)
+
+    # is the bot digging a block?
+    def is_digging(self):
+        return self.agent.bot.targetDigBlock is not None

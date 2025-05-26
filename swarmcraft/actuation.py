@@ -2,20 +2,17 @@
 agent actuation class
 like a robot actuator suite - every agent gets one of these
 """
-from time import sleep
 from javascript import require
 
 Vec3 = require('vec3').Vec3
+
+CARDINALS = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
+MOVE_DIRS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
 
 class Actuation(object):
     def __init__(self, agent):
         # agent parts
         self.agent = agent
-
-        self.dig = None
-
-    def __reset_dig__(self):
-        self.dig = None
 
     # send a chat message to everyone
     def say(self, message: str):
@@ -31,60 +28,66 @@ class Actuation(object):
         self.agent.message_server.send(self.agent, message, recipient_id)
 
     def send_message_ranged(self, message: str, recipient_id: str, distance: float):
+        if distance < 0.0:
+            raise ValueError('distance must be positive')
         self.agent.message_server.send(self.agent, message, recipient_id, distance)
 
     def send_global_message(self, message: str):
         self.agent.message_server.send(self.agent, message)
 
     def send_global_message_ranged(self, message: str, distance: float):
+        if distance < 0.0:
+            raise ValueError('distance must be positive')
         self.agent.message_server.send(self.agent, message, None, distance)
 
-    # jump once
-    def jump(self):
-        self.agent.bot.setControlState('jump', True)
-        self.agent.bot.setControlState('jump', False)
-
-    # hold down a movement direction key for a given amount of time
-    # this is a little janky! probably best eschewed
-    def move(self, direction: str, t: float):
-        self.agent.bot.setControlState(direction, True)
-        sleep(t)
-        self.agent.bot.setControlState(direction, False)
-
     def start_move(self, direction: str):
+        """
+        Start moving in a given direction (like holding down a movement key)
+        Direction may be any one of ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
+        """
+        if direction not in MOVE_DIRS:
+            raise ValueError('direction must be one of {}'.format(MOVE_DIRS))
         self.agent.bot.setControlState(direction, True)
 
     def stop_move(self, direction: str):
+        """
+        Stop moving in a given direction (like releasing a movement key)
+        Direction may be any one of ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
+        """
+        if direction not in MOVE_DIRS:
+            raise ValueError('direction must be one of {}'.format(MOVE_DIRS))
         self.agent.bot.setControlState(direction, False)
 
-    # stop all movement
     def stop(self):
+        """
+        Stop moving in all directions
+        """
         self.agent.bot.clearControlStates()
 
-    # look at a specific point
     def look_at(self, position: tuple[float, float, float]):
+        """
+        Look at a point
+        """
         self.agent.bot.lookAt(Vec3(position[0], position[1], position[2]), True)
 
-    # (yaw, pitch) in radians
-    # yaw 0 is east
-    # pitch 0 is forward
-    # look in a direction
     def look(self, direction: tuple[float, float]):
+        """
+        Look in a direction
+        Accepts a (yaw, pitch) tuple of radians where yaw 0 is east and pitch 0 is level/horizon
+        Prefer look_at where possible - breaking/placing methods operate on the block under the cursor
+        """
         self.agent.bot.look(direction[0], direction[1], True)
 
-    # use diggingCompleted event to know if you're done digging or not
     def start_dig(self):
         """
         Start mining the block at the bot's cursor
-        Returns false if already mining or block is not present
+        Returns false if already mining or block is not present or the block cannot be mined
         """
-        if self.dig is None:
+        if self.agent.bot.targetDigBlock is None:
             block = self.agent.bot.blockAtCursor()
-            print(block)
-            if block is not None:
-                self.dig = self.agent.bot.dig(block)
+            if block is not None and self.agent.bot.canDigBlock(block):
+                self.agent.bot.dig(block)
                 return True
-            return False
         return False
 
     def stop_dig(self):
@@ -92,6 +95,28 @@ class Actuation(object):
         Stop the running digging action
         Does nothing if not digging
         """
-        if self.dig is not None:
+        if self.agent.bot.targetDigBlock is not None:
             self.agent.bot.stopDigging()
-            self.dig = None
+
+    def select_hotbar(self, slot: int):
+        """
+        Select the given hotbar slot
+        """
+        if slot < 0 or slot > 8:
+            raise ValueError('Hotbar slot range is 0 to 8')
+        self.agent.bot.setQuickBarSlot(slot)
+
+    def place_block(self, face: tuple[int, int, int]):
+        """
+        Place the currently held block
+        Block will be placed at position of block under crosshair + face
+        If you aren't looking at a block or aren't holding a placeable block do nothing
+        Position must be any one of [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
+
+        If the block cannot be placed (lag, position blocked by entity, etc.) this will return control as normal, but throw a JavaScriptError after 5000ms
+        """
+        if face not in CARDINALS:
+            raise ValueError('Block face must be a unit cardinal vector such as (1, 0, 0)')
+        block = self.agent.bot.blockAtCursor()
+        if block is not None:
+            self.agent.bot.placeBlock(block, Vec3(face[0], face[1], face[2]))

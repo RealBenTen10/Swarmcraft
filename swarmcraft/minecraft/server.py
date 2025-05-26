@@ -1,4 +1,5 @@
 import os
+import signal
 import socket
 import time
 import warnings
@@ -57,7 +58,7 @@ class MinecraftServer:
             return
         #try:
         self.send('command say got call to stop from console, going down NOW!')
-        self.svproc.terminate() # stop the process
+        os.kill(self.svproc.pid, signal.SIGINT) # stop the process (doing it this way seems to work better than svproc.terminate())
         self.svproc.stdin.close() # and close its associated streams
         self.running = False
         print("server stopped")

@@ -1,4 +1,5 @@
 import time
+from time import sleep
 from typing import override
 
 from agents.test_dig import Digger
@@ -16,6 +17,7 @@ class DigTest(Experiment):
     def initialize(self):
         self.environment.reset()
         self.environment.initialize()
+        self.minecraft_server.send('command setblock 21 -59 20 minecraft:grass_block')
         self.minecraft_server.send('say initialized foraging environment')
 
         if len(self.pooler.free_bots) == 0:
@@ -25,8 +27,10 @@ class DigTest(Experiment):
         self.a.reset()
 
     def run(self):
+        print('start')
         start_time = time.time()
-        self.minecraft_server.send(f'command tp {self.a.sensing.get_username()} 20 -55 20')
+        self.minecraft_server.send(f'command tp {self.a.sensing.get_username()} 20 -58 20')
+        sleep(1)
         while time.time() - start_time < 30:
             self.a.update()
 

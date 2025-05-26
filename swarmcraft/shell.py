@@ -116,6 +116,7 @@ class ServerShell(cmd.Cmd):
         at = args.split()
         exp_name = at[0]
         exp_args = at[1:]
+        exp = None
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.initialize()
@@ -127,6 +128,13 @@ class ServerShell(cmd.Cmd):
             print("Experiment error")
             print(e)
             traceback.print_tb(e.__traceback__)
+            if exp is not None:
+                try:
+                    exp.cleanup()
+                except Exception as e:
+                    print('Experiment cleanup error - you may need to restart Swarmcraft')
+                    print(e)
+                    traceback.print_tb(e.__traceback__)
 
     def do_clear(self, args):
         """Clear an area"""
