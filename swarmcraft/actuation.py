@@ -12,6 +12,11 @@ class Actuation(object):
         # agent parts
         self.agent = agent
 
+        self.dig = None
+
+    def __reset_dig__(self):
+        self.dig = None
+
     # send a chat message to everyone
     def say(self, message: str):
         self.agent.bot.chat(message)
@@ -66,3 +71,27 @@ class Actuation(object):
     # look in a direction
     def look(self, direction: tuple[float, float]):
         self.agent.bot.look(direction[0], direction[1], True)
+
+    # use diggingCompleted event to know if you're done digging or not
+    def start_dig(self):
+        """
+        Start mining the block at the bot's cursor
+        Returns false if already mining or block is not present
+        """
+        if self.dig is None:
+            block = self.agent.bot.blockAtCursor()
+            print(block)
+            if block is not None:
+                self.dig = self.agent.bot.dig(block)
+                return True
+            return False
+        return False
+
+    def stop_dig(self):
+        """
+        Stop the running digging action
+        Does nothing if not digging
+        """
+        if self.dig is not None:
+            self.agent.bot.stopDigging()
+            self.dig = None

@@ -67,6 +67,9 @@ class Sensing(object):
         @On(self.bot, "wake")
         def on_wake(this, *args):
             self.awake = True
+        @On(self.bot, "diggingCompleted")
+        def on_digging_complete(this, *args):
+            self.agent.sensing.__reset_dig__()
 
     def get_health(self):
         return self.bot.health

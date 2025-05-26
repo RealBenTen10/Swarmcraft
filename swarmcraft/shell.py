@@ -116,10 +116,17 @@ class ServerShell(cmd.Cmd):
         at = args.split()
         exp_name = at[0]
         exp_args = at[1:]
-        exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
-        exp.initialize()
-        exp.run()
-        exp.cleanup()
+        try:
+            exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
+            exp.initialize()
+            exp.run()
+            exp.cleanup()
+        except KeyError as e:
+            print("Experiment not found")
+        except Exception as e:
+            print("Experiment error")
+            print(e)
+            traceback.print_tb(e.__traceback__)
 
     def do_clear(self, args):
         """Clear an area"""
