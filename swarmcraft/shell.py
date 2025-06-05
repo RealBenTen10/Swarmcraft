@@ -1,17 +1,19 @@
 import cmd
+from datetime import datetime
 import importlib
 from importlib import util
 import inspect
 import os
 import sys
 import traceback
+from pathlib import Path
 from typing import Any
-
 import javascript.connection
 
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 
+LOG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
 class ServerShell(cmd.Cmd):
     intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\n"
@@ -119,6 +121,7 @@ class ServerShell(cmd.Cmd):
         exp = None
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
+            exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
             exp.initialize()
             exp.run()
             exp.cleanup()
@@ -177,3 +180,7 @@ class ServerShell(cmd.Cmd):
         at = args.split()
         block = self.server.send('getblock ' + args)
         if block is not None: print(block)
+
+    def do_getlogdir(self):
+        """Print the log directory"""
+        print(LOG_DIR)

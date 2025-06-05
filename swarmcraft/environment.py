@@ -1,3 +1,5 @@
+from pandas import DataFrame
+
 from swarmcraft.minecraft.server import MinecraftServer
 from swarmcraft.util import add_tuples
 
@@ -13,6 +15,9 @@ class Environment(object):
         """Resets the environment
         Clears all blocks"""
         self.minecraft_server.send(f'setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} {self.size[0]} {self.size[1]} {self.size[2]} minecraft:air')
+
+    def log(self) -> DataFrame:
+        return DataFrame.from_dict({})
 
     # set the environment to an initial state
     # by default just builds a fence around the edge

@@ -1,4 +1,5 @@
 from typing import override
+from pandas import DataFrame
 
 from behaviors.Examples import GotoPoint
 from swarmcraft.actuation import Actuation
@@ -28,13 +29,13 @@ class Agent(object):
         self.pooler.reset_bot_stats(self.bot)
         pass
 
-    def log(self):
+    def log(self) -> DataFrame:
         """Called periodically by the logger
-        Should return a dict object"""
-        return {
+        Should return a dataframe"""
+        return DataFrame.from_dict({
             'id': str(self.id),
             'bot': 'None' if self.bot is None else self.bot.username,
-        }
+        })
 
     def destroy(self):
         """Destroy this agent

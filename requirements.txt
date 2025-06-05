@@ -1,5 +1,6 @@
 javascript==1!1.2.2
 numpy
+pandas
 pip
 typing-extensions
 shortuuid

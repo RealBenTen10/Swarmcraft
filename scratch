@@ -1,23 +1,6 @@
-Agent stdlib
-what do we need?
-Remember these all need to be btrees
+Logging
 
-At very least - go places, get/set blocks in your surroundings, get/modify chests in your surroundings
-Messaging as well, but that's mostly a done deal (one action node to send a message, one action node to pop from the message receive queue)
-
-Go places
-- start moving, stop moving
-- know when you're somewhere
-- what to do if the movement is interrupted (eg ticks are redirected out of the movement node for some reason)
-- what to do if the movement is blocked/stuck somehow? try to jump over the block? how to detect that?
-- is it reasonable to use mineflayer pathfinding here? is that something that we can turn on/off at high freq?
-- look in a given direction
-- look at a given block
-
-Get/set blocks in your surroundings
-- get block you're looking at
-- get blocks around you
-
-Movement (something like gotoblock)
-- is an asynchronous action
-- needs to be cancelable
+Logger - separate class from experiment
+needs to know
+- logging directory
+- logging format (just do dataframes/csvs for now)
