@@ -1,6 +1,6 @@
 """
 Manipulation library for btree based agents
-Getting an idea of your surroundings, digging, placing blocks, etc
+Getting an idea of your surroundings, digging, placing blocks, select hotbar, current held item, etc
 """
 from typing import override
 
@@ -38,6 +38,20 @@ class StartDig(ActionNode):
             return 'success'
         return 'failure'
 
+class StopDig(ActionNode):
+    """
+    Cancel the current digging action
+    Always ticks success
+    """
+    def __init__(self, agent: Agent):
+        super().__init__()
+        self.agent = agent
+
+    @override
+    def tick(self) -> str:
+        self.agent.actuation.stop_dig()
+        return 'success'
+
 class IsDigging(ConditionNode):
     """
     Check if the bot is already mining something
@@ -49,3 +63,35 @@ class IsDigging(ConditionNode):
     @override
     def condition(self) -> bool:
         return self.agent.sensing.is_digging()
+
+class SelectHotbar(ActionNode):
+    """
+    Select a given hotbar slot
+    """
+    def __init__(self, agent: Agent, slot: int):
+        super().__init__()
+        self.agent = agent
+        self.slot = slot
+
+    @override
+    def tick(self) -> str:
+        self.agent.actuation.select_hotbar(self.slot)
+        return 'success'
+
+class IsHoldingItem(ConditionNode):
+    """
+    Check if you are holding the given item
+    Passing None checks if holding any item
+    """
+    def __init__(self, agent: Agent, item=None):
+        super().__init__()
+        self.agent = agent
+        self.item = item
+
+    @override
+    def condition(self) -> bool:
+        if self.item is None:
+            return self.agent.sensing.get_held_item() is not None
+        else:
+            # TODO typing stuff here
+            return self.agent.sensing.get_held_item() == self.item
