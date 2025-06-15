@@ -6,14 +6,14 @@ from environments.forage import ForageEnvironment
 from swarmcraft.experiment import Experiment
 
 ORIGIN = (10, -60, 10)
-SIZE = (100, 10, 100)
-START_LOCATION = (55, -55, 55)
+SIZE = (20, 10, 20)
+START_LOCATION = (20, -55, 20)
 
 class ForageExperiment(Experiment):
     def __init__(self, pooler, minecraft_server, message_server, *args):
         super().__init__(pooler, minecraft_server, message_server)
         self.num_agents = int(*args[0])
-        self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 2, 5, 20)
+        self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 2, 10)
 
     @override
     def initialize(self):

@@ -9,12 +9,10 @@ from swarmcraft.btree.nodes import ActionNode, ConditionNode
 
 
 class SendMessage(ActionNode):
-    """
-    Sends a message in the internal messenger
-    Configurable with target, without target, with range, without range
-    """
     def __init__(self, agent: Agent, message: str, target_id: str=None, dist: int=None):
         """
+        Sends a message in the internal messenger
+        Configurable with target, without target, with range, without range
         target_id, if present, must be the internal id of the agent this message is meant for (not username!)
         """
         super().__init__()
@@ -41,10 +39,10 @@ class SendMessage(ActionNode):
                 return 'success'
 
 class ClearMessageQueue(ActionNode):
-    """
-    Clears the agent's swarmcraft messaging queue
-    """
     def __init__(self, agent: Agent):
+        """
+        Clears the agent's swarmcraft messaging queue
+        """
         super().__init__()
         self.agent = agent
 
@@ -54,10 +52,10 @@ class ClearMessageQueue(ActionNode):
         return 'success'
 
 class ClearChatQueue(ActionNode):
-    """
-    Clears the agent's minecraft chat queue
-    """
     def __init__(self, agent: Agent):
+        """
+        Clears the agent's minecraft chat queue
+        """
         super().__init__()
         self.agent = agent
 
@@ -67,11 +65,9 @@ class ClearChatQueue(ActionNode):
         return 'success'
 
 class GotMessage(ConditionNode):
-    """
-    Check if an agent has received a given swarmcraft message
-    """
     def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
         """
+        Check if an agent has received a given swarmcraft message
         Passing None to message_content, sender_id, privacy is a wildcard
         First message from top of queue (oldest received) is matched
         """
@@ -96,11 +92,9 @@ class GotMessage(ConditionNode):
         return False
 
 class GotChat(ConditionNode):
-    """
-    Check if an agent has received a given minecraft chat message
-    """
     def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
         """
+        Check if an agent has received a given minecraft chat message
         Passing None to message_content, sender_id, privacy is a wildcard
         First message from top of queue (oldest received) is matched
         """

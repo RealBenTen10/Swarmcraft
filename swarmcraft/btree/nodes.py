@@ -3,14 +3,15 @@ from typing import override
 # implements behavior tree nodes
 # inspiration from https://arxiv.org/pdf/1709.00084
 
-# children/parent are other control nodes
 class ControlNode(object):
+    """
+    Base class for control nodes
+    """
     def __init__(self, children=None, parent=None):
         if children is None:
             children = []
         self.children = children
         self.parent = parent
-        self.halt_requested = False
 
     def add_child(self, child):
         self.children.append(child)
@@ -19,12 +20,12 @@ class ControlNode(object):
     def tick(self) -> str:
         return 'success'
 
-    def halt(self):
-        self.halt_requested = True
-
-# route ticks to children from left -> right until you find a child that has failed or is running
-# returns success if all children succeeded
 class SequenceNode(ControlNode):
+    """
+    When ticked, sequence nodes tick their children from left to right until a child is encountered which has failed or is running.
+    If all children succeed, returns success.
+    Otherwise, returns the status of the last ticked child.
+    """
     def __init__(self, children=None):
         super().__init__(children)
 
@@ -33,15 +34,15 @@ class SequenceNode(ControlNode):
         for child in self.children:
             status = child.tick()
             if status == 'running' or status == 'failure':
-                if status == 'running' and self.halt_requested:
-                    child.halt()
-                    self.halt_requested = False
                 return status
         return 'success'
 
-# route ticks left -> right until you find a child that is successful or running
-# returns failure only if all children failed
 class FallbackNode(ControlNode):
+    """
+    When ticked, fallback nodes tick their children from left to right until a child is encountered which has succeeded or is running.
+    If all children fail, returns failure.
+    Otherwise, returns the status of the last ticked child.
+    """
     def __init__(self, children=None):
         super().__init__(children)
 
@@ -50,16 +51,15 @@ class FallbackNode(ControlNode):
         for child in self.children:
             status = child.tick()
             if status == 'running' or status == 'success':
-                if status == 'running' and self.halt_requested:
-                    child.halt()
-                    self.halt_requested = False
                 return status
         return 'failure'
 
-# execute all children left -> right and return success if m children return success
-# return failure if len(children) - m + 1 children return failure
-# return running otherwise
 class ParallelNode(ControlNode):
+    """
+    When ticked, parallel nodes tick their children from left to right and return success if m children succeed.
+    If len(children) - m + 1 children fail, returns failure.
+    Otherwise, returns running.
+    """
     def __init__(self, m: int, children=None):
         super().__init__(children)
         if m < 0 or m > len(children):
@@ -71,38 +71,29 @@ class ParallelNode(ControlNode):
         statuses = []
         for child in self.children:
             statuses.append(child.tick())
-            if self.halt_requested:
-                child.halt()
-                self.halt_requested = False
         if statuses.count('success') > self.m:
             return 'success'
         if statuses.count('failure') > len(self.children) - self.m:
             return 'failure'
         return 'running'
 
-# ActionNodes do things whenever they're ticked
-# to create your own action, inherit this class and override tick
-# tick must return success, running, or failure depending on the action state
-# when node.halt() is called, asynchronous nodes (those which take more than 1 tick to accomplish their action)
-# must stop doing whatever it is they're doing as quickly as possible
 class ActionNode(object):
-    def __init__(self):
-        self.halt_requested = False
-
+    """
+    Action nodes perform actions when they are ticked.
+    To implement your own action, inherit from this class and override tick().
+    """
     def tick(self) -> str:
-        # update yourself
+        """
+        Must return 'success', 'failure' or 'running' depending on the state of the action.
+        """
         return 'success'
 
-    def halt(self):
-        self.halt_requested = True
-
-# ConditionNodes evaluate a condition whenever they're ticked
-# to create your own condition, inherit this class and override condition()
-# condition must return success, running, or failure depending on the condition state
-# and it should accomplish all its work in as little time as possible
 class ConditionNode(object):
+    """
+    Condition nodes check conditions when they are ticked.
+    To implement your own condition, inherit from this class and override condition().
+    """
     def condition(self) -> bool:
-        # evaluate condition here
         return True
 
     def tick(self) -> str:
@@ -110,9 +101,11 @@ class ConditionNode(object):
             return 'success'
         return 'failure'
 
-# BranchNodes evaluate a condition, then tick either one or another child node
-# you could also implement these with the nodes given above, but this is nicer to have
 class BranchNode(object):
+    """
+    Branch nodes evaluate a condition, then tick either one or the other child based on the result.
+    The condition can be defined by inheriting from this class and overriding condition().
+    """
     def __init__(self, if_node: ControlNode, else_node: ControlNode):
         self.ifNode = if_node
         self.elseNode = else_node

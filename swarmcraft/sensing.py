@@ -73,57 +73,90 @@ class Sensing(object):
             self.awake = True
 
     def get_health(self):
+        """
+        Get the bot's health.
+        """
         return self.bot.health
 
     def get_gameticks(self):
+        """
+        Get the current game time in ticks.
+        """
         return self.bot.time.bigTime
 
     def get_food(self):
+        """
+        Get the bot's satiation level.
+        """
         return self.bot.food
 
     def get_username(self):
+        """
+        Get the bot's username.
+        This is not the same as agent ID!
+        """
         return self.bot.username
 
     def get_held_item(self):
+        """
+        Get the item the bot is currently holding.
+        """
+        # TODO what kind of thing does this return??
         return self.bot.heldItem
 
-    # state variables that you can change or that are personal to you
-    # entity info
-    # block you're looking at
-    # entity you're looking at
-    # blocks immediately around you (with findBlocks)
-    # etc
     def get_position(self):
+        """
+        Get the bot's current position.
+        """
         return self.bot.entity.position.x, self.bot.entity.position.y, self.bot.entity.position.z
 
     def get_velocity(self):
+        """
+        Get the bot's current velocity vector.
+        """
         return self.bot.entity.velocity.x, self.bot.entity.velocity.y, self.bot.entity.velocity.z
 
-    # yaw, pitch in radians
     def get_heading(self):
+        """
+        Get the direction the bot is looking in.
+        Returns (yaw, pitch) in radians.
+        """
         return self.bot.entity.yaw, self.bot.entity.pitch
 
-    # get the block the bot is standing on
-    # can be an air block if the bot isn't on a block
     def get_ground_block(self):
+        """
+        Get the block the bot is standing on.
+        """
         return self.bot.blockAt(self.bot.entity.position.offset(0, -1, 0))
 
-    # get the block at the bot's cursor/null if no block
     def get_cursor_block(self):
+        """
+        Get the block at the bot's cursor, to a distance of 256 blocks.
+        """
         return self.bot.blockAtCursor(256)
 
-    # get the entity at the bot's cursor/null if no entity
     def get_cursor_entity(self):
+        """
+        Get the entity at the bot's cursor, to a distance of 256 blocks.
+        """
         return self.bot.entityAtCursor(256)
 
-    # is the given block in this bot's fov?
     def is_visible(self, block):
+        """
+        Check if a block is visible.
+        """
         return self.bot.canSeeBlock(block)
 
-    # is the given control direction (forward, back, left, right, jump, sprint, sneak) active?
     def control_is_toggled(self, direction):
+        """
+        Check if the given control direction is toggled or not.
+        Control directions can be forward, back, left, right, jump, sprint, or sneak
+        """
         return self.bot.getControlState(direction)
 
     # is the bot digging a block?
     def is_digging(self):
+        """
+        Return true if the bot is digging a block, false otherwise.
+        """
         return self.agent.bot.targetDigBlock is not None

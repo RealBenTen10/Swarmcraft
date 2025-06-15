@@ -6,7 +6,6 @@ from javascript import require
 
 Vec3 = require('vec3').Vec3
 
-CARDINALS = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
 MOVE_DIRS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
 
 class Actuation(object):
@@ -115,7 +114,7 @@ class Actuation(object):
 
         If the block cannot be placed (lag, position blocked by entity, etc.) this will return control as normal, but throw a JavaScriptError after 5000ms
         """
-        if face not in CARDINALS:
+        if face not in [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]:
             raise ValueError('Block face must be a unit cardinal vector such as (1, 0, 0)')
         block = self.agent.bot.blockAtCursor()
         if block is not None:

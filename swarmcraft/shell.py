@@ -42,10 +42,14 @@ class ServerShell(cmd.Cmd):
                 spec = importlib.util.spec_from_file_location(f'envrionments.{env[:-3]}', os.path.join(abs_dir, env))
                 mod = importlib.util.module_from_spec(spec)
                 sys.modules[f'environments.{env[:-3]}'] = mod
-                spec.loader.exec_module(mod)
-                for name, obj in inspect.getmembers(mod):
-                    if inspect.isclass(obj) and issubclass(obj, Environment) and name != 'Environment':
-                        self.environments[name] = obj
+                try:
+                    spec.loader.exec_module(mod)
+                    for name, obj in inspect.getmembers(mod):
+                        if inspect.isclass(obj) and issubclass(obj, Environment) and name != 'Environment':
+                            self.environments[name] = obj
+                except Exception as e:
+                    print('Failed to load environment:', e)
+                    traceback.print_tb(e.__traceback__)
         print("Loaded environments:")
         for name, env in self.environments.items():
             print(f'\t{name}: {env}')
@@ -58,10 +62,14 @@ class ServerShell(cmd.Cmd):
                 spec = importlib.util.spec_from_file_location(f'experiments.{exp[:-3]}', os.path.join(abs_dir, exp))
                 mod = importlib.util.module_from_spec(spec)
                 sys.modules[f'experiments.{exp[:-3]}'] = mod
-                spec.loader.exec_module(mod)
-                for name, obj in inspect.getmembers(mod):
-                    if inspect.isclass(obj) and issubclass(obj, Experiment) and name != 'Experiment':
-                        self.experiments[name] = obj
+                try:
+                    spec.loader.exec_module(mod)
+                    for name, obj in inspect.getmembers(mod):
+                        if inspect.isclass(obj) and issubclass(obj, Experiment) and name != 'Experiment':
+                            self.experiments[name] = obj
+                except Exception as e:
+                    print('Failed to load experiment:', e)
+                    traceback.print_tb(e.__traceback__)
         print("Loaded experiments:")
         for name, exp in self.experiments.items():
             print(f'\t{name}: {exp}')
@@ -168,6 +176,10 @@ class ServerShell(cmd.Cmd):
         javascript.connection.stop()
         print("Server is DOWN!")
         return True
+
+    def do_exit(self, args):
+        """Alias for quit"""
+        return self.do_quit(args)
 
     def do_readcube(self, args):
         """Read a cube and print the results to console"""
