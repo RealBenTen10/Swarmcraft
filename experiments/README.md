@@ -2,6 +2,7 @@
 
 Experiments define a setup routine, an update loop, and a teardown routine.
 They are designed to be hot-loadable, in that several different experiments can be run without needing to exit and restart Swarmcraft.
+Experiments can also be edited without needing to restart by saving the experiment and running `reloadexps` in the shell.
 Experiments manage environments and agents, as well as the logging thereof.
 
 Experiments can be launched from the Swarmcraft shell with `run <Experiment> <args>`. 
