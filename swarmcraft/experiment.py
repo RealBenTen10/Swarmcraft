@@ -11,7 +11,7 @@ from swarmcraft.environment import Environment
 class Experiment:
     def __init__(self, pooler: Pooler, minecraft_server: MinecraftServer, message_server: MessageServer):
         self.agents = [] # all the agents that are currently involved in this experiment, alive or dead
-        self.environment = None
+        self.environment = Environment(minecraft_server, (0, 60, 0), (25, 25, 25))
         self.pooler = pooler
         self.minecraft_server = minecraft_server
         self.message_server = message_server
@@ -25,9 +25,8 @@ class Experiment:
 
     def initialize(self):
         """Reset this experiment to its initial state"""
-        if self.environment is not None:
-            self.environment.reset()
-            self.environment.initialize()
+        self.environment.reset()
+        self.environment.initialize()
         for agent in self.agents:
             agent.reset()
         pass
@@ -49,16 +48,15 @@ class Experiment:
     def log_environment(self, entry_id):
         """Run the logger on this experiment's environment
         entry_id should be a unique identifier for the current log such as a timestamp"""
-        if self.environment is not None:
-            e_log = self.environment.log()
-            e_log['entry_id'] = entry_id
-            old_log_path = self.log_dir / 'environment.csv'
-            if old_log_path.exists():
-                old_log = pd.read_csv(old_log_path.absolute().as_posix())
-            else:
-                old_log = pd.DataFrame()
-            new_log = old_log.append(e_log)
-            new_log.to_csv(old_log_path.absolute().as_posix())
+        e_log = self.environment.log()
+        e_log['entry_id'] = entry_id
+        old_log_path = self.log_dir / 'environment.csv'
+        if old_log_path.exists():
+            old_log = pd.read_csv(old_log_path.absolute().as_posix())
+        else:
+            old_log = pd.DataFrame()
+        new_log = old_log.append(e_log)
+        new_log.to_csv(old_log_path.absolute().as_posix())
 
     def run(self):
         """Run this experiment"""
@@ -67,7 +65,5 @@ class Experiment:
     def cleanup(self):
         """Clean up after this experiment"""
         for a in self.agents:
-            a.log()
             a.destroy()
-        if self.environment is not None:
-            self.environment.reset()
+        self.environment.reset()
