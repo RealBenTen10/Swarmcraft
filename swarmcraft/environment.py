@@ -9,8 +9,6 @@ class Environment(object):
         self.size = size
         self.minecraft_server = minecraft_server
 
-    # reset the environment
-    # by default, clears all blocks and spawns a ground plane at the bottom of the environment
     def reset(self):
         """Resets the environment
         Clears all blocks"""
@@ -19,8 +17,6 @@ class Environment(object):
     def log(self) -> DataFrame:
         return DataFrame.from_dict({})
 
-    # set the environment to an initial state
-    # by default just builds a fence around the edge
     def initialize(self):
         """Set the environment to an initial state
         Builds a fence around the edge and spawns a ground plane at the bottom"""
