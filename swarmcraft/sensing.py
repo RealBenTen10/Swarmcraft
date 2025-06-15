@@ -5,6 +5,9 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import On
 
+from swarmcraft.messaging import Chat
+
+
 class Sensing(object):
     def __init__(self, agent):
         # agent parts
@@ -16,8 +19,8 @@ class Sensing(object):
         self.pending_actions = [] # promises for actions which have been initialized but not yet taken
 
         # state queues
-        self.chat_queue = deque() # messages which have been sent to everyone
-        self.whisper_queue = deque() # messages which have been whispered to you
+        self.messages = [] # messages which have been sent to you via the swarmcraft messenger
+        self.chats = [] # messages which have been sent to you via minecraft chat (whisper or public)
         self.error_queue = deque()
         self.sounds_queue = deque()
         self.window_stack = deque()
@@ -26,13 +29,14 @@ class Sensing(object):
 
         # register all listeners for world events (which can't be accessed through bot state vars)
         # these hooks fire whenever an event happens and push the info for that event into the event queue
-        # this is not a complete list! just what i thought would be most important to have
+        # not a complete list
         @On(self.bot, "chat") # player chat
-        def on_chat(this, username, message, *args): # this should push to a chat queue
-            self.chat_queue.append({"username": username, "message": message})
+        def on_chat(this, username, message, *args):
+            self.chats.append(Chat(username, self.get_username(), message, False))
         @On(self.bot, "whisper") # player whisper
         def on_whisper(this, username, message, *args): # this should push to a whisper queue
-            self.whisper_queue.append({"username": username, "message": message})
+            self.chats.append(Chat(username, self.get_username(), message, True))
+        # swarmcraft message queue is accessed by the messenger
         @On(self.bot, "spawn") # your spawn. probably wait for this before doing anything
         def on_spawn(this, *args):
             self.connected = True

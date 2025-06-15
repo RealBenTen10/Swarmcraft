@@ -1,6 +1,3 @@
-import random
-
-from behaviors.Examples import GotoPoint
 from swarmcraft.agent import Agent
 
 

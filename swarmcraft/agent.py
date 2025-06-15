@@ -1,7 +1,5 @@
-from typing import override
 from pandas import DataFrame
 
-from behaviors.Examples import GotoPoint
 from swarmcraft.actuation import Actuation
 from swarmcraft.messaging import MessageServer
 from swarmcraft.pooler import Pooler
@@ -45,12 +43,3 @@ class Agent(object):
 
     def __str__(self):
         return str(self.log())
-
-class GotoAgent(Agent):
-    def __init__(self, pooler, message_server, internalid):
-        super().__init__(pooler, message_server, internalid)
-        self.behavior = GotoPoint(self.sensing, self.actuation, (-169, 4, 1220))
-
-    @override
-    def update(self):
-        status = self.behavior.tick()

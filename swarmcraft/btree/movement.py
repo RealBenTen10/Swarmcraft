@@ -1,6 +1,9 @@
 """
 Movement library for btree based agents
+Going places, checking where you're at, etc
 """
+from typing import override
+
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes import ActionNode, ConditionNode
 
@@ -39,11 +42,24 @@ class IsMoving(ConditionNode):
         return self.agent.sensing.control_is_toggled(self.direction)
 
 class IsAtPosition(ConditionNode):
-    """Check if an agent is at a given position"""
+    """Check if an agent is at a given position
+    The check is done with integers, so as long as you're in the same block, this evaluates to true"""
     def __init__(self, agent: Agent, position: tuple[int, int, int]):
         super().__init__()
         self.agent = agent
         self.position = position
 
     def condition(self) -> bool:
-        return self.agent.sensing.get_position() == self.position
+        return (int(x) for x in self.agent.sensing.get_position()) == self.position
+
+class LookAtPosition(ActionNode):
+    """Look at a given position"""
+    def __init__(self, agent: Agent, position: tuple[float, float, float]):
+        super().__init__()
+        self.agent = agent
+        self.position = position
+
+    @override
+    def tick(self) -> str:
+        self.agent.actuation.look_at(self.position)
+        return 'success'
