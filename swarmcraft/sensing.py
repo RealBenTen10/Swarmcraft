@@ -81,6 +81,7 @@ class Sensing(object):
     def get_gameticks(self):
         """
         Get the current game time in ticks.
+        Normally the game runs at 20 ticks/second.
         """
         return self.bot.time.bigTime
 

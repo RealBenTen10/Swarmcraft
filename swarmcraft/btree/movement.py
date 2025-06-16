@@ -69,6 +69,7 @@ class LookAtPosition(ActionNode):
         return 'success'
 
 # TODO need a way to check if stuck?
+# with a timeout probably
 class WalkToPosition(FallbackNode):
     def __init__(self, agent: Agent, position: tuple[float, float, float]):
         class WalkToPositionInternal(ActionNode):

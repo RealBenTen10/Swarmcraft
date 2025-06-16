@@ -22,6 +22,8 @@ class ForageAgent(Agent):
         self.env = env
         # behavior for walking to a random point in the environment
         self.wander_behavior = WalkToPosition(self, self.env.get_point_in_environment())
+        self.last_move_check_time = self.sensing.get_gameticks()
+        self.last_pos = self.sensing.get_position()
         # behavior for checking if any of the blocks around you are wool
         self.look_behavior = CheckAllBlocksAtFeet(self, 'orange_wool')
         # behavior for digging up a block
@@ -29,6 +31,9 @@ class ForageAgent(Agent):
 
     def update(self):
         if self.state == 'wander':
+            if self.sensing.get_gameticks() - self.last_move_check_time > 20 and self.sensing.get_position() == self.last_pos:
+                print('unsticking')
+                self.wander_behavior = WalkToPosition(self, self.env.get_point_in_environment())
             if self.wander_behavior.tick() == 'success':
                 self.state = 'look'
         elif self.state == 'look':
