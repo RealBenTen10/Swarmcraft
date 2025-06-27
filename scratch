@@ -1,6 +1,31 @@
-Logging
+neural-like/evolved behavior trees
 
-Logger - separate class from experiment
-needs to know
-- logging directory
-- logging format (just do dataframes/csvs for now)
+use parallel nodes to combine results of sensory action nodes
+then use those outputs to control actions - setting direction, choosing message to send
+in effect, this is a ff neural net with binary output functions - is that expressive enough?
+
+parallel nodes will be the bread and butter
+- execute all children at once
+- if more than n children return success, you return success
+- thresholds of the parallel nodes are what we evolve
+
+- also need a limited set of actuation nodes
+- limited set of sensing nodes
+
+evolution:
+two parameters:
+- growth chance (expand the behavior tree)
+- mutation chance (modify a parameter in a node)
+- deletion chance (drop a node and all its children)
+start with an empty node (brain = None)
+then at each evolution step:
+- do dfs starting at root of btree
+- at each node:
+    - roll for deletion: if successful and this node is not the root, delete this node and continue to next node
+    - roll for mutation: if successful, mutate this node node
+    - roll for growth: if successful and this node is a control node, add a random randomly initialized child node
+
+when agents reproduce, do a deep copy of their behavior tree and apply evolution to it
+
+encoding trees?
+- maybe best as pickles - byte streams
