@@ -20,6 +20,10 @@ class ControlNode(object):
     def tick(self) -> str:
         return 'success'
 
+    def __repr__(self) -> str:
+        return 'Control()'
+        # format should be "Name(param1, param2, ...)[child1, child2, ...]"
+
 class SequenceNode(ControlNode):
     """
     When ticked, sequence nodes tick their children from left to right until a child is encountered which has failed or is running.
@@ -36,6 +40,9 @@ class SequenceNode(ControlNode):
             if status == 'running' or status == 'failure':
                 return status
         return 'success'
+
+    def __repr__(self) -> str:
+        return f"Sequence(){[child for child in self.children]}"
 
 class FallbackNode(ControlNode):
     """
@@ -54,6 +61,9 @@ class FallbackNode(ControlNode):
                 return status
         return 'failure'
 
+    def __repr__(self) -> str:
+        return f"Fallback(){[child for child in self.children]}"
+
 class ParallelNode(ControlNode):
     """
     When ticked, parallel nodes tick their children from left to right and return success if m children succeed.
@@ -68,14 +78,22 @@ class ParallelNode(ControlNode):
 
     @override
     def tick(self):
-        statuses = []
+        success = 0
+        failure = 0
         for child in self.children:
-            statuses.append(child.tick())
-        if statuses.count('success') > self.m:
+            status = child.tick()
+            if status == 'success':
+                success += 1
+            elif status == 'failure':
+                failure += 1
+        if success > self.m:
             return 'success'
-        if statuses.count('failure') > len(self.children) - self.m:
+        if failure > len(self.children) - self.m:
             return 'failure'
         return 'running'
+
+    def __repr__(self) -> str:
+        return f"Parallel(m={self.m}){[child for child in self.children]}"
 
 class ActionNode(object):
     """
@@ -87,6 +105,9 @@ class ActionNode(object):
         Must return 'success', 'failure' or 'running' depending on the state of the action.
         """
         return 'success'
+
+    def __repr__(self) -> str:
+        return 'Action()'
 
 class ConditionNode(object):
     """
@@ -100,6 +121,9 @@ class ConditionNode(object):
         if self.condition():
             return 'success'
         return 'failure'
+
+    def __repr__(self) -> str:
+        return 'Condition()'
 
 class BranchNode(object):
     """
@@ -118,3 +142,6 @@ class BranchNode(object):
             return self.ifNode.tick()
         else:
             return self.elseNode.tick()
+
+    def __repr__(self) -> str:
+        return f'Branch()[{self.ifNode}, {self.elseNode}]'

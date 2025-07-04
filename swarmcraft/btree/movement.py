@@ -20,6 +20,9 @@ class StartMove(ActionNode):
         self.agent.actuation.start_move(self.direction)
         return 'success'
 
+    def __repr__(self) -> str:
+        return f"StartMove(direction={self.direction})"
+
 class StopMove(ActionNode):
     def __init__(self, agent: Agent, direction):
         """Stop moving in a given direction (forward, back, left, right, jump, sprint, sneak, all)"""
@@ -34,6 +37,9 @@ class StopMove(ActionNode):
         self.agent.actuation.stop_move(self.direction)
         return 'success'
 
+    def __repr__(self) -> str:
+        return f"StopMove(direction={self.direction})"
+
 class IsMoving(ConditionNode):
     def __init__(self, agent: Agent, direction):
         """Check if an agent is trying to move in a given direction (forward, back, left, right, jump, sprint sneak)
@@ -44,6 +50,9 @@ class IsMoving(ConditionNode):
 
     def condition(self) -> bool:
         return self.agent.sensing.control_is_toggled(self.direction)
+
+    def __repr__(self) -> str:
+        return f"IsMoving(direction={self.direction})"
 
 class IsAtPosition(ConditionNode):
     def __init__(self, agent: Agent, position: tuple[float, float, float]):
@@ -56,6 +65,9 @@ class IsAtPosition(ConditionNode):
     def condition(self) -> bool:
         return (int(x) for x in self.agent.sensing.get_position()) == (int(x) for x in self.position)
 
+    def __repr__(self) -> str:
+        return f"IsAtPosition(position={self.position})"
+
 class LookAtPosition(ActionNode):
     def __init__(self, agent: Agent, position: tuple[float, float, float]):
         """Look at a given position"""
@@ -67,6 +79,9 @@ class LookAtPosition(ActionNode):
     def tick(self) -> str:
         self.agent.actuation.look_at(self.position)
         return 'success'
+
+    def __repr__(self) -> str:
+        return f"LookAtPosition(position={self.position})"
 
 # TODO need a way to check if stuck?
 # with a timeout probably

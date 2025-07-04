@@ -38,6 +38,28 @@ class SendMessage(ActionNode):
                 self.agent.actuation.send_global_message(self.message)
                 return 'success'
 
+    def __repr__(self) -> str:
+        return f"SendMessage(msg={self.message}, target={self.target}, dist={self.dist})"
+
+
+class SendChat(ActionNode):
+    def __init__(self, agent: Agent, message: str):
+        """
+        Sends a given string in the game chat.
+        """
+        super().__init__()
+        self.agent = agent
+        self.message = message
+
+    @override
+    def tick(self) -> str:
+        self.agent.actuation.say(self.message)
+        return 'success'
+
+    def __repr__(self) -> str:
+        return f"SendChat(message={self.message})"
+
+
 class ClearMessageQueue(ActionNode):
     def __init__(self, agent: Agent):
         """
@@ -51,6 +73,9 @@ class ClearMessageQueue(ActionNode):
         self.agent.sensing.messages.clear()
         return 'success'
 
+    def __repr__(self) -> str:
+        return f"ClearMessageQueue()"
+
 class ClearChatQueue(ActionNode):
     def __init__(self, agent: Agent):
         """
@@ -63,6 +88,9 @@ class ClearChatQueue(ActionNode):
     def tick(self) -> str:
         self.agent.sensing.chats.clear()
         return 'success'
+
+    def __repr__(self) -> str:
+        return f"ClearChatQueue()"
 
 class GotMessage(ConditionNode):
     def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
@@ -91,6 +119,9 @@ class GotMessage(ConditionNode):
                 return True
         return False
 
+    def __repr__(self) -> str:
+        return f"GotMessage(content={self.message_content}, sender_id={self.sender_id}, privacy={self.privacy})"
+
 class GotChat(ConditionNode):
     def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
         """
@@ -117,3 +148,6 @@ class GotChat(ConditionNode):
             if matched:
                 return True
         return False
+
+    def __repr__(self) -> str:
+        return f"GotChat(content={self.message_content}, sender_id={self.sender_id}, privacy={self.privacy})"

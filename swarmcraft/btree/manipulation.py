@@ -10,21 +10,6 @@ from swarmcraft.btree.nodes import ActionNode, ConditionNode, FallbackNode, Sequ
 from swarmcraft.util import CARDINAL_DIRS, add_tuples
 
 
-class Say(ActionNode):
-    def __init__(self, agent: Agent, message: str):
-        """
-        Sends a given string in the game chat.
-        For more powerful messaging, see btree.messaging
-        """
-        super().__init__()
-        self.agent = agent
-        self.message = message
-
-    @override
-    def tick(self) -> str:
-        self.agent.actuation.say(self.message)
-        return 'success'
-
 class Dig(ActionNode):
     def __init__(self, agent: Agent):
         """
@@ -42,6 +27,9 @@ class Dig(ActionNode):
             return 'success'
         return 'failure'
 
+    def __repr__(self) -> str:
+        return f"Dig[]()"
+
 class StopDig(ActionNode):
     def __init__(self, agent: Agent):
         """
@@ -56,6 +44,9 @@ class StopDig(ActionNode):
         self.agent.actuation.stop_dig()
         return 'success'
 
+    def __repr__(self) -> str:
+        return f"StopDig[]()"
+
 class IsDigging(ConditionNode):
     def __init__(self, agent: Agent):
         """
@@ -67,6 +58,9 @@ class IsDigging(ConditionNode):
     @override
     def condition(self) -> bool:
         return self.agent.sensing.is_digging()
+
+    def __repr__(self) -> str:
+        return f"IsDigging[]()"
 
 class SelectHotbar(ActionNode):
     def __init__(self, agent: Agent, slot: int):
@@ -81,6 +75,9 @@ class SelectHotbar(ActionNode):
     def tick(self) -> str:
         self.agent.actuation.select_hotbar(self.slot)
         return 'success'
+
+    def __repr__(self) -> str:
+        return f"SelectHotbar[slot={self.slot}]()"
 
 class IsHoldingItem(ConditionNode):
     def __init__(self, agent: Agent, item=None):
@@ -99,6 +96,9 @@ class IsHoldingItem(ConditionNode):
         else:
             # TODO typing stuff here
             return self.agent.sensing.get_held_item() == self.item
+
+    def __repr__(self) -> str:
+        return f"IsHoldingItem[item={self.item}]()"
 
 class LookAndCheckBlockAtFeetCardinal(ActionNode):
     def __init__(self, agent: Agent, cardinal_dir: str, block_type: str):
@@ -119,6 +119,9 @@ class LookAndCheckBlockAtFeetCardinal(ActionNode):
         if looking_at == self.block_type:
             return 'success'
         return 'failure'
+
+    def __repr__(self) -> str:
+        return f"LookAndCheckBlockAtFeetCardinal[dir={self.offset}, block_type={self.block_type}]()"
 
 class CheckAllBlocksAtFeet(FallbackNode):
     def __init__(self, agent: Agent, block_type: str):
