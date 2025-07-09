@@ -32,6 +32,8 @@ BLOCK_TYPES = [
     'grass_block'
 ]
 
+MOVEMENT_KEYS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
+
 def dist_sqr(a, b) -> floating[Any]:
     a = np.array(a)
     b = np.array(b)

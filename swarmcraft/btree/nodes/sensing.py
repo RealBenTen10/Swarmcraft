@@ -1,4 +1,8 @@
+import random
+
+from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
+from swarmcraft.util import MOVEMENT_KEYS
 
 
 class IsDigging(ActionNode):
@@ -13,44 +17,25 @@ class IsDigging(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
+class IsKeyDown(ActionNode):
+    """
+    Check if key pressed
+    """
+    def __init__(self, agent: Agent, key: str = None):
+        super().__init__(agent)
+        self.key = key
+        if self.key is None:
+            self.randomize_params()
+        elif self.key not in MOVEMENT_KEYS:
+            raise ValueError(f'key must be one of {MOVEMENT_KEYS}')
 
-class IsMoving(ActionNode):
-    """
-    Check if any movement directions (forward, back, left, right, jump) are toggled
-    """
+    def randomize_params(self):
+        self.key = random.choice(MOVEMENT_KEYS)
+
     def tick(self) -> str:
-        if self.agent.sensing.control_is_toggled('forward') or self.agent.sensing.control_is_toggled('backward') or self.agent.sensing.control_is_toggled('left') or self.agent.sensing.control_is_toggled('right') or self.agent.sensing.control_is_toggled('jump'):
+        if self.agent.sensing.control_is_toggled(self.key):
             return 'success'
         return 'failure'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class IsSprinting(ActionNode):
-    """
-    Check if sprint is toggled
-    """
-    def tick(self) -> str:
-        if self.agent.sensing.control_is_toggled('sprint'):
-            return 'success'
-        return 'failure'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class IsSneaking(ActionNode):
-    """
-    Check if sneak is toggled
-    """
-    def tick(self) -> str:
-        if self.agent.sensing.control_is_toggled('sneak'):
-            return 'success'
-        return 'failure'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
 
 
 class IsHoldingItem(ActionNode):

@@ -1,90 +1,54 @@
+import math
+import random
+
+from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
-from swarmcraft.util import add_tuples, CARDINAL_DIRS
+from swarmcraft.util import add_tuples, MOVEMENT_KEYS
 
 
-class Forward(ActionNode):
+class PressDir(ActionNode):
     """
-    Start moving forward
+    Start holding down the given movement key
     """
+    def __init__(self, agent: Agent, key: str = None):
+        super().__init__(agent)
+        self.key = key
+        if self.key is None:
+            self.randomize_params()
+        elif self.key not in MOVEMENT_KEYS:
+            raise ValueError(f'key must be one of {MOVEMENT_KEYS}')
+
+    def randomize_params(self):
+        self.key = random.choice(MOVEMENT_KEYS)
+
     def tick(self) -> str:
-        self.agent.actuation.start_move('forward')
+        self.agent.actuation.start_move(self.key)
         return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
+        return f'{__class__.__name__}({self.key})'
 
+class ReleaseDir(ActionNode):
+    """
+    Stop holding down the given movement key
+    """
+    def __init__(self, agent: Agent, key: str = None):
+        super().__init__(agent)
+        self.key = key
+        if self.key is None:
+            self.randomize_params()
+        elif self.key not in MOVEMENT_KEYS:
+            raise ValueError(f'key must be one of {MOVEMENT_KEYS}')
 
-class Back(ActionNode):
-    """
-    Start moving backward
-    """
+    def randomize_params(self):
+        self.key = random.choice(MOVEMENT_KEYS)
+
     def tick(self) -> str:
-        self.agent.actuation.start_move('backward')
+        self.agent.actuation.stop_move(self.key)
         return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class Left(ActionNode):
-    """
-    Start moving left
-    """
-    def tick(self) -> str:
-        self.agent.actuation.start_move('left')
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class Right(ActionNode):
-    """
-    Start moving right
-    """
-    def tick(self) -> str:
-        self.agent.actuation.start_move('right')
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class Jump(ActionNode):
-    """
-    Start jumping
-    """
-    def tick(self) -> str:
-        self.agent.actuation.start_move('jump')
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class Sprint(ActionNode):
-    """
-    Toggle sprinting
-    """
-    def tick(self) -> str:
-        self.agent.actuation.start_move('sprint')
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class Sneak(ActionNode):
-    """
-    Toggle sneaking
-    """
-    def tick(self) -> str:
-        self.agent.actuation.start_move('sneak')
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
+        return f'{__class__.__name__}({self.key})'
 
 class Stop(ActionNode):
     """
@@ -97,126 +61,57 @@ class Stop(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
+class Look(ActionNode):
+    """
+    Look in a given direction
+    """
+    def __init__(self, agent: Agent, yaw: float = None, pitch: float = None):
+        """
+        @param yaw: horizontal rotation in radians. 0 is east, pi/2 is north
+        @param pitch: vertical rotation in radians. 0 is flat, pi is down, -pi is up
+        """
+        super().__init__(agent)
+        self.yaw = yaw
+        self.pitch = pitch
+        if self.pitch is None or self.yaw is None:
+            self.randomize_params()
 
-class LookNorth(ActionNode):
-    """
-    Look north
-    """
+    def randomize_params(self):
+        self.pitch = random.random() * 2 * math.pi
+        self.yaw = (random.random() * 2 - 1) * math.pi
+
     def tick(self) -> str:
-        self.agent.actuation.look((3.14/2, 0))
+        self.agent.actuation.look((self.yaw, self.pitch))
         return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
+        return f'{__class__.__name__}({self.yaw}, {self.pitch})'
 
+class Rotate(ActionNode):
+    """
+    Rotate the view by a given amount
+    """
+    def __init__(self, agent: Agent, yaw: float = None, pitch: float = None):
+        """
+        @param yaw: horizontal rotation in radians. positive is counterclockwise
+        @param pitch: vertical rotation in radians. positive is down
+        """
+        super().__init__(agent)
+        self.yaw = yaw
+        self.pitch = pitch
+        if self.pitch is None or self.yaw is None:
+            self.randomize_params()
 
-class LookSouth(ActionNode):
-    """
-    Look south
-    """
+    def randomize_params(self):
+        self.pitch = (random.random() * 2 - 1) * math.pi
+        self.yaw = (random.random() * 2 - 1) * math.pi
+
     def tick(self) -> str:
-        self.agent.actuation.look((-3.14/2, 0))
+        self.agent.actuation.look(add_tuples(self.agent.sensing.get_heading(), (self.yaw, self.pitch)))
         return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class LookEast(ActionNode):
-    """
-    Look east
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look((0, 0))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class LookWest(ActionNode):
-    """
-    Look west
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look((3.14, 0))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class RotateRight(ActionNode):
-    """
-    Change yaw by one positive tenth of 2pi
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look(add_tuples(self.agent.sensing.get_heading(), (0.628, 0)))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class RotateLeft(ActionNode):
-    """
-    Change yaw by one negative tenth of 2pi
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look(add_tuples(self.agent.sensing.get_heading(), (-0.628, 0)))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class RotateUp(ActionNode):
-    """
-    Change pitch by one negative tenth of 2pi
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look(add_tuples(self.agent.sensing.get_pitch(), (0.0, -0.628)))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class RotateDown(ActionNode):
-    """
-    Change pitch by one positive tenth of 2pi
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look(add_tuples(self.agent.sensing.get_pitch(), (0.0, 0.628)))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class LookUp(ActionNode):
-    """
-    Look up
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look((0, -3.14))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class LookDown(ActionNode):
-    """
-    Look down
-    """
-    def tick(self) -> str:
-        self.agent.actuation.look((0, 3.14))
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
+        return f'{__class__.__name__}({self.yaw}, {self.pitch})'
 
 class StartDig(ActionNode):
     """
@@ -244,113 +139,27 @@ class StopDig(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
+class SelectSlot(ActionNode):
+    """
+    Select a hotbar slot
+    """
+    def __init__(self, agent: Agent, slot: int = None):
+        super().__init__(agent)
+        self.slot = slot
+        if self.slot is None:
+            self.randomize_params()
+        elif self.slot < 0 or self.slot > 8:
+            raise ValueError('Hotbar slot must be between 0 and 8')
 
-class SelectSlot0(ActionNode):
-    """
-    Select hotbar slot 0
-    """
+    def randomize_params(self):
+        self.slot = random.randint(0, 8)
+
     def tick(self) -> str:
-        self.agent.actuation.select_hotbar(0)
+        self.agent.actuation.select_hotbar(self.slot)
         return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot1(ActionNode):
-    """
-    Select hotbar slot 1
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(1)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot2(ActionNode):
-    """
-    Select hotbar slot 2
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(2)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot3(ActionNode):
-    """
-    Select hotbar slot 3
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(3)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot4(ActionNode):
-    """
-    Select hotbar slot 4
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(4)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot5(ActionNode):
-    """
-    Select hotbar slot 5
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(5)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot6(ActionNode):
-    """
-    Select hotbar slot 6
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(6)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot7(ActionNode):
-    """
-    Select hotbar slot 7
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(7)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
-
-
-class SelectSlot8(ActionNode):
-    """
-    Select hotbar slot 8
-    """
-    def tick(self) -> str:
-        self.agent.actuation.select_hotbar(8)
-        return 'success'
-
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'
+        return f'{__class__.__name__}({self.slot})'
 
 # TODO node for placing block
 

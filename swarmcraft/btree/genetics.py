@@ -54,7 +54,9 @@ def generate_maxdepth(depth: int, agent: Agent, min_spread = 1, max_spread = 5):
     def build_subtree(d):
         # if at maximum depth, initialize a random terminal
         if d >= depth:
-            return random.choice(_terminals)(agent)
+            t = random.choice(_terminals)(agent)
+            t.randomize_params()
+            return t
         # otherwise, initialize a random control with a random number of children
         n_children = random.randint(min_spread, max_spread)
         children = [build_subtree(d + 1) for _ in range(n_children)]
@@ -84,11 +86,15 @@ def generate_minmax(min_depth: int, max_depth: int, agent: Agent, min_spread = 1
             return node
         if d >= max_depth:
             # if at maximum depth, initialize a random terminal
-            return random.choice(_terminals)(agent)
+            t = random.choice(_terminals)(agent)
+            t.randomize_params()
+            return t
         # roll the dice
         if random.random() < 0.5:
             # if we broke off, add a terminal
-            return random.choice(_terminals)(agent)
+            t = random.choice(_terminals)(agent)
+            t.randomize_params()
+            return t
         # if we didn't, continue as  before
         n_children = random.randint(min_spread, max_spread)
         children = [build_subtree(d + 1) for _ in range(n_children)]

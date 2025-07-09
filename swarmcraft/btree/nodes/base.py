@@ -24,6 +24,9 @@ class ControlNode(object):
     def tick(self) -> str:
         return 'success'
 
+    def randomize_params(self):
+        pass
+
     def size(self):
         return 1 + sum([child.size() for child in self.children])
 
@@ -108,7 +111,7 @@ class ActionNode(object):
     """
     Action nodes perform actions when they are ticked.
     To implement your own action, inherit from this class and override tick().
-    DO NOT override the constructor!
+    It's ok to override the constructor, but any additional parameters should default to None and be randomly initialized by randomize_params.
     """
     def __init__(self, agent: Agent):
         self.agent = agent
@@ -120,7 +123,16 @@ class ActionNode(object):
         return 'success'
 
     def size(self):
+        """
+        Used for recursive behavior tree size calculation.
+        """
         return 1
+
+    def randomize_params(self):
+        """
+        Used by some internal methods to randomize node parameters during procedural generation.
+        """
+        pass
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
