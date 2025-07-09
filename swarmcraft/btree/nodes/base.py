@@ -24,6 +24,9 @@ class ControlNode(object):
     def tick(self) -> str:
         return 'success'
 
+    def size(self):
+        return 1 + sum([child.size() for child in self.children])
+
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
         # format should be "Name(param1, param2, ...)[child1, child2, ...]"
@@ -115,6 +118,9 @@ class ActionNode(object):
         Must return 'success', 'failure' or 'running' depending on the state of the action.
         """
         return 'success'
+
+    def size(self):
+        return 1
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
