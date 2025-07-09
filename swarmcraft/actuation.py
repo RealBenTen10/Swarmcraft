@@ -72,7 +72,7 @@ class Actuation(object):
     def look(self, direction: tuple[float, float]):
         """
         Look in a direction
-        Accepts a (yaw, pitch) tuple of radians where yaw 0 is east and pitch 0 is level/horizon
+        Accepts a (yaw, pitch) tuple of radians where yaw 0 is east, north is positive and pitch 0 is level/horizon, up is negative and down is positive
         Prefer look_at where possible - breaking/placing methods operate on the block under the cursor
         """
         self.agent.bot.look(direction[0], direction[1], True)
