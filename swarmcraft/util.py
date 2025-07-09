@@ -18,6 +18,20 @@ CARDINAL_DIRS = {
     'sw': (-0.707, 0, -0.707)
 }
 
+BLOCK_TYPES = [
+    'diamond_block',
+    'white_wool',
+    'black_wool',
+    'red_wool',
+    'orange_wool',
+    'yellow_wool',
+    'green_wool',
+    'blue_wool',
+    'purple_wool',
+    'brown_wool',
+    'grass_block'
+]
+
 def dist_sqr(a, b) -> floating[Any]:
     a = np.array(a)
     b = np.array(b)
