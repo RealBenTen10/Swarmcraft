@@ -13,13 +13,13 @@ _functions = [SequenceNode, FallbackNode]
 # terminals/actions (mutable)
 _terminals = []
 
-def add_terminal(terminal: ActionNode):
+def add_terminal(terminal: type[ActionNode]):
     """
     Add a terminal to the pool
     """
     _terminals.append(terminal)
 
-def remove_terminal(terminal: ActionNode):
+def remove_terminal(terminal: type[ActionNode]):
     """
     Remove a terminal from the pool
     """
@@ -30,6 +30,17 @@ def write_genome(root: ControlNode):
     Tree to genome string
     """
     return root.__repr__()
+
+def bind_tree_to_agent(tree, agent: Agent):
+    """
+    Bind a behavior tree to an agent
+    Depth-first traverse of the tree, setting the agent attribute of each node without children to the given agent
+    """
+    if hasattr(tree, 'children'):
+        for child in tree.children:
+            bind_tree_to_agent(child, agent)
+    else:
+        tree.agent = agent
 
 def generate_maxdepth(depth: int, agent: Agent, min_spread = 1, max_spread = 5):
     """
@@ -84,6 +95,80 @@ def generate_minmax(min_depth: int, max_depth: int, agent: Agent, min_spread = 1
         node = random.choice(_functions)(children)
         return node
     return build_subtree(0)
+
+def crossover(a: ControlNode, b: ControlNode, a_agent: Agent, b_agent: Agent):
+    """
+    Crossover between two behavior trees
+    """
+    def get_kth_node_with_parent_and_index(node, k):
+        def helper(node, k, count, parent, index_in_parent):
+            if node is None:
+                return None, None, None, count
+
+            count += 1
+            if count == k:
+                return node, parent, index_in_parent, count
+
+            if hasattr(node, 'children'):
+                for i, child in enumerate(node.children):
+                    result, result_parent, child_index, count = helper(
+                        child, k, count, node, i
+                    )
+                    if result is not None:
+                        return result, result_parent, child_index, count
+
+            return None, None, None, count
+
+        result, parent, index, _ = helper(node, k, 0, None, None)
+        return result, parent, index
+
+    # get subtrees, their parent nodes, and the places of those subtrees in the parent node child lists
+    a_sub, a_place, a_index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
+    b_sub, b_place, b_index = get_kth_node_with_parent_and_index(b, random.randint(0, b.size() - 1))
+
+    # swap
+    a_place.children[a_index] = b_sub
+    b_place.children[b_index] = a_sub
+
+    # rebind agents
+    bind_tree_to_agent(a, a_agent)
+    bind_tree_to_agent(b, b_agent)
+
+def mutate(a: ControlNode, agent: Agent):
+    """
+    Mutate a behavior tree
+    Select a random node in a tree, and replace it with a newly generated subtree of lesser or equivalent depth
+    """
+    def get_kth_node_with_parent_and_index(node, k):
+        def helper(node, k, count, parent, index_in_parent):
+            if node is None:
+                return None, None, None, count
+
+            count += 1
+            if count == k:
+                return node, parent, index_in_parent, count
+
+            if hasattr(node, 'children'):
+                for i, child in enumerate(node.children):
+                    result, result_parent, child_index, count = helper(
+                        child, k, count, node, i
+                    )
+                    if result is not None:
+                        return result, result_parent, child_index, count
+
+            return None, None, None, count
+
+        result, parent, index, _ = helper(node, k, 0, None, None)
+        return result, parent, index
+
+    # select a subtree, its parent node, and the place of that subtree in the parent node child list
+    _, place, index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
+    # generate a new subtree
+    new = generate_minmax(1, a.size(), None)
+    # bind the new subtree to the agent
+    bind_tree_to_agent(new, agent)
+    # replace the old subtree with the new one
+    place.children[index] = new
 
 def read_genome(dna: str, agent: Agent) -> ControlNode:
     # TODO NOT DONE! (recursion)
