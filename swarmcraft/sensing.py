@@ -26,6 +26,8 @@ class Sensing(object):
         self.window_stack = deque()
 
         self.connected = True
+        self.alive = False
+        self.died = False
 
         # register all listeners for world events (which can't be accessed through bot state vars)
         # these hooks fire whenever an event happens and push the info for that event into the event queue
@@ -40,6 +42,11 @@ class Sensing(object):
         @On(self.bot, "spawn") # your spawn. probably wait for this before doing anything
         def on_spawn(this, *args):
             self.connected = True
+            self.alive = True
+        @On(self.bot, "death")
+        def on_death(this, *args):
+            self.alive = False
+            self.died = True
         @On(self.bot, "end") # when you disconnect
         def on_end(this, reason, *args): # this can be a method: get_connected()
             self.connected = False
@@ -161,3 +168,17 @@ class Sensing(object):
         Return true if the bot is digging a block, false otherwise.
         """
         return self.agent.bot.targetDigBlock is not None
+
+    def is_alive(self):
+        """
+        Return true if the bot is alive.
+        """
+        return self.alive
+
+    def has_died(self):
+        """
+        Return true if the bot has died since this method was called last
+        """
+        v = self.died
+        self.died = False
+        return v
