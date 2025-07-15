@@ -8,6 +8,8 @@ from swarmcraft.util import MOVEMENT_KEYS
 class IsDigging(ActionNode):
     """
     Check if digging a block
+    If the agent is digging a block, returns 'success'
+    Otherwise returns 'failure'
     """
     def tick(self) -> str:
         if self.agent.sensing.is_digging():

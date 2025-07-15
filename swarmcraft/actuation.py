@@ -73,7 +73,6 @@ class Actuation(object):
         """
         Look in a direction
         Accepts a (yaw, pitch) tuple of radians where yaw 0 is east, north is positive and pitch 0 is level/horizon, up is negative and down is positive
-        Prefer look_at where possible - breaking/placing methods operate on the block under the cursor
         """
         self.agent.bot.look(direction[0], direction[1], True)
 
@@ -83,9 +82,8 @@ class Actuation(object):
         Returns false if already mining or block is not present or the block cannot be mined
         """
         if self.agent.bot.targetDigBlock is None:
-            block = self.agent.bot.blockAtCursor()
-            if block is not None and self.agent.bot.canDigBlock(block):
-                self.agent.bot.dig(block)
+            if self.agent.sensing.can_dig_cursor_block():
+                self.agent.bot.dig(self.agent.sensing.get_cursor_block())
                 return True
         return False
 
@@ -109,13 +107,18 @@ class Actuation(object):
         """
         Place the currently held block
         Block will be placed at position of block under crosshair + face
-        If you aren't looking at a block or aren't holding a placeable block do nothing
         Position must be any one of [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
 
-        If the block cannot be placed (lag, position blocked by entity, etc.) this will return control as normal, but throw a JavaScriptError after 5000ms
+        If the block cannot be placed (not holding placeable item, lag, position blocked by entity, etc.) this will return false.
+        If the block was placed successfully, this will return true.
+        Timing is a little strange: successful placements return control immediately, failed ones take up to 5 seconds.
+        Recommended to run this in its own thread.
         """
         if face not in [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]:
             raise ValueError('Block face must be a unit cardinal vector such as (1, 0, 0)')
         block = self.agent.bot.blockAtCursor()
-        if block is not None:
+        try:
             self.agent.bot.placeBlock(block, Vec3(face[0], face[1], face[2]))
+            return True
+        except Exception:
+            return False

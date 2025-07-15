@@ -28,6 +28,7 @@ class Sensing(object):
         self.connected = True
         self.alive = False
         self.died = False
+        self.dig_result = True
 
         # register all listeners for world events (which can't be accessed through bot state vars)
         # these hooks fire whenever an event happens and push the info for that event into the event queue
@@ -78,6 +79,12 @@ class Sensing(object):
         @On(self.bot, "wake")
         def on_wake(this, *args):
             self.awake = True
+        @On(self.bot, "diggingCompleted")
+        def on_digging_completed(this, *args):
+            self.dig_result = True
+        @On(self.bot, "diggingAborted")
+        def on_digging_aborted(this, *args):
+            self.dig_result = False
 
     def get_health(self):
         """
@@ -141,7 +148,14 @@ class Sensing(object):
         """
         Get the block at the bot's cursor, to a distance of 256 blocks.
         """
+        print(self.bot.blockAtCursor(256).getProperties())
         return self.bot.blockAtCursor(256)
+
+    def can_dig_cursor_block(self):
+        """
+        Check if the block at the cursor is diggable and in range
+        """
+        return self.bot.canDigBlock(self.get_cursor_block())
 
     def get_cursor_entity(self):
         """
@@ -168,6 +182,12 @@ class Sensing(object):
         Return true if the bot is digging a block, false otherwise.
         """
         return self.agent.bot.targetDigBlock is not None
+
+    def finished_digging(self):
+        """
+        Return true if the bot successfully completed its last dig action.
+        """
+        return self.dig_result
 
     def is_alive(self):
         """
