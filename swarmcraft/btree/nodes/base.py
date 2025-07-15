@@ -1,4 +1,5 @@
 import random
+import threading
 from typing import override
 
 from swarmcraft.agent import Agent
@@ -133,6 +134,45 @@ class ActionNode(object):
         Used by some internal methods to randomize node parameters during procedural generation.
         """
         pass
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}()'
+
+class AsyncActionNode(ActionNode):
+    """
+    For doing asynchronous actions.
+    Should be used sparingly!
+    """
+    def __init__(self, agent: Agent):
+        super().__init__(agent)
+        self.thread = None
+        self.thread_status = ''
+
+    def do_async(self):
+        """
+        Do long-running stuff here.
+        This method will be called in a new thread and should return 'success' or 'failure' on completion.
+        You may block for as long as you like.
+        """
+        pass
+
+    def tick(self) -> str:
+        """
+        Don't override!
+        """
+        # if our action isn't running, start it
+        if self.thread is None:
+            self.thread = threading.Thread(target=self.do_async)
+            self.thread.start()
+
+        # if we're not done, return running
+        if self.thread.is_alive():
+            return 'running'
+        # if we are done, join the thread, delete it, return the status
+        else:
+            self.thread.join()
+            self.thread = None
+            return self.thread_status
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'

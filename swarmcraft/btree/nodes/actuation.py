@@ -2,7 +2,7 @@ import math
 import random
 
 from swarmcraft.agent import Agent
-from swarmcraft.btree.nodes.base import ActionNode
+from swarmcraft.btree.nodes.base import ActionNode, AsyncActionNode
 from swarmcraft.util import add_tuples, MOVEMENT_KEYS
 
 
@@ -68,7 +68,7 @@ class Look(ActionNode):
     def __init__(self, agent: Agent, yaw: float = None, pitch: float = None):
         """
         @param yaw: horizontal rotation in radians. 0 is east, pi/2 is north
-        @param pitch: vertical rotation in radians. 0 is flat, pi is down, -pi is up
+        @param pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
         """
         super().__init__(agent)
         self.yaw = yaw
@@ -116,6 +116,10 @@ class Rotate(ActionNode):
 class StartDig(ActionNode):
     """
     Start digging
+    If the agent is not currently digging, starts to dig and returns 'success'
+    If the agent is already digging, returns 'running'
+    If the agent could not start digging, returns 'failure'
+    Use sensing.IsDigging to check if agent is digging or not
     """
     def tick(self) -> str:
         if self.agent.sensing.is_digging():
@@ -126,7 +130,6 @@ class StartDig(ActionNode):
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
-
 
 class StopDig(ActionNode):
     """
@@ -161,8 +164,109 @@ class SelectSlot(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}({self.slot})'
 
-# TODO node for placing block
+class SendMessage(ActionNode):
+    def __init__(self, agent: Agent, message: str = None, target_id: str = None, dist: int = None):
+        """
+        Sends a message in the internal messenger
+        Configurable with target, without target, with range, without range
+        Random initialization (all parameters None) sends a random 8 bytes to everyone
+        """
+        super().__init__(agent)
+        self.message = message
+        self.target_id = target_id
+        self.dist = dist
+        if self.message is None and self.target_id is None and self.dist is None:
+            self.randomize_params()
+        elif self.dist < 0:
+            raise ValueError('Distance must be positive')
 
-# TODO node for sending message
+    def randomize_params(self):
+        self.message = random.randbytes(8).decode('utf-8')
+        self.target_id = None
+        self.dist = None
 
-# TODO node for sending chat
+    def tick(self) -> str:
+        if self.target_id is not None:
+            if self.dist is not None:
+                self.agent.actuation.send_message_ranged(self.message, self.target_id, self.dist)
+                return 'success'
+            else:
+                self.agent.actuation.send_message(self.message, self.target_id)
+                return 'success'
+        else:
+            if self.dist is not None:
+                self.agent.actuation.send_global_message_ranged(self.message, self.dist)
+                return 'success'
+            else:
+                self.agent.actuation.send_global_message(self.message)
+                return 'success'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.message}, {self.target_id}, {self.dist})'
+
+class SendChat(ActionNode):
+    def __init__(self, agent: Agent, message: str = None):
+        """
+        Sends a message in the game chat
+        Random initialization sends a random 8 bytes
+        """
+        super().__init__(agent)
+        self.message = message
+        if self.message is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.message = random.randbytes(8).decode('utf-8')
+
+    def tick(self) -> str:
+        self.agent.actuation.say(self.message)
+        return 'success'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.message})'
+
+class PlaceHeldItem(AsyncActionNode):
+    """
+    Try to place the item in your hand at the block you're currently looking at.
+    If placeable, item will be placed on the face of the block your cursor is on.
+    If not placeable or blocked, node fails.
+    """
+    def __init__(self, agent: Agent):
+        super().__init__(agent)
+
+    def do_async(self):
+        # TODO place block on face the cursor points at
+        if self.agent.actuation.place_block((0, 1, 0)):
+            self.thread_status = 'success'
+        else:
+            self.thread_status = 'failure'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}()'
+
+"""class BreakBlockAtCursor(AsyncActionNode):
+    def __init__(self, agent: Agent):
+        super().__init__(agent)
+
+    def do_async(self):
+        # if we can't break the block, fail
+        if not self.agent.sensing.can_dig_cursor_block():
+            self.thread_status = 'failure'
+            return
+
+        # otherwise start digging the block at the cursor
+        self.agent.actuation.start_dig()
+        # wait until we're done digging
+        while self.agent.sensing.is_digging():
+            pass
+        # when we're done, look at the dig result
+        if self.agent.sensing.finished_digging():
+            # if we were able to finish the dig, we were successful
+            self.thread_status = 'success'
+            return
+        # otherwise we weren't
+        self.thread_status = 'failure'
+        return
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}()'"""
