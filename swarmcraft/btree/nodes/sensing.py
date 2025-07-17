@@ -23,9 +23,9 @@ class IsKeyDown(ActionNode):
     """
     Check if key pressed
     """
-    def __init__(self, agent: Agent, key: str = None):
+    def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.key = key
+        self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
         elif self.key not in MOVEMENT_KEYS:
@@ -109,7 +109,7 @@ class ClearMessageQueue(ActionNode):
         return f'{__class__.__name__}()'
 
 class GotMessage(ActionNode):
-    def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
+    def __init__(self, agent: Agent, *args):
         """
         Check if an agent has received a swarmcraft message
         Passing None to any parameter is a wildcard.
@@ -117,9 +117,9 @@ class GotMessage(ActionNode):
         No random initialization
         """
         super().__init__(agent)
-        self.message_content = message_content
-        self.sender_id = sender_id
-        self.privacy = privacy
+        self.message_content = args[0] if len(args) > 0 else None
+        self.sender_id = args[1] if len(args) > 1 else None
+        self.privacy = args[2] if len(args) > 2 else None
 
     def tick(self) -> str:
         for message in self.agent.sensing.messages:
@@ -138,7 +138,7 @@ class GotMessage(ActionNode):
         return f'{__class__.__name__}({self.message_content}, {self.sender_id}, {self.privacy})'
 
 class GotChat(ActionNode):
-    def __init__(self, agent: Agent, message_content: str=None, sender_id: str=None, privacy: bool=None):
+    def __init__(self, agent: Agent, *args):
         """
         Check if an agent has received a minecraft chat
         Passing None to any parameter is a wildcard.
@@ -146,9 +146,9 @@ class GotChat(ActionNode):
         No random initialization
         """
         super().__init__(agent)
-        self.message_content = message_content
-        self.sender_id = sender_id
-        self.privacy = privacy
+        self.message_content = args[0] if len(args) > 0 else None
+        self.sender_id = args[1] if len(args) > 1 else None
+        self.privacy = args[2] if len(args) > 2 else None
 
     def tick(self) -> str:
         for chat in self.agent.sensing.chats:

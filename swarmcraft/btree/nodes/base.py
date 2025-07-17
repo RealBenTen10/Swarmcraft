@@ -114,7 +114,7 @@ class ActionNode(object):
     To implement your own action, inherit from this class and override tick().
     It's ok to override the constructor, but any additional parameters should default to None and be randomly initialized by randomize_params.
     """
-    def __init__(self, agent: Agent):
+    def __init__(self, agent: Agent, *args):
         self.agent = agent
 
     def tick(self) -> str:
@@ -143,8 +143,8 @@ class AsyncActionNode(ActionNode):
     For doing asynchronous actions.
     Should be used sparingly!
     """
-    def __init__(self, agent: Agent):
-        super().__init__(agent)
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent, *args)
         self.thread = None
         self.thread_status = ''
 

@@ -9,10 +9,11 @@ from swarmcraft.util import add_tuples, MOVEMENT_KEYS
 class PressDir(ActionNode):
     """
     Start holding down the given movement key
+    args[0] is key
     """
-    def __init__(self, agent: Agent, key: str = None):
+    def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.key = key
+        self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
         elif self.key not in MOVEMENT_KEYS:
@@ -31,10 +32,11 @@ class PressDir(ActionNode):
 class ReleaseDir(ActionNode):
     """
     Stop holding down the given movement key
+    args[0] is key
     """
-    def __init__(self, agent: Agent, key: str = None):
+    def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.key = key
+        self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
         elif self.key not in MOVEMENT_KEYS:
@@ -65,14 +67,14 @@ class Look(ActionNode):
     """
     Look in a given direction
     """
-    def __init__(self, agent: Agent, yaw: float = None, pitch: float = None):
+    def __init__(self, agent: Agent, *args):
         """
-        @param yaw: horizontal rotation in radians. 0 is east, pi/2 is north
-        @param pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
+        @param args[0] yaw: horizontal rotation in radians. 0 is east, pi/2 is north
+        @param args[1] pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
         """
         super().__init__(agent)
-        self.yaw = yaw
-        self.pitch = pitch
+        self.yaw = args[0] if len(args) > 0 else None
+        self.pitch = args[1] if len(args) > 1 else None
         if self.pitch is None or self.yaw is None:
             self.randomize_params()
 
@@ -91,14 +93,14 @@ class Rotate(ActionNode):
     """
     Rotate the view by a given amount
     """
-    def __init__(self, agent: Agent, yaw: float = None, pitch: float = None):
+    def __init__(self, agent: Agent, *args):
         """
-        @param yaw: horizontal rotation in radians. positive is counterclockwise
-        @param pitch: vertical rotation in radians. positive is down
+        @param args[0] yaw: horizontal rotation in radians. positive is counterclockwise
+        @param args[1] pitch: vertical rotation in radians. positive is down
         """
         super().__init__(agent)
-        self.yaw = yaw
-        self.pitch = pitch
+        self.yaw = args[0] if len(args) > 0 else None
+        self.pitch = args[1] if len(args) > 1 else None
         if self.pitch is None or self.yaw is None:
             self.randomize_params()
 
@@ -145,10 +147,11 @@ class StopDig(ActionNode):
 class SelectSlot(ActionNode):
     """
     Select a hotbar slot
+    @param args[0]: the slot to select (in range 0 to 8)
     """
-    def __init__(self, agent: Agent, slot: int = None):
+    def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.slot = slot
+        self.slot = args[0] if len(args) > 0 else None
         if self.slot is None:
             self.randomize_params()
         elif self.slot < 0 or self.slot > 8:
@@ -165,16 +168,19 @@ class SelectSlot(ActionNode):
         return f'{__class__.__name__}({self.slot})'
 
 class SendMessage(ActionNode):
-    def __init__(self, agent: Agent, message: str = None, target_id: str = None, dist: int = None):
+    def __init__(self, agent: Agent, *args):
         """
         Sends a message in the internal messenger
         Configurable with target, without target, with range, without range
         Random initialization (all parameters None) sends a random 8 bytes to everyone
+        @param args[0]: message to send
+        @param args[1]: target agent id
+        @param args[2]: distance to target (in blocks)
         """
         super().__init__(agent)
-        self.message = message
-        self.target_id = target_id
-        self.dist = dist
+        self.message = args[0]
+        self.target_id = args[1] if len(args) > 1 else None
+        self.dist = args[2] if len(args) > 2 else None
         if self.message is None and self.target_id is None and self.dist is None:
             self.randomize_params()
         elif self.dist < 0:
@@ -205,13 +211,13 @@ class SendMessage(ActionNode):
         return f'{__class__.__name__}({self.message}, {self.target_id}, {self.dist})'
 
 class SendChat(ActionNode):
-    def __init__(self, agent: Agent, message: str = None):
+    def __init__(self, agent: Agent, *args):
         """
         Sends a message in the game chat
         Random initialization sends a random 8 bytes
         """
         super().__init__(agent)
-        self.message = message
+        self.message = args[0] if len(args) > 0 else None
         if self.message is None:
             self.randomize_params()
 
