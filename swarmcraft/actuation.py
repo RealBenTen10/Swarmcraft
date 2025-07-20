@@ -28,16 +28,18 @@ class Actuation(object):
 
     def send_message_ranged(self, message: str, recipient_id: str, distance: float):
         if distance < 0.0:
-            raise ValueError('distance must be positive')
-        self.agent.message_server.send(self.agent, message, recipient_id, distance)
+            self.send_message(message, recipient_id)
+        else:
+            self.agent.message_server.send(self.agent, message, recipient_id, distance)
 
     def send_global_message(self, message: str):
         self.agent.message_server.send(self.agent, message)
 
     def send_global_message_ranged(self, message: str, distance: float):
         if distance < 0.0:
-            raise ValueError('distance must be positive')
-        self.agent.message_server.send(self.agent, message, None, distance)
+            self.send_global_message(message)
+        else:
+            self.agent.message_server.send(self.agent, message, None, distance)
 
     def start_move(self, direction: str):
         """

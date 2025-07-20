@@ -19,11 +19,25 @@ def add_terminal(terminal: type[ActionNode]):
     """
     _terminals.append(terminal)
 
+def add_terminals(terminals: list[type[ActionNode]]):
+    """
+    Add terminals to the pool
+    """
+    for terminal in terminals:
+        add_terminal(terminal)
+
 def remove_terminal(terminal: type[ActionNode]):
     """
     Remove a terminal from the pool
     """
     _terminals.remove(terminal)
+
+def remove_terminals(terminals: list[type[ActionNode]]):
+    """
+    Remove terminals from the pool
+    """
+    for terminal in terminals:
+        remove_terminal(terminal)
 
 def write_genome(root: ControlNode):
     """
@@ -55,6 +69,8 @@ def generate_maxdepth(depth: int, agent: Agent, min_spread = 1, max_spread = 5):
         # if at maximum depth, initialize a random terminal
         if d >= depth:
             t = random.choice(_terminals)(agent)
+            if type(t) is ActionNode:
+                print("uh oh!!")
             t.randomize_params()
             return t
         # otherwise, initialize a random control with a random number of children
@@ -176,8 +192,7 @@ def mutate(a: ControlNode, agent: Agent):
     # replace the old subtree with the new one
     place.children[index] = new
 
-def read_genome(dna: str, agent: Agent) -> ControlNode:
-    # TODO NOT DONE! (recursion)
+def read_genome(dna: str, agent: Agent, global_pos=0) -> ControlNode:
     """
     Genome string to tree
     """
@@ -200,18 +215,52 @@ def read_genome(dna: str, agent: Agent) -> ControlNode:
             depth -= 1
         place += 1
     name = dna[0:param_start_i] # node name
-    params = dna[param_start_i:children_start_i].strip('()').split(', ') # node parameters
-    children = dna[children_start_i:place].strip('[]').split(', ') # node children
+    params = dna[param_start_i:children_start_i].strip('()').split(', ') # node parameters (list of strings)
 
+    children_str = dna[children_start_i:place] # node children string - still needs to be split
+    children = [] # list of child nodes
+    bdepth = 0 # for tracking bracket nesting
+    pdepth = 0 # for tracking parenthesis nesting
+    current_child = [] # dna string for the current child
+
+    for c in children_str[1:-1]: # skip the outside brackets
+        # increase depths according to character discovered
+        if c == '[':
+            bdepth += 1
+        elif c == ']':
+            bdepth -= 1
+        elif c == '(':
+            pdepth += 1
+        elif c == ')':
+            pdepth -= 1
+        # when we find a comma, and are at the top level of both nesting possibilities, we have found a complete top level child genome string
+        elif c == ',' and bdepth == 0 and pdepth == 0:
+            children.append(read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos)) # build the node for that child string
+            current_child = [] # clear the buffer
+            continue
+        current_child.append(c) # add character to the child string buffer
+
+    # construct the last child if there's still stuff in the buffer
+    if current_child:
+        children.append(read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos))
+
+    # check the available functions (inner nodes) and initialize one with the children if we find the right one
     node = None
     for fun in _functions:
-        if fun.__name__ in name:
-            node = fun() #TODO add children initializers
+        if fun.__name__ == name:
+            node = fun(children)
     if node is not None:
         return node
 
+    # check all the terminals in the pool and initialize one with the parameters if we find the right one
     for term in _terminals:
-        if term.__name__ in name:
-            node = term(agent)
+        if term.__name__ == name:
+            try:
+                node = term(agent, *params)
+                return node
+            except Exception as e:
+                print(e)
+                print(name, params)
 
-    return node
+    raise ValueError(f'Could not reconstruct behavior tree - unknown node {name} near position {global_pos}')
+    return None

@@ -39,6 +39,8 @@ class IsKeyDown(ActionNode):
             return 'success'
         return 'failure'
 
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.key})'
 
 class IsHoldingItem(ActionNode):
     """
@@ -81,7 +83,7 @@ class IsLookingAtBlock(ActionNode):
         return f'{__class__.__name__}()'
 
 class ClearChatQueue(ActionNode):
-    def __init__(self, agent: Agent):
+    def __init__(self, agent: Agent, *args):
         """
         Clear minecraft chat queue
         """
@@ -95,12 +97,9 @@ class ClearChatQueue(ActionNode):
         return f'{__class__.__name__}()'
 
 class ClearMessageQueue(ActionNode):
-    def __init__(self, agent: Agent):
-        """
-        Clear swarmcraft message queue
-        """
-        super().__init__(agent)
-
+    """
+    Clear swarmcraft message queue
+    """
     def tick(self) -> str:
         self.agent.sensing.messages.clear()
         return 'success'
@@ -119,7 +118,7 @@ class GotMessage(ActionNode):
         super().__init__(agent)
         self.message_content = args[0] if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
-        self.privacy = args[2] if len(args) > 2 else None
+        self.privacy = args[2] == 'True' if len(args) > 2 else False
 
     def tick(self) -> str:
         for message in self.agent.sensing.messages:
@@ -148,7 +147,7 @@ class GotChat(ActionNode):
         super().__init__(agent)
         self.message_content = args[0] if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
-        self.privacy = args[2] if len(args) > 2 else None
+        self.privacy = args[2] == 'True' if len(args) > 2 else False
 
     def tick(self) -> str:
         for chat in self.agent.sensing.chats:

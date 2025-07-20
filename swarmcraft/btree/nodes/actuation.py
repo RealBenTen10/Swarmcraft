@@ -1,5 +1,6 @@
 import math
 import random
+import string
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode, AsyncActionNode
@@ -40,7 +41,7 @@ class ReleaseDir(ActionNode):
         if self.key is None:
             self.randomize_params()
         elif self.key not in MOVEMENT_KEYS:
-            raise ValueError(f'key must be one of {MOVEMENT_KEYS}')
+            raise ValueError(f'key must be one of {MOVEMENT_KEYS} (was {self.key})')
 
     def randomize_params(self):
         self.key = random.choice(MOVEMENT_KEYS)
@@ -73,8 +74,8 @@ class Look(ActionNode):
         @param args[1] pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
         """
         super().__init__(agent)
-        self.yaw = args[0] if len(args) > 0 else None
-        self.pitch = args[1] if len(args) > 1 else None
+        self.yaw = float(args[0]) if len(args) > 0 else None
+        self.pitch = float(args[1]) if len(args) > 1 else None
         if self.pitch is None or self.yaw is None:
             self.randomize_params()
 
@@ -99,8 +100,8 @@ class Rotate(ActionNode):
         @param args[1] pitch: vertical rotation in radians. positive is down
         """
         super().__init__(agent)
-        self.yaw = args[0] if len(args) > 0 else None
-        self.pitch = args[1] if len(args) > 1 else None
+        self.yaw = float(args[0]) if len(args) > 0 else None
+        self.pitch = float(args[1]) if len(args) > 1 else None
         if self.pitch is None or self.yaw is None:
             self.randomize_params()
 
@@ -151,7 +152,7 @@ class SelectSlot(ActionNode):
     """
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.slot = args[0] if len(args) > 0 else None
+        self.slot = int(args[0]) if len(args) > 0 else None
         if self.slot is None:
             self.randomize_params()
         elif self.slot < 0 or self.slot > 8:
@@ -178,29 +179,27 @@ class SendMessage(ActionNode):
         @param args[2]: distance to target (in blocks)
         """
         super().__init__(agent)
-        self.message = args[0]
+        self.message = args[0] if len(args) > 0 else None
         self.target_id = args[1] if len(args) > 1 else None
-        self.dist = args[2] if len(args) > 2 else None
+        self.dist = float(args[2]) if len(args) > 2 else None
         if self.message is None and self.target_id is None and self.dist is None:
             self.randomize_params()
-        elif self.dist < 0:
-            raise ValueError('Distance must be positive')
 
     def randomize_params(self):
-        self.message = random.randbytes(8).decode('utf-8')
+        self.message = ''.join(random.choices(string.ascii_lowercase, k=8))
         self.target_id = None
-        self.dist = None
+        self.dist = -1
 
     def tick(self) -> str:
         if self.target_id is not None:
-            if self.dist is not None:
+            if self.dist != -1:
                 self.agent.actuation.send_message_ranged(self.message, self.target_id, self.dist)
                 return 'success'
             else:
                 self.agent.actuation.send_message(self.message, self.target_id)
                 return 'success'
         else:
-            if self.dist is not None:
+            if self.dist != -1:
                 self.agent.actuation.send_global_message_ranged(self.message, self.dist)
                 return 'success'
             else:
@@ -208,7 +207,7 @@ class SendMessage(ActionNode):
                 return 'success'
 
     def __repr__(self) -> str:
-        return f'{__class__.__name__}({self.message}, {self.target_id}, {self.dist})'
+        return f'{__class__.__name__}({self.message}, {self.target_id}, {float(self.dist)})'
 
 class SendChat(ActionNode):
     def __init__(self, agent: Agent, *args):
@@ -222,7 +221,7 @@ class SendChat(ActionNode):
             self.randomize_params()
 
     def randomize_params(self):
-        self.message = random.randbytes(8).decode('utf-8')
+        self.message = ''.join(random.choices(string.ascii_lowercase, k=8))
 
     def tick(self) -> str:
         self.agent.actuation.say(self.message)
@@ -237,7 +236,7 @@ class PlaceHeldItem(AsyncActionNode):
     If placeable, item will be placed on the face of the block your cursor is on.
     If not placeable or blocked, node fails.
     """
-    def __init__(self, agent: Agent):
+    def __init__(self, agent: Agent, *args):
         super().__init__(agent)
 
     def do_async(self):
