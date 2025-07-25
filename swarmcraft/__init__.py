@@ -27,6 +27,8 @@ class BLOCK_TYPES(Enum):
     PURPLE_WOOL = 'purple_wool'
     BROWN_WOOL = 'brown_wool'
     GRASS = 'grass_block'
+    BEDROCK = 'bedrock'
+    AIR = 'air'
 
 class MOVEMENT_KEYS(Enum):
     FORWARD = 'forward'
