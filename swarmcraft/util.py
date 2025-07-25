@@ -1,38 +1,11 @@
 """
-utility functions
+utility functions, constants
 """
 import operator
 from typing import Any
 
 import numpy as np
 from numpy import floating
-
-CARDINAL_DIRS = {
-    'n': (1, 0, 0),
-    'e': (0, 0, 1),
-    's': (-1, 0, 0),
-    'w': (0, 0, -1),
-    'ne': (0.707, 0, 0.707),
-    'nw': (0.707, 0, -0.707),
-    'se': (-0.707, 0, 0.707),
-    'sw': (-0.707, 0, -0.707)
-}
-
-BLOCK_TYPES = [
-    'diamond_block',
-    'white_wool',
-    'black_wool',
-    'red_wool',
-    'orange_wool',
-    'yellow_wool',
-    'green_wool',
-    'blue_wool',
-    'purple_wool',
-    'brown_wool',
-    'grass_block'
-]
-
-MOVEMENT_KEYS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
 
 def dist_sqr(a, b) -> floating[Any]:
     a = np.array(a)

@@ -4,7 +4,8 @@ import string
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode, AsyncActionNode
-from swarmcraft.util import add_tuples, MOVEMENT_KEYS
+from swarmcraft.util import add_tuples
+from swarmcraft import MOVEMENT_KEYS
 
 
 class PressDir(ActionNode):
@@ -17,11 +18,11 @@ class PressDir(ActionNode):
         self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
-        elif self.key not in MOVEMENT_KEYS:
-            raise ValueError(f'key must be one of {MOVEMENT_KEYS}')
+        elif self.key not in [el.value for el in MOVEMENT_KEYS]:
+            raise ValueError(f'key must be one of {[el.value for el in MOVEMENT_KEYS]}')
 
     def randomize_params(self):
-        self.key = random.choice(MOVEMENT_KEYS)
+        self.key = random.choice([el.value for el in MOVEMENT_KEYS])
 
     def tick(self) -> str:
         self.agent.actuation.start_move(self.key)
@@ -40,11 +41,11 @@ class ReleaseDir(ActionNode):
         self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
-        elif self.key not in MOVEMENT_KEYS:
-            raise ValueError(f'key must be one of {MOVEMENT_KEYS} (was {self.key})')
+        elif self.key not in [el.value for el in MOVEMENT_KEYS]:
+            raise ValueError(f'key must be one of {[el.value for el in MOVEMENT_KEYS]} (was {self.key})')
 
     def randomize_params(self):
-        self.key = random.choice(MOVEMENT_KEYS)
+        self.key = random.choice([el.value for el in MOVEMENT_KEYS])
 
     def tick(self) -> str:
         self.agent.actuation.stop_move(self.key)
