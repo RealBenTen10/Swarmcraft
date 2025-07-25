@@ -240,8 +240,7 @@ class PlaceHeldItem(AsyncActionNode):
         super().__init__(agent)
 
     def do_async(self):
-        # TODO place block on face the cursor points at
-        if self.agent.actuation.place_block((0, 1, 0)):
+        if self.agent.actuation.place_block():
             self.thread_status = 'success'
         else:
             self.thread_status = 'failure'

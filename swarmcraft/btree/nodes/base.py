@@ -183,7 +183,7 @@ class AsyncActionNode(ActionNode):
     def do_async(self):
         """
         Do long-running stuff here.
-        This method will be called in a new thread and should return 'success' or 'failure' on completion.
+        This method will be called in a new thread and should set self.thread_status to 'success' or 'failure' on completion.
         You may block for as long as you like.
         """
         pass

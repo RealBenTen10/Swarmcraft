@@ -105,22 +105,23 @@ class Actuation(object):
             raise ValueError('Hotbar slot range is 0 to 8')
         self.agent.bot.setQuickBarSlot(slot)
 
-    def place_block(self, face: tuple[int, int, int]):
+    def place_block(self, face: tuple[int, int, int]=None):
         """
         Place the currently held block
         Block will be placed at position of block under crosshair + face
-        Position must be any one of [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
+        Face must be any one of [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)], or None
+        If face is None, block will be placed on the face of the block intersected by the cursor.
 
         If the block cannot be placed (not holding placeable item, lag, position blocked by entity, etc.) this will return false.
         If the block was placed successfully, this will return true.
         Timing is a little strange: successful placements return control immediately, failed ones take up to 5 seconds.
         Recommended to run this in its own thread.
         """
-        if face not in [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]:
+        if face is not None and face not in [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]:
             raise ValueError('Block face must be a unit cardinal vector such as (1, 0, 0)')
         block = self.agent.bot.blockAtCursor()
         try:
-            self.agent.bot.placeBlock(block, Vec3(face[0], face[1], face[2]))
+            self.agent.bot.placeBlock(block, Vec3(face[0], face[1], face[2]) if face is not None else block.face)
             return True
         except Exception:
             return False
