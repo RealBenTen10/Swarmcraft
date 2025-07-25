@@ -40,16 +40,23 @@ class SequenceNode(ControlNode):
     When ticked, sequence nodes tick their children from left to right until a child is encountered which has failed or is running.
     If all children succeed, returns success.
     Otherwise, returns the status of the last ticked child.
+
+    Whenever a tick comes in, this node routes it further to the next node in the order.
+    An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
     """
     def __init__(self, children=None):
         super().__init__(children)
+        self.__counter = 0
 
     @override
     def tick(self):
-        for child in self.children:
-            status = child.tick()
-            if status == 'running' or status == 'failure':
-                return status
+        # tick the next node
+        status = self.children[self.__counter].tick()
+        if status == 'running' or status == 'failure':
+            # if it's still going or it failed, don't advance and return status
+            return status
+        # if it succeeded, advance and return success
+        self.__counter = (self.__counter + 1) % len(self.children)
         return 'success'
 
     def __repr__(self) -> str:
@@ -60,16 +67,23 @@ class FallbackNode(ControlNode):
     When ticked, fallback nodes tick their children from left to right until a child is encountered which has succeeded or is running.
     If all children fail, returns failure.
     Otherwise, returns the status of the last ticked child.
+
+    Whenever a tick comes in, this node routes it further to the next node in the order.
+    An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
     """
     def __init__(self, children=None):
         super().__init__(children)
+        self.__counter = 0
 
     @override
     def tick(self):
-        for child in self.children:
-            status = child.tick()
-            if status == 'running' or status == 'success':
-                return status
+        # tick the next node
+        status = self.children[self.__counter].tick()
+        if status == 'running' or status == 'success':
+            # if it's still going or it succeeded, don't advance and return status
+            return status
+        # if it failed, advance and return failure
+        self.__counter = (self.__counter + 1) % len(self.children)
         return 'failure'
 
     def __repr__(self) -> str:
@@ -80,6 +94,10 @@ class ParallelNode(ControlNode):
     When ticked, parallel nodes tick their children from left to right and return success if m children succeed.
     If len(children) - m + 1 children fail, returns failure.
     Otherwise, returns running.
+
+    Whenever a tick comes in, this node routes it further to the next node in the order.
+    An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
+    Once all children have run successfully, the counter resets.
     """
     def __init__(self, m: int = None, children=None):
         super().__init__(children)
@@ -88,21 +106,35 @@ class ParallelNode(ControlNode):
         if m < 0 or m > len(children):
             raise ValueError('Parallel node threshold must be between 0 and {}'.format(len(children)))
         self.m = m
+        self.__counter = 0
+        self.__success = 0
+        self.__failure = 0
 
     @override
     def tick(self):
-        success = 0
-        failure = 0
-        for child in self.children:
-            status = child.tick()
-            if status == 'success':
-                success += 1
-            elif status == 'failure':
-                failure += 1
-        if success > self.m:
+        # tick the next child
+        status = self.children[self.__counter].tick()
+        # update failure and success counters accordingly
+        if status == 'success':
+            self.__success += 1
+        elif status == 'failure':
+            self.__failure += 1
+        # success condition reached?
+        if self.__success > self.m:
+            # reset and return success
+            self.__counter = 0
+            self.__success = 0
+            self.__failure = 0
             return 'success'
-        if failure > len(self.children) - self.m:
+        # failure condition reached?
+        if self.__failure > len(self.children) - self.m:
+            # reset and return failure
+            self.__counter = 0
+            self.__success = 0
+            self.__failure = 0
             return 'failure'
+        # advance counter and return running
+        self.__counter = (self.__counter + 1) % len(self.children)
         return 'running'
 
     def __repr__(self) -> str:
