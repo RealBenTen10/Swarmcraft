@@ -16,6 +16,9 @@ server = Bukkit.getServer()
 def ping(*args):
     return 'pong'
 
+def say(*args):
+    return command('say', *args)
+
 # get the id of one block
 def getblock(*args):
     x = int(args[0])
@@ -23,6 +26,32 @@ def getblock(*args):
     z = int(args[2])
     b = world.getBlockAt(x, y, z).getBlockData().getAsString()
     return str(b)
+
+# set a player's health to a value between 0 and their max health (usually 20)
+# values out of bounds are truncated
+# returns the player's health after modification
+# setphealth name amount
+def setphealth(*args):
+    name = str(args[0])
+    p = Bukkit.getPlayer(name)
+    if p is None:
+        raise ValueError('Player ' + name + ' not found')
+    else:
+        p.setHealth(max(0., min(p.getMaxHealth(), float(args[1]))))
+        return p.getHealth()
+
+# change a player's health by a given amount (positive or negative)
+# changes which would result in an out of bounds value are truncated
+# returns the player's health after change
+# changephealth name amount
+def changephealth(*args):
+    name = str(args[0])
+    p = Bukkit.getPlayer(name)
+    if p is None:
+        raise ValueError('Player ' + name + ' not found')
+    else:
+        p.setHealth(max(0., min(p.getMaxHealth(), p.getHealth() + float(args[1]))))
+        return p.getHealth()
 
 # get ids of many blocks
 # getblocks x 10 10 10 y 2 4 5 z -3 4 4
@@ -82,7 +111,7 @@ def setblock(*args):
     b = world.getBlockAt(x, y, z)
     d = Material.matchMaterial(args[3]).createBlockData()
     if d is None:
-        return 'unknown block type'
+        raise ValueError('Unknown block "' + args[3] + '"')
     # wacky little workaround for sync block set
     def sb(block, data):
         block.setBlockData(data)
@@ -99,7 +128,8 @@ def setcube(*args):
     z_s = int(args[5])
     d = Material.matchMaterial(args[6]).createBlockData()
     if d is None:
-        return 'unknown block type'
+        raise ValueError('Unknown block "' + args[3] + '"')
+
     def sc(xo, yo, zo, xs, ys, zs, dat):
         for x in range(xo, xo + xs):
             for y in range(yo, yo + ys):

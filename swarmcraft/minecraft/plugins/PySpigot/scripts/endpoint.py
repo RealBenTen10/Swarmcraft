@@ -43,7 +43,7 @@ def handle(conn, addr):
         try:
             conn.send(encode(str(getattr(methods, cmd)(*args)))) # look up any function with the name sent in the local symbol table and run it
         except Exception as e:
-            print('Command "' + cmd + '" failed. (' + str(e) + ')')
+            print('ERROR Command "' + cmd + '" failed. (' + str(e) + ')')
             conn.send(encode('ERROR (INTERNAL) check server console for more information'))
             continue
 
