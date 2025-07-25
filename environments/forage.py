@@ -5,6 +5,7 @@ from typing import override
 
 from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
+from swarmcraft import BLOCK_TYPES
 
 
 class ForageEnvironment(Environment):
@@ -14,10 +15,12 @@ class ForageEnvironment(Environment):
         self.resource_min_size = resource_min_size
         self.resource_max_size = resource_max_size
         self.resource_count = resource_count
+        self.resource_positions = []
 
     @override
     def initialize(self):
         super().initialize()
+        self.resource_positions = []
         # generate the resource chunks
         for _ in range(self.resource_count):
             w = random.randint(self.resource_min_size, self.resource_max_size)
@@ -25,10 +28,11 @@ class ForageEnvironment(Environment):
             y_off = random.randint(1, self.size[2] - 2)
             for x in range(w):
                 for y in range(w):
-                    b_pos = add_tuples(self.origin, (x + x_off, 1, y + y_off))
+                    b_pos = add_tuples(self.origin, (x + x_off, 0, y + y_off))
                     if self.origin[0] + self.size[0] - 1 > b_pos[0] > self.origin[0] + 1 and self.origin[2] + self.size[2] - 1 > \
                             b_pos[2] > self.origin[2] + 1:
-                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:orange_wool')
+                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BLOCK_TYPES.ORANGE_WOOL.value}')
+                        self.resource_positions.append(b_pos)
 
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.origin[0] + self.size[0]), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.origin[2] + self.size[2])
