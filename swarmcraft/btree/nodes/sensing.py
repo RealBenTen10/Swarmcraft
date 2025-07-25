@@ -1,5 +1,6 @@
 import random
 
+import swarmcraft.util
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
 from swarmcraft.util import MOVEMENT_KEYS
@@ -72,8 +73,20 @@ class IsHoldingTool(ActionNode):
 
 class IsLookingAtBlock(ActionNode):
     """
-    Check if looking at any block
+    Check if looking at a block
+    First argument can be any minecraft block name, e.g. 'grass_block' or None for wildcard
+    randomize_params() chooses one block from util.BLOCK_TYPES or None
     """
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        if len(args) > 0:
+            self.block = args[0]
+        else:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice(swarmcraft.util.BLOCK_TYPES + [None])
+
     def tick(self) -> str:
         if self.agent.sensing.get_cursor_block() is not None:
             return 'success'
