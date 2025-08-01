@@ -41,8 +41,33 @@ class SequenceNode(ControlNode):
     If all children succeed, returns success.
     Otherwise, returns the status of the last ticked child.
 
-    Whenever a tick comes in, this node routes it further to the next node in the order.
+    Whenever a tick comes in, this node ticks all of its children from left to right.
+    This is a stateless node, meaning that each tick will result in all children being ticked from left to right.
+    For a stateful node that remembers its last ticked child, see SSequenceNode.
+    """
+    def __init__(self, children=None):
+        super().__init__(children)
+
+    @override
+    def tick(self):
+        for child in self.children:
+            status = child.tick()
+            if status == 'running' or status == 'failure':
+                return status
+        return 'success'
+
+    def __repr__(self) -> str:
+        return f"{__class__.__name__}(){[child for child in self.children]}"
+
+class SSequenceNode(ControlNode):
+    """
+    When ticked, s(tar) sequence nodes tick their children from left to right until a child is encountered which has failed or is running.
+    If all children succeed, returns success.
+    Otherwise, returns the status of the last ticked child.
+
+    Whenever a tick comes in, this node routes it further to the next node in the tree.
     An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
+    In effect, this is a Sequence node with memory/state.
     """
     def __init__(self, children=None):
         super().__init__(children)
@@ -68,8 +93,30 @@ class FallbackNode(ControlNode):
     If all children fail, returns failure.
     Otherwise, returns the status of the last ticked child.
 
-    Whenever a tick comes in, this node routes it further to the next node in the order.
+    Whenever a tick comes in, this node ticks all of its children from left to right.
+    This is a stateless node, meaning that each tick will result in all children being ticked from left to right.
+    For a stateful node that remembers its last ticked child, see SFallbackNode.
+    """
+    def __init__(self, children=None):
+        super().__init__(children)
+
+    @override
+    def tick(self):
+        for child in self.children:
+            status = child.tick()
+            if status == 'running' or status == 'success':
+                return status
+        return 'failure'
+
+class SFallbackNode(ControlNode):
+    """
+    When ticked, s(tar) fallback nodes tick their children from left to right until a child is encountered which has succeeded or is running.
+    If all children fail, returns failure.
+    Otherwise, returns the status of the last ticked child.
+
+    Whenever a tick comes in, this node routes it further to the next node in the tree.
     An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
+    In effect, this is a Fallback node with memory/state.
     """
     def __init__(self, children=None):
         super().__init__(children)
@@ -95,7 +142,45 @@ class ParallelNode(ControlNode):
     If len(children) - m + 1 children fail, returns failure.
     Otherwise, returns running.
 
-    Whenever a tick comes in, this node routes it further to the next node in the order.
+    Whenever a tick comes in, this node ticks all of its children from left to right.
+    This is a stateless node, meaning that each tick will result in all children being ticked from left to right.
+    For a stateful node that remembers its last ticked child, see SParallelNode.
+    """
+    def __init__(self, m: int = None, children=None):
+        super().__init__(children)
+        if m is None:
+            m = random.randint(0, len(self.children)-1)
+        if m < 0 or m > len(children):
+            raise ValueError('Parallel node threshold must be between 0 and {}'.format(len(children)))
+        self.m = m
+
+    @override
+    def tick(self):
+        failure = 0
+        success = 0
+        for child in self.children:
+            status = child.tick()
+            if status == 'success':
+                success += 1
+            elif status == 'failure':
+                failure += 1
+            if success > self.m:
+                return 'success'
+            if failure > len(self.children) - self.m:
+                return 'failure'
+        return 'running'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}(m="{self.m}"){[child for child in self.children]}'
+
+
+class SParallelNode(ControlNode):
+    """
+    When ticked, s(tar) parallel nodes tick their children from left to right and return success if m children succeed.
+    If len(children) - m + 1 children fail, returns failure.
+    Otherwise, returns running.
+
+    Whenever a tick comes in, this node routes it further to the next node in the tree.
     An internal counter is then incremented and used to remember which node to tick when the next tick arrives.
     Once all children have run successfully, the counter resets.
     """
