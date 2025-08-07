@@ -68,6 +68,7 @@ class Stop(ActionNode):
 class Look(ActionNode):
     """
     Look in a given direction
+    Pass -1 to any parameter to randomize at each tick call
     """
     def __init__(self, agent: Agent, *args):
         """
@@ -85,7 +86,19 @@ class Look(ActionNode):
         self.yaw = (random.random() * 2 - 1) * math.pi
 
     def tick(self) -> str:
+        randpitch = False
+        randyaw = False
+        if self.pitch == -1:
+            self.pitch = random.random() * 2 * math.pi
+            randpitch = True
+        if self.yaw == -1:
+            self.yaw = (random.random() * 2 - 1) * math.pi
+            randyaw = True
         self.agent.actuation.look((self.yaw, self.pitch))
+        if randpitch:
+            self.pitch = -1
+        if randyaw:
+            self.yaw = -1
         return 'success'
 
     def __repr__(self) -> str:
@@ -94,6 +107,7 @@ class Look(ActionNode):
 class Rotate(ActionNode):
     """
     Rotate the view by a given amount
+    Pass -1 to any parameter to randomize at each tick call
     """
     def __init__(self, agent: Agent, *args):
         """
@@ -111,7 +125,19 @@ class Rotate(ActionNode):
         self.yaw = (random.random() * 2 - 1) * math.pi
 
     def tick(self) -> str:
+        randpitch = False
+        randyaw = False
+        if self.pitch == -1:
+            self.pitch = random.random() * 2 * math.pi
+            randpitch = True
+        if self.yaw == -1:
+            self.yaw = (random.random() * 2 - 1) * math.pi
+            randyaw = True
         self.agent.actuation.look(add_tuples(self.agent.sensing.get_heading(), (self.yaw, self.pitch)))
+        if randpitch:
+            self.pitch = -1
+        if randyaw:
+            self.yaw = -1
         return 'success'
 
     def __repr__(self) -> str:
