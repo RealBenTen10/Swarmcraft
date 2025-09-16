@@ -1,4 +1,4 @@
-from pandas import DataFrame
+import time
 
 from swarmcraft.actuation import Actuation
 from swarmcraft.messaging import MessageServer
@@ -22,22 +22,25 @@ class Agent(object):
         pass
 
     def reset(self):
-        """Reset this agent to an initial state"""
+        """Reset this agent to an initial state
+        By default resets agents to pooler origin, clears stats and inventory, and clears control states"""
         self.pooler.reset_bot_position(self.bot)
         self.pooler.reset_bot_stats(self.bot)
-        pass
+        self.actuation.stop()
 
-    def log(self) -> DataFrame:
+    def log(self) -> dict:
         """Called periodically by the logger
-        Should return a dataframe"""
-        return DataFrame.from_dict({
+        Should return a dict, with at least one uniquely identifiable key (log entries are not indexed)"""
+        return {
+            'time': time.time(),
             'id': str(self.id),
             'bot': 'None' if self.bot is None else self.bot.username,
-        })
+        }
 
     def destroy(self):
         """Destroy this agent
         Performs cleanup such as freeing the attached bot and deregistering from the message server"""
+        self.bot.removeAllListeners()
         self.pooler.unbind_bot(self)
         self.message_server.deregister(self)
         self.sensing = None

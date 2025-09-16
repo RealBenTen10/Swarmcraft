@@ -1,14 +1,14 @@
 # Swarmcraft
 This is a framework for minecraft-based multi-agent simulations.
-Users can create behavior-tree powered agents and run experiments in custom environments.
-Logging tools are also included.
+Users can create agents and run experiments in custom environments.
+Logging tools are also included, as well as a suite of tools for behavior-tree-based agent control.
 
 ## Requirements
 - Python 3.8 or newer
 - pip
 - NodeJS
 - npm
-- Java 8
+- Java 21
 - Minecraft 1.21.1
 
 ## Installation

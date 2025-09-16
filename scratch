@@ -1,31 +1,16 @@
-neural-like/evolved behavior trees
+ReportPosition node produces "pos <x> <y> <z>"
 
-use parallel nodes to combine results of sensory action nodes
-then use those outputs to control actions - setting direction, choosing message to send
-in effect, this is a ff neural net with binary output functions - is that expressive enough?
+ReceivePosition should read one message in queue that begin with "pos", extract the x, y, and z components, and read them into some position tuple in the agent
 
-parallel nodes will be the bread and butter
-- execute all children at once
-- if more than n children return success, you return success
-- thresholds of the parallel nodes are what we evolve
+Use position reports to notify the rest of the swarm of great success (agent has energy above the reproduction threshold)
 
-- also need a limited set of actuation nodes
-- limited set of sensing nodes
+In future - allow the agents to see their neighbors - one action node that averages position of nearby neighbors
 
-evolution:
-two parameters:
-- growth chance (expand the behavior tree)
-- mutation chance (modify a parameter in a node)
-- deletion chance (drop a node and all its children)
-start with an empty node (brain = None)
-then at each evolution step:
-- do dfs starting at root of btree
-- at each node:
-    - roll for deletion: if successful and this node is not the root, delete this node and continue to next node
-    - roll for mutation: if successful, mutate this node node
-    - roll for growth: if successful and this node is a control node, add a random randomly initialized child node
+"Wanted" behavior:
+- agents walk around randomly until someone strikes it rich
+- when an agent is doing well, it sends a position report
+- if an agent gets a position report, it should act on it (move closer to that position)
 
-when agents reproduce, do a deep copy of their behavior tree and apply evolution to it
-
-encoding trees?
-- maybe best as pickles - byte streams
+- probably should also add install scripts so that users can compile their own versions of spigot/bukkit
+- figure out how to hotload agent code changes? some kind of deep reload of all imports of the experiments?
+- somewhere at agent init or reset there is a missing effects removal

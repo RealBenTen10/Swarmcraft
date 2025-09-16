@@ -15,8 +15,8 @@ class Environment(object):
         Clears all blocks"""
         self.minecraft_server.send(f'setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} {self.size[0]} {self.size[1]} {self.size[2]} minecraft:{BLOCK_TYPES.AIR.value}')
 
-    def log(self) -> DataFrame:
-        return DataFrame.from_dict({})
+    def log(self) -> dict:
+        return {}
 
     def initialize(self):
         """Set the environment to an initial state

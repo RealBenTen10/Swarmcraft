@@ -3,7 +3,7 @@ agent sensing class
 like a robot sensor suite - every agent gets one of these
 """
 from collections import deque
-from javascript import On
+from javascript import On, off
 
 from swarmcraft.messaging import Chat
 
@@ -202,3 +202,14 @@ class Sensing(object):
         v = self.died
         self.died = False
         return v
+
+    def pop_message(self):
+        """
+        Pop the last message received from the message list.
+        This method also deletes the last message from the message list.
+        If there are no messages in the message list, return None.
+        """
+        try:
+            return self.messages.pop()
+        except IndexError:
+            return None

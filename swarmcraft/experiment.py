@@ -24,46 +24,58 @@ class Experiment:
         print(f'Log dir: {self.log_dir.as_posix()}')
 
     def initialize(self):
-        """Reset this experiment to its initial state"""
+        """Reset this experiment to its initial state
+        Default resets and initializes the environment, and resets all agents."""
         self.environment.reset()
         self.environment.initialize()
         for agent in self.agents:
             agent.reset()
         pass
 
-    def log_agents(self, entry_id):
+    def log_agents(self):
         """Run the logger on all agents involved in this experiment
-        entry_id should be a unique identifier for the current log such as a timestamp"""
+        Every agent gets their own logfile - no need to write identifying information like id"""
         for agent in self.agents:
-            a_log = agent.log()
-            a_log['entry_id'] = entry_id
-            old_log_path = self.log_dir / 'agents' / f'{agent.id}.csv'
+            a_log = agent.log() # get the agent's current log (this is a dict of scalars)
+            a_log_df = pd.DataFrame([a_log]) # convert it to a df
+            old_log_path = self.log_dir / 'agents' / f'{agent.id}.csv' # read their old log from disk
             if old_log_path.exists():
-                old_log = pd.read_csv(old_log_path.absolute().as_posix())
+                old_log = pd.read_csv(old_log_path.absolute().as_posix()) # if it exists, read in
+                new_log = pd.concat([old_log, a_log_df], axis=0) # concatenate new onto old along the vertical
+                # we do end up with duplicate indexes
             else:
-                old_log = pd.DataFrame()
-            new_log = old_log.append(a_log)
-            new_log.to_csv(old_log_path.absolute().as_posix())
+                new_log = a_log_df # if it doesn't exist, populate blank df
+            new_log.to_csv(old_log_path.absolute().as_posix(), index=False) # write the new log
 
-    def log_environment(self, entry_id):
-        """Run the logger on this experiment's environment
-        entry_id should be a unique identifier for the current log such as a timestamp"""
+    def log_environment(self):
+        """Run the logger on this experiment's environment"""
         e_log = self.environment.log()
-        e_log['entry_id'] = entry_id
         old_log_path = self.log_dir / 'environment.csv'
         if old_log_path.exists():
             old_log = pd.read_csv(old_log_path.absolute().as_posix())
         else:
             old_log = pd.DataFrame()
-        new_log = old_log.append(e_log)
-        new_log.to_csv(old_log_path.absolute().as_posix())
+        new_log = pd.concat([old_log, pd.DataFrame([e_log])], axis=0)
+        new_log.to_csv(old_log_path.absolute().as_posix(), index=False)
+
+    def write_to_experiment_log(self, entry: dict):
+        """Write an entry dict to this experiment's log"""
+        log_path = self.log_dir / 'experiment.csv'
+        if log_path.exists():
+            log = pd.read_csv(log_path.absolute().as_posix())
+        else:
+            log = pd.DataFrame()
+        new_log = pd.concat([log, pd.DataFrame([entry])])
+        new_log.to_csv(log_path.absolute().as_posix(), index=False)
 
     def run(self):
-        """Run this experiment"""
+        """Run this experiment
+        Default does nothing"""
         pass
 
     def cleanup(self):
-        """Clean up after this experiment"""
+        """Clean up after this experiment
+        Default destroys all agents and resets the environment"""
         for a in self.agents:
             a.destroy()
         self.environment.reset()

@@ -21,21 +21,23 @@ class ForageExperiment(Experiment):
         self.reproduction_threshold = 16. # how much health an agent needs to reproduce
         self.reproduction_cost = 10. # how much it costs to reproduce
         self.start_health = 6. # how much health new agents start with
-        self.num_agents = int(*args[0])
+        self.init_agent_count = int(*args[0])
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
+        self.total_agents_existed = 0
+        self.current_agent_count = 0
 
     @override
     def initialize(self):
-        super().initialize()
-        self.environment.reset()
-        self.environment.initialize()
+        super().initialize() # initialize and reset environment
         self.minecraft_server.send('say initialized foraging environment')
 
         self.agents = []
-        for i in range(self.num_agents):
+        for i in range(self.init_agent_count):
             if len(self.pooler.free_bots) == 0:
                 self.pooler.create_bot()
-            a = ForageAgent(self.pooler, self.message_server, f'forager_{i}', START_LOCATION, self.environment)
+            a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment)
+            self.total_agents_existed += 1
+            self.current_agent_count += 1
             a.reset()
             self.agents.append(a)
             self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
@@ -44,22 +46,21 @@ class ForageExperiment(Experiment):
 
     @override
     def run(self):
+        print('changes loaded')
         start_time = time.time()
         for a in self.agents:
             self.minecraft_server.send(f'command tp {a.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
-        while time.time() - start_time < 30: #not self.done:
-            # controlled update - once per second
-            if time.time() - self.last_update_time > self.update_interval:
+        while self.current_agent_count > 0:
+            if time.time() - self.last_update_time > self.update_interval: # controlled update
+                agents_not_dead = []
                 for a in self.agents:
-                    # update agent
-                    a.update()
+                    a.update() # let the agent do stuff
 
                     # apply food and damage
-                    # distance to closest resource
-                    min_dist = np.inf
+                    min_dist = np.inf  # figure distance to nearest resource
                     for pos in self.environment.resource_positions:
                         min_dist = min(min_dist, swarmcraft.util.dist_sqr(a.sensing.get_position(), pos))
-                    bonus = (1. / min_dist) # how much bonus health?
+                    bonus = (1. / max(min_dist, 0.005))  # how much bonus health? (at most 20)
                     # apply bonus
                     self.minecraft_server.send(f'changephealth {a.sensing.get_username()} {bonus}')
                     # apply damage
@@ -67,17 +68,41 @@ class ForageExperiment(Experiment):
                     # obviously it's nicer and probably a little quicker to say something like change = bonus - decay_rate
                     # but changephealth provides no visual feedback - with damage at least you know something happened
 
-                    # reproduce
+                    # if the agent died after damage application, remove them and skip to the next agent
+                    if a.sensing.has_died():
+                        print(a.sensing.get_username(), 'died')
+                        a.actuation.stop()
+                        a.reset()
+                        a.destroy()
+                        self.current_agent_count -= 1
+                        continue
+
+                    # reproduce if we are able to and not dead yet
                     if a.sensing.get_health() >= self.reproduction_threshold:
                         self.minecraft_server.send(f'say {a.sensing.get_username()} wants to reproduce')
-                        self.minecraft_server.send(f'command damage {a.sensing.get_username()} {self.reproduction_cost}')
+                        if len(self.pooler.free_bots) > 0: # if there are bots available
+                            # reproduce (just initialize a new bot here since we're not doing mutations)
+                            child = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment)
+                            self.total_agents_existed += 1
+                            self.current_agent_count += 1
+                            child.reset()
+                            agents_not_dead.append(child)
+                            self.minecraft_server.send(f'setphealth {child.sensing.get_username()} {self.start_health}')
+                            self.minecraft_server.send(f'command tp {child.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
+                            print(f"{a.sensing.get_username()} reproduced successfully")
+                        else:
+                            print(f"{a.sensing.get_username()}'s reproduction blocked (population full)")
+                        self.minecraft_server.send(
+                            f'command damage {a.sensing.get_username()} {self.reproduction_cost}')
+
+                    # keep this agent on the alive list
+                    agents_not_dead.append(a)
+
+                # once all agents have been updated, remember which ones are alive
+                self.agents = agents_not_dead # move the reference
+
+                # do logging
+                self.log_agents()
+                self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
+
                 self.last_update_time = time.time()
-
-    @override
-    def cleanup(self):
-        super().cleanup()
-        self.environment.reset()
-
-    def done(self):
-        blocks = self.minecraft_server.send(f'getcube {ORIGIN[0]} {ORIGIN[1]} {ORIGIN[2]} {SIZE[0]} {SIZE[1]} {SIZE[2]}')
-        return not 'DIAMOND_BLOCK' in str(blocks) # done if the environment contains no more diamond blocks

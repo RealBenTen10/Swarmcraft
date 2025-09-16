@@ -39,6 +39,12 @@ def remove_terminals(terminals: list[type[ActionNode]]):
     for terminal in terminals:
         remove_terminal(terminal)
 
+def reset_terminals():
+    """
+    Clear the terminal pool
+    """
+    _terminals.clear()
+
 def write_genome(root: ControlNode):
     """
     Tree to genome string
@@ -263,4 +269,3 @@ def read_genome(dna: str, agent: Agent, global_pos=0) -> ControlNode:
                 print(name, params)
 
     raise ValueError(f'Could not reconstruct behavior tree - unknown node {name} near position {global_pos}')
-    return None
