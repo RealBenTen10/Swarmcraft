@@ -176,3 +176,56 @@ class GotChat(ActionNode):
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}({self.message_content}, {self.sender_id}, {self.privacy})'
+
+class HealthCheck(ActionNode):
+    def __init__(self, agent: Agent, *args):
+        """
+        Compare an agent's health with a fixed value.
+        Random initialization sets the check value to a random int between 0 and 20, and the comparison to one of: less than, less than/equal, greater than, greater than/equal, equal, not equal.
+        Constructor args, if passed, are: <check value> <comparison>.
+        Check value must be in range [0, 20].
+        Comparison can be one of: "LT", "LEQ", "GT", "GEQ", "EQ", "NEQ".
+        """
+        super().__init__(agent)
+        self.val = args[0] if len(args) > 0 else None
+        self.comp = args[1] if len(args) > 1 else None
+
+        if self.val is None:
+            self.randomize_params()
+        elif self.val < 0 or self.val > 20:
+            raise ValueError('HealthCheck val must be between 0 and 20')
+
+        if self.comp is None:
+            self.randomize_params()
+        elif self.comp not in ['LT', 'LEQ', 'GT', 'GEQ', 'EQ', 'NEQ']:
+            raise ValueError('HealthCheck comparison must be one of "LT", "LEQ", "GT", "GEQ", "EQ", "NEQ"')
+
+    def randomize_params(self):
+        self.val = random.randint(0, 20)
+        self.comp = random.choice(['LT', 'LEQ', 'GT', 'GEQ', 'EQ', 'NEQ'])
+
+    def tick(self) -> str:
+        h = self.agent.sensing.get_health()
+        if self.comp == 'LT':
+            if h < self.val:
+                return 'success'
+            return 'failure'
+        elif self.comp == 'LEQ':
+            if h <= self.val:
+                return 'success'
+            return 'failure'
+        elif self.comp == 'GT':
+            if h > self.val:
+                return 'success'
+            return 'failure'
+        elif self.comp == 'GEQ':
+            if h >= self.val:
+                return 'success'
+            return 'failure'
+        elif self.comp == 'NEQ':
+            if h != self.val:
+                return 'success'
+            return 'failure'
+        if h == self.val:
+            return 'success'
+        return 'failure'

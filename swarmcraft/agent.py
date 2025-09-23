@@ -14,7 +14,7 @@ class Agent(object):
         if pooler.bind_bot(self): # ask the pooler for a bot
             self.sensing = Sensing(self)
             self.actuation = Actuation(self)
-            self.id = uid # internal id (use this for sending chats over the internal server)
+            self.id = uid # internal id (use this for sending chats over the internal server, or tracking individual agents instead of bots)
             self.message_server.register(self) # register yourself with the message server
 
     def update(self):

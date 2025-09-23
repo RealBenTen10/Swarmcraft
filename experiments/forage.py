@@ -21,7 +21,8 @@ class ForageExperiment(Experiment):
         self.reproduction_threshold = 16. # how much health an agent needs to reproduce
         self.reproduction_cost = 10. # how much it costs to reproduce
         self.start_health = 6. # how much health new agents start with
-        self.init_agent_count = int(*args[0])
+        self.init_agent_count = int(*args[0]) if len(args) == 1 else 5
+        self.max_time_sec = int(*args[1]) if len(args) == 2 else 60
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0
@@ -50,7 +51,7 @@ class ForageExperiment(Experiment):
         start_time = time.time()
         for a in self.agents:
             self.minecraft_server.send(f'command tp {a.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
-        while self.current_agent_count > 0:
+        while self.current_agent_count > 0 and time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval: # controlled update
                 agents_not_dead = []
                 for a in self.agents:

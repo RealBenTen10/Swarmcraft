@@ -162,7 +162,7 @@ def crossover(a: ControlNode, b: ControlNode, a_agent: Agent, b_agent: Agent):
     bind_tree_to_agent(a, a_agent)
     bind_tree_to_agent(b, b_agent)
 
-def mutate(a: ControlNode, agent: Agent):
+def mutate_and_rebind(a: ControlNode, agent: Agent):
     """
     Mutate a behavior tree
     Select a random node in a tree, and replace it with a newly generated subtree of lesser or equivalent depth

@@ -1,14 +1,8 @@
-ReportPosition node produces "pos <x> <y> <z>"
-
-ReceivePosition should read one message in queue that begin with "pos", extract the x, y, and z components, and read them into some position tuple in the agent
-
 Use position reports to notify the rest of the swarm of great success (agent has energy above the reproduction threshold)
-
-In future - allow the agents to see their neighbors - one action node that averages position of nearby neighbors
 
 "Wanted" behavior:
 - agents walk around randomly until someone strikes it rich
-- when an agent is doing well, it sends a position report
+- when an agent is doing well (healthy), it sends a position report
 - if an agent gets a position report, it should act on it (move closer to that position)
 
 - probably should also add install scripts so that users can compile their own versions of spigot/bukkit

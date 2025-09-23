@@ -36,7 +36,7 @@ class ReportPosition(ActionNode):
     """
     Node for having an agent report its position over the internal messenger
     Format is <id> <x> <y> <z>, rotation is omitted
-    First argument is the range in which to send the message. If range is omitted, sends to all agents.
+    First argument is the range in which to send the message. If range is omitted, set to random value between 1 and 100.
     Second argument is True/False flag for whether to randomize the range. True randomizes range at initialization to value from 0 to first argument.
     False or omission uses the range provided in first argument.
     Always returns success
@@ -44,7 +44,7 @@ class ReportPosition(ActionNode):
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
 
-        self.max_range = float(args[0]) if len(args) > 0 else None
+        self.max_range = float(args[0]) if len(args) > 0 else random() * 100
         self.range = self.max_range
         self.randomize = args[1] == 'True' if len(args) > 1 else False
 
