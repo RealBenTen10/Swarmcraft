@@ -1,4 +1,5 @@
 import cmd
+import types
 from datetime import datetime
 import importlib
 from importlib import util
@@ -38,14 +39,16 @@ class ServerShell(cmd.Cmd):
         self.environments = {}
         print("Loading environments from", abs_dir)
         for env in os.listdir(abs_dir):
-            if env.endswith('.py'):
-                spec = importlib.util.spec_from_file_location(f'envrionments.{env[:-3]}', os.path.join(abs_dir, env))
-                mod = importlib.util.module_from_spec(spec)
-                sys.modules[f'environments.{env[:-3]}'] = mod
+            if env.endswith('.py'): # all python files in environments dir are loaded
+                spec = importlib.util.spec_from_file_location(f'envrionments.{env[:-3]}', os.path.join(abs_dir, env)) # initialize the import spec from the file
+                mod = importlib.util.module_from_spec(spec) # then create the module based on that spec
+                sys.modules[f'environments.{env[:-3]}'] = mod # add that module to the system modules
                 try:
-                    spec.loader.exec_module(mod)
+                    spec.loader.exec_module(mod) # execute the module (i think this initializes all classes in the file, in essence just runs the file)
                     for name, obj in inspect.getmembers(mod):
+                        # look at all the things that got initialized
                         if inspect.isclass(obj) and issubclass(obj, Environment) and name != 'Environment':
+                            # if those things are objects which are subclasses of the Environment class but not that original class, add them to the environments dict under their name
                             self.environments[name] = obj
                 except Exception as e:
                     print('Failed to load environment:', e)

@@ -1,10 +1,15 @@
-Use position reports to notify the rest of the swarm of great success (agent has energy above the reproduction threshold)
-
-"Wanted" behavior:
-- agents walk around randomly until someone strikes it rich
-- when an agent is doing well (healthy), it sends a position report
-- if an agent gets a position report, it should act on it (move closer to that position)
-
 - probably should also add install scripts so that users can compile their own versions of spigot/bukkit
 - figure out how to hotload agent code changes? some kind of deep reload of all imports of the experiments?
 - somewhere at agent init or reset there is a missing effects removal
+
+Deep reload
+- need to revisit the import machinery alltogether
+what do we want to do?
+- iterate over all files in the experiments dir
+- run them (such that the classes within are declared/instantiated)
+    - at this run step, we also need to (re)import/load everything imported by those files (deep/recursive reload)
+- out of all the classes we've instantiated, add the ones which are actual objects AND subclasses of Environment to the shell's experiment dict
+
+Build scripts
+probably best to not package the full minecraft stuff (lots of stuff!)
+instead, ship a server_installer dir

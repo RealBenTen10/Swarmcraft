@@ -1,5 +1,0 @@
-/minecraft/**
-!/minecraft/plugins
-!/minecraft/server.properties
-!/minecraft/server.py
-!/minecraft/spigot-1.21.1.jar

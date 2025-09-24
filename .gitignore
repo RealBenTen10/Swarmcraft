@@ -4,3 +4,5 @@ package.json
 scratch
 node_modules
 .idea
+swarmcraft/minecraft
+logs
