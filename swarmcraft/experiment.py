@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from swarmcraft.messaging import MessageServer
-from swarmcraft.tmp.minecraft.server import MinecraftServer
+from swarmcraft.minecraft.server import MinecraftServer
 from swarmcraft.pooler import Pooler
 from swarmcraft.environment import Environment
 
