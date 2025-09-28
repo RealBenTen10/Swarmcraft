@@ -32,7 +32,7 @@ A python virtual environment is recommended:
 Install python packages:
 - `pip install -r requirements.txt`
 
-## Minecraft client
+## Viewing clients
 Swarmcraft does not provide an interface to view running experiments other than the swarmcraft and server consoles.
 In order to log into the server as a player and observe running experiments, you will need a copy of Minecraft, available at https://www.minecraft.net/en-us/download.
 
