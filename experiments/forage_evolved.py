@@ -42,21 +42,6 @@ class ForageEvolved(Experiment):
                 self.pooler.create_bot()
         self.minecraft_server.send('say initialized bots')
 
-        # set up initial agents
-        # make sure we have twice as many bots available as we need for the initial pop (to allow room for population growth)
-        self.agents = []
-        for i in range(self.init_agent_count):
-            a = SmartForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment) # init agent
-            genetics.generate_minmax(1, 3, a) # generate a tree for them
-            self.total_agents_existed += 1
-            self.current_agent_count += 1
-            a.reset()
-            self.agents.append(a)
-            self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
-            print('added', i)
-        self.minecraft_server.send('say initialized foraging agents')
-        self.last_update_time = time.time()
-
         # set up the gene pool
         genetics.reset_terminals()
         # we want - agents do random walk
@@ -75,6 +60,20 @@ class ForageEvolved(Experiment):
             HealthCheck
         ])
 
+        # set up initial agents
+        # make sure we have twice as many bots available as we need for the initial pop (to allow room for population growth)
+        self.agents = []
+        for i in range(self.init_agent_count):
+            a = SmartForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment) # init agent
+            genetics.generate_minmax(1, 3, a) # generate a tree for them
+            self.total_agents_existed += 1
+            self.current_agent_count += 1
+            a.reset()
+            self.agents.append(a)
+            self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
+            print('added', i)
+        self.minecraft_server.send('say initialized foraging agents')
+        self.last_update_time = time.time()
 
     @override
     def run(self):
