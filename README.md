@@ -77,7 +77,7 @@ Experiments are routines which can be launched from the swarmcraft shell.
 They consist of startup, update, and cleanup methods.
 Experiments can also accept arguments from the shell such as the number of agents to use during a run.
 Currently, swarmcraft does not support a method for cancelling running experiments short of killing the swarmcraft process.
-For more information regarding experiments, the agents that take part in them, and the environments they take place in, see the accompanying documentation in `agents.md`, `environments.md`, and `experiments.md`.
+For more information regarding experiments, the agents that take part in them, and the environments they take place in, see the accompanying documentation in `swarmcraft/docs/agents.md`, `swarmcraft/docs/environments.md`, and `swarmcraft/docs/experiments.md`.
 
 ## Behavior tree toolkit
 Swarmcraft was written with behavior tree-based control in mind.

@@ -16,6 +16,8 @@ class Agent(object):
             self.actuation = Actuation(self)
             self.id = uid # internal id (use this for sending chats over the internal server, or tracking individual agents instead of bots)
             self.message_server.register(self) # register yourself with the message server
+        else:
+            raise Exception('Could not bind bot! (No free bots left)')
 
     def update(self):
         """Tick this agent's behavior trees, or perform other work"""
