@@ -14,3 +14,5 @@
 
 ## genetics.py
 - contains methods for genetic tree generation
+
+TODO docs on how to use this!
