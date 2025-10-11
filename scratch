@@ -9,7 +9,6 @@ what do we want to do?
 - run them (such that the classes within are declared/instantiated)
     - at this run step, we also need to (re)import/load everything imported by those files (deep/recursive reload)
 - out of all the classes we've instantiated, add the ones which are actual objects AND subclasses of Environment to the shell's experiment dict
+- make sure that changes in btree nodes are loaded also
 
-Build scripts
-probably best to not package the full minecraft stuff (lots of stuff!)
-instead, ship a server_installer dir
+move to docstrings
