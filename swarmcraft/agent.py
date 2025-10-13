@@ -7,6 +7,9 @@ from swarmcraft.sensing import Sensing
 
 # base agent class
 class Agent(object):
+    """Agents are program-controlled minecraft player characters.
+    They can interact with their environment and send each other messages.
+    """
     def __init__(self, pooler: Pooler, message_server: MessageServer, uid):
         """Default agent constructor binds to a free bot from the pooler, sets up actuation and sensing, and registers with message server.
 

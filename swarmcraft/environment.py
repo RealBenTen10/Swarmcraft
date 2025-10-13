@@ -3,6 +3,7 @@ from swarmcraft.util import add_tuples
 from swarmcraft import BLOCK_TYPES
 
 class Environment(object):
+    """"""
     def __init__(self, minecraft_server: MinecraftServer, origin: tuple[int, int, int], size: tuple[int, int, int]):
         self.origin = origin
         self.size = size

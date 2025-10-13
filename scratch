@@ -12,3 +12,4 @@ what do we want to do?
 - make sure that changes in btree nodes are loaded also
 
 move to docstrings
+TODO align stuff in all those md files with what's in the docstrings
