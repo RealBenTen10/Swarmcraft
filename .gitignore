@@ -4,5 +4,24 @@ package.json
 scratch
 node_modules
 .idea
-swarmcraft/minecraft
+# ignore everything in the minecraft server binary folder
+swarmcraft/minecraft/*
+# except...
+# server control script
+!swarmcraft/minecraft/server.py
+# server properties (so user doesn't need to set insecure by hand)
+!swarmcraft/minecraft/server.properties
+# server binary
+!swarmcraft/minecraft/spigot-1.21.1.jar
+# server eula, so user doesn't need to agree manually (maybe make agreement conditional on some kind of post-install questionnaire)
+!swarmcraft/minecraft/eula.txt
+# gitignore globbing is pretty stupid
+!swarmcraft/minecraft/plugins
+swarmcraft/minecraft/plugins/*
+# python plugin
+!swarmcraft/minecraft/plugins/pyspigot-bukkit-0.8.0.jar
+!swarmcraft/minecraft/plugins/PySpigot
+swarmcraft/minecraft/plugins/PySpigot/*
+# custom server command scripts
+!swarmcraft/minecraft/plugins/PySpigot/scripts
 logs

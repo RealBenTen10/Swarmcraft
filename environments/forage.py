@@ -5,7 +5,7 @@ from typing import override
 
 from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
-from swarmcraft import BLOCK_TYPES
+from swarmcraft import BlockTypes
 
 
 class ForageEnvironment(Environment):
@@ -31,7 +31,7 @@ class ForageEnvironment(Environment):
                     b_pos = add_tuples(self.origin, (x + x_off, 0, y + y_off))
                     if self.origin[0] + self.size[0] - 1 > b_pos[0] > self.origin[0] + 1 and self.origin[2] + self.size[2] - 1 > \
                             b_pos[2] > self.origin[2] + 1:
-                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BLOCK_TYPES.ORANGE_WOOL.value}')
+                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BlockTypes.ORANGE_WOOL.value}')
                         self.resource_positions.append(b_pos)
 
     def get_point_in_environment(self):

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class CARDINAL_DIRS(Enum):
+class CardinalDirs(Enum):
     NORTH = (1, 0, 0)
     EAST = (0, 0, 1)
     SOUTH = (-1, 0, 0)
@@ -13,7 +13,7 @@ class CARDINAL_DIRS(Enum):
     SE = (-0.707, 0, 0.707)
     SW = (-0.707, 0, -0.707)
 
-class BLOCK_TYPES(Enum):
+class BlockTypes(Enum):
     DIAMOND = 'diamond_block'
     GOLD = 'gold_block'
     EMERALD = 'emerald_block'
@@ -30,7 +30,7 @@ class BLOCK_TYPES(Enum):
     BEDROCK = 'bedrock'
     AIR = 'air'
 
-class MOVEMENT_KEYS(Enum):
+class MovementKeys(Enum):
     FORWARD = 'forward'
     BACKWARD = 'back'
     LEFT = 'left'

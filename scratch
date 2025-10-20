@@ -1,4 +1,3 @@
-- probably should also add install scripts so that users can compile their own versions of spigot/bukkit
 - figure out how to hotload agent code changes? some kind of deep reload of all imports of the experiments?
 - somewhere at agent init or reset there is a missing effects removal
 
@@ -13,3 +12,5 @@ what do we want to do?
 
 move to docstrings
 TODO align stuff in all those md files with what's in the docstrings
+
+we are moving to a python package

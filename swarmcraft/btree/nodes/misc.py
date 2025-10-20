@@ -7,7 +7,7 @@ A little spaghetti but it works, and keeps the behavior trees reasonably decoupl
 from random import random, choice
 import math
 
-from swarmcraft import CARDINAL_DIRS
+from swarmcraft import CardinalDirs
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
 
@@ -133,13 +133,13 @@ class ComparePosition(ActionNode):
             self.randomize_params()
         else:
             try:
-                self.direction_vec = CARDINAL_DIRS[self.direction].value
+                self.direction_vec = CardinalDirs[self.direction].value
             except KeyError:
-                raise ValueError(f'direction must be one of {[i.name for i in CARDINAL_DIRS]}')
+                raise ValueError(f'direction must be one of {[i.name for i in CardinalDirs]}')
 
     def randomize_params(self):
-        self.direction = choice(list(CARDINAL_DIRS)).name
-        self.direction_vec = CARDINAL_DIRS[self.direction].value
+        self.direction = choice(list(CardinalDirs)).name
+        self.direction_vec = CardinalDirs[self.direction].value
 
     def tick(self) -> str:
         pos = self.agent.sensing.get_position()

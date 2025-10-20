@@ -1,0 +1,3 @@
+# EULA agreement (https://aka.ms/MinecraftEULA)
+eula=true
+

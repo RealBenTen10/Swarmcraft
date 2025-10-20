@@ -4,7 +4,7 @@ like a robot actuator suite - every agent gets one of these
 """
 from javascript import require
 
-from swarmcraft import MOVEMENT_KEYS
+from swarmcraft import MovementKeys
 
 Vec3 = require('vec3').Vec3
 
@@ -46,8 +46,8 @@ class Actuation(object):
         Start moving in a given direction (like holding down a movement key)
         Direction may be any one of ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
         """
-        if direction not in [el.value for el in MOVEMENT_KEYS]:
-            raise ValueError('direction must be one of {}'.format([el.value for el in MOVEMENT_KEYS]))
+        if direction not in [el.value for el in MovementKeys]:
+            raise ValueError('direction must be one of {}'.format([el.value for el in MovementKeys]))
         self.agent.bot.setControlState(direction, True)
 
     def stop_move(self, direction: str):
@@ -55,8 +55,8 @@ class Actuation(object):
         Stop moving in a given direction (like releasing a movement key)
         Direction may be any one of ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
         """
-        if direction not in [el.value for el in MOVEMENT_KEYS]:
-            raise ValueError('direction must be one of {}'.format([el.value for el in MOVEMENT_KEYS]))
+        if direction not in [el.value for el in MovementKeys]:
+            raise ValueError('direction must be one of {}'.format([el.value for el in MovementKeys]))
         self.agent.bot.setControlState(direction, False)
 
     def stop(self):

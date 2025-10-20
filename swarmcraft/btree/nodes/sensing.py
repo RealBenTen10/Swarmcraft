@@ -2,7 +2,7 @@ import random
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
-from swarmcraft import MOVEMENT_KEYS, BLOCK_TYPES
+from swarmcraft import MovementKeys, BlockTypes
 
 
 class IsDigging(ActionNode):
@@ -28,11 +28,11 @@ class IsKeyDown(ActionNode):
         self.key = args[0] if len(args) > 0 else None
         if self.key is None:
             self.randomize_params()
-        elif self.key not in [el.value for el in MOVEMENT_KEYS]:
-            raise ValueError(f'key must be one of {[el.value for el in MOVEMENT_KEYS]}')
+        elif self.key not in [el.value for el in MovementKeys]:
+            raise ValueError(f'key must be one of {[el.value for el in MovementKeys]}')
 
     def randomize_params(self):
-        self.key = random.choice([el.value for el in MOVEMENT_KEYS])
+        self.key = random.choice([el.value for el in MovementKeys])
 
     def tick(self) -> str:
         if self.agent.sensing.control_is_toggled(self.key):
@@ -84,7 +84,7 @@ class IsLookingAtBlock(ActionNode):
             self.randomize_params()
 
     def randomize_params(self):
-        self.block = random.choice([el.value for el in BLOCK_TYPES])
+        self.block = random.choice([el.value for el in BlockTypes])
 
     def tick(self) -> str:
         if self.agent.sensing.get_cursor_block() is not None:
