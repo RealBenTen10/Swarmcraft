@@ -149,17 +149,22 @@ class Sensing(object):
         Get the block at the bot's cursor, to a distance of 256 blocks.
         """
         #print(self.bot.blockAtCursor(256).getProperties())
-        print(self.bot.entity.position.offset(-1,0,0))
-        print(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-        print(self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))))
-        self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+
+        if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))):
+            print("1: ", self.bot.entity.position.offset(-1,0,0))
+            print("2: ", self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+            print("3: ", self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))))
+            #print("4: ", self.bot.blockAtCursor(256)) # always None
+            #print("5: ", self.bot.canDigBlock(self.bot.blockAtCursor(256))) # always None
+            #self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+            self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
         return self.bot.blockAtCursor(256)
 
     def can_dig_cursor_block(self):
         """
         Check if the block at the cursor is diggable and in range
         """
-        print(self.bot.canDigBlock(self.get_cursor_block()))
+
         return self.bot.canDigBlock(self.get_cursor_block())
 
     def get_cursor_entity(self):
