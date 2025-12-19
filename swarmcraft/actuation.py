@@ -83,15 +83,18 @@ class Actuation(object):
         Returns false if already mining or block is not present or the block cannot be mined
         """
         blocks_positions = self.agent.sensing.can_dig_block_in_proximity()
+        async_task = False
         try:
-            #@AsyncTask(start=True)
-            #def break_block(task):
-            #    for block in blocks_positions:
-            #        self.agent.bot.dig(self.agent.bot.blockAt(block))
-
-            for block in blocks_positions:
-                self.agent.bot.dig(self.agent.bot.blockAt(block))
-                self.agent.bot.chat('I started digging!')
+            if async_task:
+                @AsyncTask(start=True)
+                def break_block(task):
+                    for block in blocks_positions:
+                        self.agent.bot.dig(self.agent.bot.blockAt(block))
+                    self.agent.bot.chat('I started digging!')
+            else:
+                for block in blocks_positions:
+                    self.agent.bot.dig(self.agent.bot.blockAt(block))
+                    self.agent.bot.chat('I started digging!')
             return True
         except Exception as e:
             self.agent.bot.chat(f"I had an error while digging")

@@ -47,7 +47,7 @@ class ForageAgent(Agent):
             self.pooler.reset_bot_control(self.bot)
             self.pooler.reset_bot_position(self.bot)
         except Exception as e:
-            #print(f"Error while reseting agent: {e}")
+            #print(f"Error while resetting agent: {e}")
             pass
 
 class SmartForageAgent(Agent):
