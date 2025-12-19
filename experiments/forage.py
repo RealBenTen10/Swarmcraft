@@ -21,8 +21,8 @@ class ForageExperiment(Experiment):
         self.reproduction_threshold = 16. # how much health an agent needs to reproduce
         self.reproduction_cost = 10. # how much it costs to reproduce
         self.start_health = 6. # how much health new agents start with
-        self.init_agent_count = int(*args[0]) if len(args) == 1 else 5
-        self.max_time_sec = int(*args[1]) if len(args) == 2 else 60
+        self.init_agent_count = 1
+        self.max_time_sec = 30
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0

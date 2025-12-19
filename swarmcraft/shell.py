@@ -127,15 +127,21 @@ class ServerShell(cmd.Cmd):
     def do_run(self, args):
         """Run an experiment"""
         at = args.split()
-        exp_name = at[0]
-        exp_args = at[1:]
+        exp_name = "ForageExperiment"
+        exp_args = ['1']
         exp = None
+        num_runs = 5
+        print(at)
+        if len(args) > 0: num_runs = int(at[0])
+        print(f"Doing {num_runs} runs")
+
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
-            exp.initialize()
-            exp.run()
-            exp.cleanup()
+            for _ in range(num_runs):
+                exp.initialize()
+                exp.run()
+                exp.cleanup()
         except KeyError as e:
             print("Experiment not found")
         except Exception as e:

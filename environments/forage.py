@@ -7,7 +7,7 @@ from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
 from swarmcraft import BlockTypes
 
-
+START_LOCATION = (20, -55, 20)
 class ForageEnvironment(Environment):
     def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(100, 100, 100),
                  resource_min_size=1, resource_max_size=2, resource_count=1):
@@ -33,6 +33,9 @@ class ForageEnvironment(Environment):
                             b_pos[2] > self.origin[2] + 1:
                         self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BlockTypes.ORANGE_WOOL.value}')
                         self.resource_positions.append(b_pos)
+        for i in range(1,3):
+            self.minecraft_server.send(
+            f'setblock {START_LOCATION[0]+1} {self.origin[1]} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
 
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.origin[0] + self.size[0]), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.origin[2] + self.size[2])
