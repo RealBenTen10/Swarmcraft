@@ -130,7 +130,7 @@ class ServerShell(cmd.Cmd):
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
-        num_runs = 5
+        num_runs = 2
         print(at)
         if len(args) > 0: num_runs = int(at[0])
         print(f"Doing {num_runs} runs")
