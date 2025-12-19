@@ -162,7 +162,8 @@ class Sensing(object):
                     self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
                 self.bot.chat('I started digging!')
             except Exception as e:
-                self.bot.chat(f"I had an error {e}")
+                self.bot.chat(f"I had an error while digging")
+                #print(f"Error during dig: {e}")
         return self.bot.blockAtCursor(256)
 
     def can_dig_cursor_block(self):
