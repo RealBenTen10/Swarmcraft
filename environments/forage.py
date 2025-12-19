@@ -20,8 +20,9 @@ class ForageEnvironment(Environment):
     @override
     def initialize(self):
         super().initialize()
-        self.resource_positions = []
+        #self.resource_positions = []
         # generate the resource chunks
+        '''
         for _ in range(self.resource_count):
             w = random.randint(self.resource_min_size, self.resource_max_size)
             x_off = random.randint(1, self.size[0] - 2)
@@ -33,6 +34,7 @@ class ForageEnvironment(Environment):
                             b_pos[2] > self.origin[2] + 1:
                         self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BlockTypes.ORANGE_WOOL.value}')
                         self.resource_positions.append(b_pos)
+        '''
         # Create Blocks around agent for dig
         for i in range(1,3):
             self.minecraft_server.send(
