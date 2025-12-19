@@ -42,9 +42,13 @@ class ForageAgent(Agent):
         }
 
     def reset(self):
-        self.pooler.reset_bot_stats(self.bot)
-        self.pooler.reset_bot_control(self.bot)
-        self.pooler.reset_bot_position(self.bot)
+        try:
+            self.pooler.reset_bot_stats(self.bot)
+            self.pooler.reset_bot_control(self.bot)
+            self.pooler.reset_bot_position(self.bot)
+        except Exception as e:
+            #print(f"Error while reseting agent: {e}")
+            pass
 
 class SmartForageAgent(Agent):
     def __init__(self, pooler, message_server, uid, start_location, env, parent_uid=None):

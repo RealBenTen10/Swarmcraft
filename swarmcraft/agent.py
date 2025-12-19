@@ -54,11 +54,15 @@ class Agent(object):
         """Destroy this agent.
         Performs cleanup such as freeing the attached bot and deregistering from the message server.
         """
-        self.bot.removeAllListeners()
-        self.pooler.unbind_bot(self)
-        self.message_server.deregister(self)
-        self.sensing = None
-        self.actuation = None
+        try:
+            self.bot.removeAllListeners()
+            self.pooler.unbind_bot(self)
+            self.message_server.deregister(self)
+            self.sensing = None
+            self.actuation = None
+        except Exception as e:
+            #print(f"Error while destroying bots: {e}")
+            pass
 
     def __str__(self):
         """String representation of this agent.
