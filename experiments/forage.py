@@ -41,7 +41,7 @@ class ForageExperiment(Experiment):
             self.current_agent_count += 1
             a.reset()
             self.agents.append(a)
-            self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
+            #self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
         self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
 
@@ -49,15 +49,18 @@ class ForageExperiment(Experiment):
     def run(self):
         print('changes loaded')
         start_time = time.time()
+        # teleport agents to center of arena
         for a in self.agents:
             self.minecraft_server.send(f'command tp {a.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
+        # loop for BT
         while self.current_agent_count > 0 and time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval: # controlled update
                 agents_not_dead = []
                 for a in self.agents:
                     a.update() # let the agent do stuff
 
-                    # apply food and damage
+                    # apply food and damage - not needed for me
+                    '''
                     min_dist = np.inf  # figure distance to nearest resource
                     for pos in self.environment.resource_positions:
                         min_dist = min(min_dist, swarmcraft.util.dist_sqr(a.sensing.get_position(), pos))
@@ -68,7 +71,7 @@ class ForageExperiment(Experiment):
                     self.minecraft_server.send(f'command damage {a.sensing.get_username()} {decay_rate}')
                     # obviously it's nicer and probably a little quicker to say something like change = bonus - decay_rate
                     # but changephealth provides no visual feedback - with damage at least you know something happened
-
+                    '''
                     # if the agent died after damage application, remove them and skip to the next agent
                     if a.sensing.has_died():
                         print(a.sensing.get_username(), 'died')
@@ -78,7 +81,8 @@ class ForageExperiment(Experiment):
                         self.current_agent_count -= 1
                         continue
 
-                    # reproduce if we are able to and not dead yet
+                    # reproduce if we are able to and not dead yet - not needed for me
+                    '''
                     if a.sensing.get_health() >= self.reproduction_threshold:
                         self.minecraft_server.send(f'say {a.sensing.get_username()} wants to reproduce')
                         if len(self.pooler.free_bots) > 0: # if there are bots available
@@ -95,7 +99,7 @@ class ForageExperiment(Experiment):
                             print(f"{a.sensing.get_username()}'s reproduction blocked (population full)")
                         self.minecraft_server.send(
                             f'command damage {a.sensing.get_username()} {self.reproduction_cost}')
-
+                    '''
                     # keep this agent on the alive list
                     agents_not_dead.append(a)
 
