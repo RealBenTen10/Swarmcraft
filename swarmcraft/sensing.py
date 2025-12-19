@@ -173,6 +173,22 @@ class Sensing(object):
 
         return self.bot.canDigBlock(self.get_cursor_block())
 
+    def can_dig_block_in_proximity(self):
+        """
+        Check the surrounding for blocks
+        Is a diamond shape with side length 3
+        """
+        radius = 2
+        block_positions = []
+        for x in range(-radius, radius + 1):
+            for y in range(-radius, radius + 1):
+                if abs(x) + abs(y) <= radius:
+                    if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
+                        block_positions.append(self.bot.entity.position.offset(x, 0, y))
+        print(block_positions)
+        return block_positions
+
+
     def get_cursor_entity(self):
         """
         Get the entity at the bot's cursor, to a distance of 256 blocks.

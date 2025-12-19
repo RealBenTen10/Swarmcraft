@@ -2,8 +2,7 @@
 agent actuation class
 like a robot actuator suite - every agent gets one of these
 """
-from javascript import require
-
+from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft import MovementKeys
 
 Vec3 = require('vec3').Vec3
@@ -83,11 +82,27 @@ class Actuation(object):
         Start mining the block at the bot's cursor
         Returns false if already mining or block is not present or the block cannot be mined
         """
-        if self.agent.bot.targetDigBlock is None:
-            if self.agent.sensing.can_dig_cursor_block():
-                self.agent.bot.dig(self.agent.sensing.get_cursor_block())
-                return True
+        blocks_positions = self.agent.sensing.can_dig_block_in_proximity()
+        try:
+            @AsyncTask(start=True)
+            def break_block(task):
+                for block in blocks_positions:
+                    self.agent.bot.dig(self.agent.bot.blockAt(block))
+            self.agent.bot.chat('I started digging!')
+            return True
+        except Exception as e:
+            self.agent.bot.chat(f"I had an error while digging")
+            # print(f"Error during dig: {e}")
         return False
+
+        #if self.agent.bot.targetDigBlock is None:
+        #    if self.agent.sensing.can_dig_cursor_block():
+        #        self.agent.bot.dig(self.agent.sensing.get_cursor_block())
+        #        return True
+        #return False
+
+    def look_for_blocks(self):
+        pass
 
     def stop_dig(self):
         """

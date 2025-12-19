@@ -25,3 +25,4 @@ swarmcraft/minecraft/plugins/PySpigot/*
 # custom server command scripts
 !swarmcraft/minecraft/plugins/PySpigot/scripts
 logs
+swarmcraft/server_install
