@@ -3,8 +3,7 @@ agent sensing class
 like a robot sensor suite - every agent gets one of these
 """
 from collections import deque
-from javascript import On, off
-
+from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft.messaging import Chat
 
 
@@ -157,7 +156,13 @@ class Sensing(object):
             #print("4: ", self.bot.blockAtCursor(256)) # always None
             #print("5: ", self.bot.canDigBlock(self.bot.blockAtCursor(256))) # always None
             #self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-            self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+            try:
+                @AsyncTask(start=True)
+                def break_block(task):
+                    self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+                self.bot.chat('I started digging!')
+            except Exception as e:
+                self.bot.chat(f"I had an error {e}")
         return self.bot.blockAtCursor(256)
 
     def can_dig_cursor_block(self):

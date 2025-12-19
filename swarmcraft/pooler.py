@@ -63,10 +63,7 @@ class Pooler:
         self.reset_bot_position(b)
 
     def reset_bot_stats(self, bot):
-        self.server.send(f'command clear {bot.username}') # reset bot's inventory
-        self.server.send(f'command effect clear {bot.username}') # clear all status effects
-        self.server.send(f'command effect give {bot.username} instant_health 1 255') # reset bot's health
-        self.server.send(f'command effect give {bot.username} saturation 1 255') # reset bot's hunger
+        pass
 
     def reset_bot_position(self, bot):
         self.server.send(
