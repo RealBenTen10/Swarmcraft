@@ -36,15 +36,17 @@ class ForageEnvironment(Environment):
                         self.resource_positions.append(b_pos)
         '''
         # Create Blocks around agent for dig
-        for i in range(1,3):
-            self.minecraft_server.send(
-            f'setblock {START_LOCATION[0]+1} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
-            self.minecraft_server.send(
-                f'setblock {START_LOCATION[0] - 1} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
-            self.minecraft_server.send(
-            f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]+1} minecraft:{BlockTypes.BLUE_WOOL.value}')
-            self.minecraft_server.send(
-                f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]-1} minecraft:{BlockTypes.BLUE_WOOL.value}')
+        print("Origin: ", self.origin)
+        for j in range(1,5):
+            for i in range(1,2):
+                self.minecraft_server.send(
+                f'setblock {START_LOCATION[0]+j} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
+                self.minecraft_server.send(
+                    f'setblock {START_LOCATION[0] - j} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
+                self.minecraft_server.send(
+                f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]+j} minecraft:{BlockTypes.BLUE_WOOL.value}')
+                self.minecraft_server.send(
+                    f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]-j} minecraft:{BlockTypes.BLUE_WOOL.value}')
 
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.origin[0] + self.size[0]), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.origin[2] + self.size[2])
