@@ -5,7 +5,7 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft.messaging import Chat
-
+Vec3 = require('vec3').Vec3
 
 class Sensing(object):
     def __init__(self, agent):
@@ -185,7 +185,7 @@ class Sensing(object):
                 if abs(x) + abs(y) <= radius:
                     if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
                         block_positions.append(self.bot.entity.position.offset(x, 0, y))
-        print(block_positions)
+        #print(block_positions)
         return block_positions
 
 
@@ -245,3 +245,26 @@ class Sensing(object):
             return self.messages.pop()
         except IndexError:
             return None
+
+    def get_blocks_in_arena(self, origin=(10, -60, 10), size=(100, 100, 100)):
+        for x in range(size[0]):
+            for y in range(size[2]):
+                position = Vec3(origin[0] + x, -59, origin[2] + y)
+                #print(position)
+                if self.bot.canDigBlock(self.bot.blockAt(position)):
+                    print(
+                        f"Block at {position} is {self.bot.blockAt(position)['name']} and {self.bot.canDigBlock(self.bot.blockAt(position))}")
+
+
+
+    def get_blocks_in_arena_2(self, origin=(10, -60, 10), size=(100, 100, 100)):
+        radius = 5
+        block_positions = []
+        for x in range(-radius, radius + 1):
+            for y in range(-radius, radius + 1):
+                if abs(x) + abs(y) <= radius:
+                    if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
+                        print(self.bot.entity.position.offset(x, 0, y))
+                        block_positions.append(self.bot.entity.position.offset(x, 0, y))
+        print("Blocks at: ", block_positions)
+

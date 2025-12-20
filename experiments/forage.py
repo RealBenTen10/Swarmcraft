@@ -43,6 +43,8 @@ class ForageExperiment(Experiment):
             a.reset()
             self.agents.append(a)
             print(f"Name of {a.get_uid()} at {i}: ", a.sensing.get_username())
+            #print("First call")
+            #a.sensing.get_blocks_in_arena()
             #self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
         self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
@@ -54,6 +56,10 @@ class ForageExperiment(Experiment):
         # teleport agents to center of arena
         for a in self.agents:
             self.minecraft_server.send(f'command tp {a.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
+            #print("Second call")
+            #a.sensing.get_blocks_in_arena()
+            #print("Third call")
+            #a.sensing.get_blocks_in_arena_2()
         # loop for BT
         while self.current_agent_count > 0 and time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval: # controlled update
@@ -115,6 +121,8 @@ class ForageExperiment(Experiment):
                 self.last_update_time = time.time()
         print("Agents ", self.agents)
         for a in self.agents:
+            print("Getting wool in arena and setting bot free")
+            a.sensing.get_blocks_in_arena()
             a.reset()
             self.pooler.unbind_bot(a)
             a.destroy()
