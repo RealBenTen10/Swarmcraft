@@ -10,7 +10,7 @@ swarmcraft/minecraft/*
 # server control script
 !swarmcraft/minecraft/server.py
 # server properties (so user doesn't need to set insecure by hand)
-!swarmcraft/minecraft/server.properties
+swarmcraft/minecraft/server.properties
 # server binary
 !swarmcraft/minecraft/spigot-1.21.1.jar
 # server eula, so user doesn't need to agree manually (maybe make agreement conditional on some kind of post-install questionnaire)
