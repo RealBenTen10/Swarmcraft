@@ -113,8 +113,8 @@ class ForageExperiment(Experiment):
                 self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
 
                 self.last_update_time = time.time()
+        print("Agents ", self.agents)
         for a in self.agents:
             a.reset()
             self.pooler.unbind_bot(a)
             a.destroy()
-        self.agents =[]
