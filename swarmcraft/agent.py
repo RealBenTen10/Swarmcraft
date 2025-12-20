@@ -37,8 +37,8 @@ class Agent(object):
         By default, resets agents to pooler origin, clears stats and inventory, and clears control states.
         """
         self.pooler.reset_bot_position(self.bot)
-        #self.pooler.reset_bot_stats(self.bot)
-        #self.actuation.stop()
+        self.pooler.reset_bot_stats(self.bot)
+        self.actuation.stop()
 
     def log(self) -> dict:
         """Called periodically by the logger.
@@ -49,6 +49,9 @@ class Agent(object):
             'id': str(self.id),
             'bot': 'None' if self.bot is None else self.bot.username,
         }
+
+    def get_uid(self):
+        return self.id
 
     def destroy(self):
         """Destroy this agent.
@@ -61,7 +64,7 @@ class Agent(object):
             self.sensing = None
             self.actuation = None
         except Exception as e:
-            #print(f"Error while destroying bots: {e}")
+            print(f"Error while destroying agent: {e}")
             pass
 
     def __str__(self):

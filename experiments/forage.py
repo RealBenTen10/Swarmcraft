@@ -34,13 +34,14 @@ class ForageExperiment(Experiment):
 
         self.agents = []
         for i in range(self.init_agent_count):
-            if len(self.pooler.free_bots) == 0:
-                self.pooler.create_bot()
+            self.pooler.create_bot()
+            print("Agent count: ", self.total_agents_existed)
             a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment)
             self.total_agents_existed += 1
             self.current_agent_count += 1
             a.reset()
             self.agents.append(a)
+            print(f"Name of {a.get_uid()} at {i}: ", a.sensing.get_username())
             #self.minecraft_server.send(f'setphealth {a.sensing.get_username()} {self.start_health}')
         self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
@@ -111,3 +112,7 @@ class ForageExperiment(Experiment):
                 self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
 
                 self.last_update_time = time.time()
+        for a in self.agents:
+            a.reset()
+            self.pooler.unbind_bot(a)
+            a.destroy()

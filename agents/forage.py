@@ -23,6 +23,7 @@ class ForageAgent(Agent):
         self.parent_uid = parent_uid
 
     def update(self):
+        print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())
         self.tree.tick()
 
     def log(self):
@@ -47,7 +48,7 @@ class ForageAgent(Agent):
             self.pooler.reset_bot_control(self.bot)
             self.pooler.reset_bot_position(self.bot)
         except Exception as e:
-            #print(f"Error while resetting agent: {e}")
+            print(f"Error while resetting agent: {e}")
             pass
 
 class SmartForageAgent(Agent):

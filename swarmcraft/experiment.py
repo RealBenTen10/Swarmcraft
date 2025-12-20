@@ -28,9 +28,7 @@ class Experiment:
         Default resets and initializes the environment, and resets all agents."""
         self.environment.reset()
         self.environment.initialize()
-        for agent in self.agents:
-            agent.reset()
-        pass
+
 
     def log_agents(self):
         """Run the logger on all agents involved in this experiment
@@ -76,6 +74,10 @@ class Experiment:
     def cleanup(self):
         """Clean up after this experiment
         Default destroys all agents and resets the environment"""
-        for a in self.agents:
-            a.destroy()
-        self.environment.reset()
+        try:
+            for a in self.agents:
+                a.reset()
+                a.destroy()
+        except Exception as e:
+            print("Error: ", e)
+        #self.environment.reset()
