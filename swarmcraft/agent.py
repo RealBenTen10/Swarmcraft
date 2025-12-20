@@ -61,7 +61,7 @@ class Agent(object):
             if self.bot is not None:
                 self.bot.removeAllListeners()
                 self.pooler.unbind_bot(self)
-            self.message_server.deregister(self)
+                self.message_server.deregister(self)
             self.sensing = None
             self.actuation = None
         except Exception as e:
