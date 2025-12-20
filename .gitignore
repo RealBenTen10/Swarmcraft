@@ -26,3 +26,4 @@ swarmcraft/minecraft/plugins/PySpigot/*
 !swarmcraft/minecraft/plugins/PySpigot/scripts
 logs
 swarmcraft/server_install
+testing.ipynb
