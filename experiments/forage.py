@@ -33,6 +33,7 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send('say initialized foraging environment')
 
         self.agents = []
+        print("Amount of agents: ", self.init_agent_count)
         for i in range(self.init_agent_count):
             self.pooler.create_bot()
             print("Agent count: ", self.total_agents_existed)
@@ -116,3 +117,4 @@ class ForageExperiment(Experiment):
             a.reset()
             self.pooler.unbind_bot(a)
             a.destroy()
+        self.agents =[]

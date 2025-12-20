@@ -144,7 +144,7 @@ class ServerShell(cmd.Cmd):
                 print(f"Run {i}/{num_runs}")
                 exp.initialize()
                 exp.run()
-            exp.cleanup()
+            #exp.cleanup()
         except KeyError as e:
             print("Experiment not found")
         except Exception as e:
