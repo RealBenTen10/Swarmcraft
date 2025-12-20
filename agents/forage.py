@@ -16,14 +16,14 @@ class ForageAgent(Agent):
             SequenceNode([ # pick a new direction and press forward
                 Look(self, -1, 0), # random yaw at each call, flat pitch
                 #PressDir(self, 'forward') # press forward
-                StartDig(self)
+                #StartDig(self)
             ]),
             RandomNode(self, 0.5) # 50% chance to succeed - if succeeds, we loop back and pick a new direction to go (because this is a SSequenceNode, so state is remembered)
         ])
         self.parent_uid = parent_uid
 
     def update(self):
-        print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())
+        #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())
         self.tree.tick()
 
     def log(self):

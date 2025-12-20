@@ -74,11 +74,4 @@ class Experiment:
     def cleanup(self):
         """Clean up after this experiment
         Default destroys all agents and resets the environment"""
-        try:
-            for a in self.agents:
-                print("Name of agents: ", a.get_uid())
-                a.reset()
-                a.destroy()
-        except Exception as e:
-            print("Error: ", e)
         self.environment.reset()

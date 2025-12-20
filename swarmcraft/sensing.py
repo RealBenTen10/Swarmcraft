@@ -247,6 +247,7 @@ class Sensing(object):
             return None
 
     def get_blocks_in_arena(self, origin=(10, -60, 10), size=(100, 100, 100)):
+        blocks_in_arena = []
         for x in range(size[0]):
             for y in range(size[2]):
                 position = Vec3(origin[0] + x, -59, origin[2] + y)
@@ -254,6 +255,8 @@ class Sensing(object):
                 if self.bot.canDigBlock(self.bot.blockAt(position)):
                     print(
                         f"Block at {position} is {self.bot.blockAt(position)['name']} and {self.bot.canDigBlock(self.bot.blockAt(position))}")
+                    blocks_in_arena.append([self.bot.blockAt(position)['name'], position])
+        return blocks_in_arena
 
 
 
@@ -267,4 +270,5 @@ class Sensing(object):
                         print(self.bot.entity.position.offset(x, 0, y))
                         block_positions.append(self.bot.entity.position.offset(x, 0, y))
         print("Blocks at: ", block_positions)
+        return
 

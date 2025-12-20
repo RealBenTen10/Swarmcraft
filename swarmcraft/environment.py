@@ -18,6 +18,7 @@ class Environment(object):
         return {}
 
     def initialize(self):
+        print("Origin: ", self.origin)
         """Set the environment to an initial state
         Builds a fence around the edge and spawns a ground plane at the bottom"""
         self.minecraft_server.send(f'setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} {self.size[0]} {1} {self.size[2]} minecraft:{BlockTypes.BEDROCK.value}')
@@ -25,5 +26,6 @@ class Environment(object):
             for y in range(self.size[2]):
                 if x == 0 or x == self.size[0] - 1 or y == 0 or y == self.size[2] - 1:
                     pos = add_tuples(self.origin, (x, 1, y))
+                    #print("Pos: ", pos)
                     self.minecraft_server.send(f'setblock {pos[0]} {pos[1]} {pos[2]} minecraft:{BlockTypes.BEDROCK.value}')
                     self.minecraft_server.send(f'setblock {pos[0]} {pos[1] + 1} {pos[2]} minecraft:{BlockTypes.BEDROCK.value}')

@@ -36,7 +36,7 @@ class ForageExperiment(Experiment):
         print("Amount of agents: ", self.init_agent_count)
         for i in range(self.init_agent_count):
             self.pooler.create_bot()
-            print("Agent count: ", self.total_agents_existed)
+            #print("Agent count: ", self.total_agents_existed)
             a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment)
             self.total_agents_existed += 1
             self.current_agent_count += 1
@@ -119,10 +119,13 @@ class ForageExperiment(Experiment):
                 self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
 
                 self.last_update_time = time.time()
-        print("Agents ", self.agents)
+        #print("Agents ", self.agents)
         for a in self.agents:
             print("Getting wool in arena and setting bot free")
             a.sensing.get_blocks_in_arena()
+            print("Resetting agent")
             a.reset()
+            print("Unbinding bot")
             self.pooler.unbind_bot(a)
+            print("Destroying agent")
             a.destroy()
