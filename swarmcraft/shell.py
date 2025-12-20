@@ -137,7 +137,7 @@ class ServerShell(cmd.Cmd):
 
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
-            exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
+            #exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
             #exp.initialize()
             for i in range(1, num_runs+1):
                 print("-"*20)

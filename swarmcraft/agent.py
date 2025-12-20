@@ -58,8 +58,9 @@ class Agent(object):
         Performs cleanup such as freeing the attached bot and deregistering from the message server.
         """
         try:
-            self.bot.removeAllListeners()
-            self.pooler.unbind_bot(self)
+            if self.bot is not None:
+                self.bot.removeAllListeners()
+                self.pooler.unbind_bot(self)
             self.message_server.deregister(self)
             self.sensing = None
             self.actuation = None
