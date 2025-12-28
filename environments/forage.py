@@ -36,7 +36,6 @@ class ForageEnvironment(Environment):
                         self.resource_positions.append(b_pos)
         '''
         # Create Blocks around agent for dig
-        print("Origin: ", self.origin)
         for j in range(1,5):
             for i in range(1,2):
                 self.minecraft_server.send(

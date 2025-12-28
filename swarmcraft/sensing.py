@@ -251,10 +251,9 @@ class Sensing(object):
         for x in range(size[0]):
             for y in range(size[2]):
                 position = Vec3(origin[0] + x, -59, origin[2] + y)
-                #print(position)
                 if self.bot.canDigBlock(self.bot.blockAt(position)):
-                    print(
-                        f"Block at {position} is {self.bot.blockAt(position)['name']} and {self.bot.canDigBlock(self.bot.blockAt(position))}")
+                    # print(f"Block at {position} is {self.bot.blockAt(position)['name']} and {self.bot.canDigBlock(self.bot.blockAt(position))}")
+                    # 'name' is enough for evaluation - get "blue_wool", etc.
                     blocks_in_arena.append([self.bot.blockAt(position)['name'], position])
         return blocks_in_arena
 

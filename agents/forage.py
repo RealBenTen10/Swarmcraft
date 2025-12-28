@@ -7,20 +7,23 @@ from swarmcraft.btree.nodes.misc import RandomNode
 
 
 class ForageAgent(Agent):
-    def __init__(self, pooler, message_server, uid, start_location, env, parent_uid=None):
+    def __init__(self, pooler, message_server, uid, start_location, env, tree=None, parent_uid=None):
         super().__init__(pooler, message_server, uid)
         self.start_location = start_location
         self.env = env
         # define btree - random walk
-        self.tree = SSequenceNode([
+        self.tree = self.set_tree(tree=tree)
+        self.parent_uid = parent_uid
+
+    def set_tree(self, tree):
+        return SSequenceNode([
             SequenceNode([ # pick a new direction and press forward
                 Look(self, -1, 0), # random yaw at each call, flat pitch
                 #PressDir(self, 'forward') # press forward
-                #StartDig(self)
+                StartDig(self)
             ]),
             RandomNode(self, 0.5) # 50% chance to succeed - if succeeds, we loop back and pick a new direction to go (because this is a SSequenceNode, so state is remembered)
         ])
-        self.parent_uid = parent_uid
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())
