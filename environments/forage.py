@@ -47,5 +47,6 @@ class ForageEnvironment(Environment):
                 self.minecraft_server.send(
                     f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]-j} minecraft:{BlockTypes.BLUE_WOOL.value}')
 
+
     def get_point_in_environment(self):
         return random.randint(self.origin[0] + 1, self.origin[0] + self.size[0]), self.origin[1] + 1, random.randint(self.origin[2] + 1, self.origin[2] + self.size[2])

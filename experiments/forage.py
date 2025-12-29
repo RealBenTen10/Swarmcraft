@@ -11,7 +11,6 @@ from swarmcraft.experiment import Experiment
 ORIGIN = (10, -60, 10)
 SIZE = (20, 10, 20)
 START_LOCATION = (20, -55, 20)
-decay_rate = 1 # how much health per second do agents lose?
 
 class ForageExperiment(Experiment):
     def __init__(self, pooler, minecraft_server, message_server, *args):
@@ -28,12 +27,12 @@ class ForageExperiment(Experiment):
     def initialize(self):
         super().initialize() # initialize and reset environment
         self.minecraft_server.send('say initialized foraging environment')
-
+        bt = "seq(move, dig)"
         self.agents = []
         # print("Amount of agents: ", self.init_agent_count)
         for i in range(self.init_agent_count):
             self.pooler.create_bot()
-            a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment)
+            a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment, tree=bt)
             self.total_agents_existed += 1
             self.current_agent_count += 1
             a.reset()
@@ -62,9 +61,8 @@ class ForageExperiment(Experiment):
         #
         while self.current_agent_count > 0 and time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval: # controlled update
-                agents_not_dead = []
                 for a in self.agents:
-                    a.update() # let the agent do stuff
+                    a.update()
 
                 # do logging
                 self.log_agents()
@@ -75,6 +73,7 @@ class ForageExperiment(Experiment):
             print("Run finished... Evaluating")
             remaining_blocks = a.sensing.get_blocks_in_arena()
             print("Got: ", remaining_blocks)
+            fitness = a.sensing.evaluation(remaining_blocks, "blue_wool", 16)
             print("Resetting agent")
             a.reset()
             print("Unbinding bot")

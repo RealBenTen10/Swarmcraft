@@ -247,16 +247,33 @@ class Sensing(object):
             return None
 
     def get_blocks_in_arena(self, origin=(10, -60, 10), size=(100, 100, 100)):
-        blocks_in_arena = []
+        # TODO
+        # Return dictionary with count per wool type
+        block_count = {
+            'blue_wool': 0,
+            'orange_wool': 0,
+            'brown_wool': 0,
+            'green_wool': 0
+        }
         for x in range(size[0]):
             for y in range(size[2]):
                 position = Vec3(origin[0] + x, -59, origin[2] + y)
                 if self.bot.canDigBlock(self.bot.blockAt(position)):
-                    # print(f"Block at {position} is {self.bot.blockAt(position)['name']} and {self.bot.canDigBlock(self.bot.blockAt(position))}")
+                    # print(f"Block at {position} is {self.bot.blockAt(position)['name']} and \
+                    # {self.bot.canDigBlock(self.bot.blockAt(position))}")
                     # 'name' is enough for evaluation - get "blue_wool", etc.
-                    blocks_in_arena.append([self.bot.blockAt(position)['name'], position])
-        return blocks_in_arena
+                    block_count[self.bot.blockAt(position)['name']] += 1
+        return block_count
 
+    def evaluation(self, remaining_blocks, color, block_number, reward_multiplier=1, penalty_multiplier=1):
+        evaluation = 0
+        for block in remaining_blocks:
+            count = block_number - remaining_blocks[block]
+            if block == color:
+                evaluation += count*reward_multiplier
+            else:
+                evaluation -= count*penalty_multiplier
+        return evaluation
 
 
     def get_blocks_in_arena_2(self, origin=(10, -60, 10), size=(100, 100, 100)):

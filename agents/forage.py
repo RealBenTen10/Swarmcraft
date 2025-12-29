@@ -7,7 +7,7 @@ from swarmcraft.btree.nodes.misc import RandomNode
 
 
 class ForageAgent(Agent):
-    def __init__(self, pooler, message_server, uid, start_location, env, tree=None, parent_uid=None):
+    def __init__(self, pooler, message_server, uid, start_location, env, tree, parent_uid=None):
         super().__init__(pooler, message_server, uid)
         self.start_location = start_location
         self.env = env
@@ -16,6 +16,7 @@ class ForageAgent(Agent):
         self.parent_uid = parent_uid
 
     def set_tree(self, tree):
+
         return SSequenceNode([
             SequenceNode([ # pick a new direction and press forward
                 Look(self, -1, 0), # random yaw at each call, flat pitch
