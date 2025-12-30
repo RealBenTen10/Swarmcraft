@@ -1,8 +1,9 @@
 import time
 
 from swarmcraft.agent import Agent
-from swarmcraft.btree.nodes.actuation import PressDir, Look, StartDig
-from swarmcraft.btree.nodes.base import SSequenceNode, SequenceNode
+from swarmcraft.btree.nodes.actuation import PressDir, Look, StartDig, ReleaseDir
+from swarmcraft.btree.nodes.sensing import CanDigBlock
+from swarmcraft.btree.nodes.base import SSequenceNode, SequenceNode, FallbackNode
 from swarmcraft.btree.nodes.misc import RandomNode
 
 
@@ -16,15 +17,18 @@ class ForageAgent(Agent):
         self.parent_uid = parent_uid
 
     def set_tree(self, tree):
-
-        return SSequenceNode([
-            SequenceNode([ # pick a new direction and press forward
-                Look(self, -1, 0), # random yaw at each call, flat pitch
-                #PressDir(self, 'forward') # press forward
-                StartDig(self)
-            ]),
-            RandomNode(self, 0.5) # 50% chance to succeed - if succeeds, we loop back and pick a new direction to go (because this is a SSequenceNode, so state is remembered)
+        tree = SequenceNode([
+            Look(self),
+            FallbackNode([
+                SequenceNode([
+                    CanDigBlock(self),
+                    ReleaseDir(self),
+                    StartDig(self)
+                ]),
+                PressDir(self)
+            ])
         ])
+        return tree
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())

@@ -54,6 +54,17 @@ class IsHoldingItem(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
+class CanDigBlock(ActionNode):
+    def tick(self, color = "blue_wool") -> str:
+        radius = 2
+        block_positions = []
+        for x in range(-radius, radius + 1):
+            for y in range(-radius, radius + 1):
+                if abs(x) + abs(y) <= radius:
+                    if self.agent.bot.blockAt(self.agent.bot.entity.position.offset(x, 0, y))['name'] == color:
+                        return 'success'
+        return 'failure'
+
 
 class IsHoldingTool(ActionNode):
     """

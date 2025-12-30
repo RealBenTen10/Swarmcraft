@@ -15,7 +15,7 @@ class PressDir(ActionNode):
     """
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.key = args[0] if len(args) > 0 else None
+        self.key = args[0] if len(args) > 0 else "forward"
         if self.key is None:
             self.randomize_params()
         elif self.key not in [el.value for el in MovementKeys]:
@@ -25,6 +25,7 @@ class PressDir(ActionNode):
         self.key = random.choice([el.value for el in MovementKeys])
 
     def tick(self) -> str:
+        print("Moving")
         self.agent.actuation.start_move(self.key)
         return 'success'
 
@@ -38,7 +39,7 @@ class ReleaseDir(ActionNode):
     """
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
-        self.key = args[0] if len(args) > 0 else None
+        self.key = args[0] if len(args) > 0 else "forward"
         if self.key is None:
             self.randomize_params()
         elif self.key not in [el.value for el in MovementKeys]:
@@ -76,8 +77,8 @@ class Look(ActionNode):
         @param args[1] pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
         """
         super().__init__(agent)
-        self.yaw = float(args[0]) if len(args) > 0 else None
-        self.pitch = float(args[1]) if len(args) > 1 else None
+        self.yaw = float(args[0]) if len(args) > 0 else -1
+        self.pitch = float(args[1]) if len(args) > 1 else 0
         if self.pitch is None or self.yaw is None:
             self.randomize_params()
 
