@@ -9,7 +9,7 @@ from swarmcraft.btree.nodes.misc import RandomNode
 
 class ForageAgent(Agent):
     def __init__(self, pooler, message_server, uid, start_location, env, tree, parent_uid=None):
-        super().__init__(pooler, message_server, uid)
+        super().__init__(pooler, message_server)
         self.start_location = start_location
         self.env = env
         # define btree - random walk

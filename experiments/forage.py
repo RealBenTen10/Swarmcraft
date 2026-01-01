@@ -22,6 +22,8 @@ class ForageExperiment(Experiment):
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0
+        self.pooler.create_bot()
+
 
     @override
     def initialize(self):
@@ -31,8 +33,9 @@ class ForageExperiment(Experiment):
         self.agents = []
         # print("Amount of agents: ", self.init_agent_count)
         for i in range(self.init_agent_count):
-            self.pooler.create_bot()
+
             a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION, self.environment, tree=bt)
+            a.get_bot(uid=f'forager_{self.total_agents_existed}')
             self.total_agents_existed += 1
             self.current_agent_count += 1
             a.reset()

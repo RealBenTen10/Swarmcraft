@@ -48,10 +48,7 @@ def generate_pset():
     pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
     pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
-    pset.addPrimitive(PressDir, )
-    pset.addPrimitive(math.sin, 1)
-    pset.addEphemeralConstant("rand101", partial(random.randint, -1, 1))
-    pset.renameArguments(ARG0='x')
+
 
     creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
     creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)

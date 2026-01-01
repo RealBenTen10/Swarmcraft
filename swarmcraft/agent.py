@@ -10,7 +10,7 @@ class Agent(object):
     """Agents are program-controlled minecraft player characters.
     They can interact with their environment and send each other messages.
     """
-    def __init__(self, pooler: Pooler, message_server: MessageServer, uid):
+    def __init__(self, pooler: Pooler, message_server: MessageServer, uid=None):
         """Default agent constructor binds to a free bot from the pooler, sets up actuation and sensing, and registers with message server.
 
         :param pooler: active pooler instance. Made available in experiments.
@@ -20,13 +20,9 @@ class Agent(object):
         self.bot = None
         self.pooler = pooler
         self.message_server = message_server
-        if pooler.bind_bot(self): # ask the pooler for a bot
-            self.sensing = Sensing(self)
-            self.actuation = Actuation(self)
-            self.id = uid # internal id (use this for sending chats over the internal server, or tracking individual agents instead of bots)
-            self.message_server.register(self) # register yourself with the message server
-        else:
-            raise Exception('Could not bind bot! (No free bots left)')
+        self.sensing = None
+        self.actuation = None
+        self.id = None
 
     def get_bot(self, uid):
         if self.pooler.bind_bot(self): # ask the pooler for a bot
