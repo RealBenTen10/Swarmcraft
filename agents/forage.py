@@ -13,22 +13,23 @@ class ForageAgent(Agent):
         self.start_location = start_location
         self.env = env
         # define btree - random walk
-        self.tree = self.set_tree(tree=tree)
+        self.tree = None
         self.parent_uid = parent_uid
 
     def set_tree(self, tree):
-        tree = SequenceNode([
-            Look(self),
-            FallbackNode([
-                SequenceNode([
-                    CanDigBlock(self),
-                    ReleaseDir(self),
-                    StartDig(self)
-                ]),
-                PressDir(self)
-            ])
-        ])
-        return tree
+        self.tree = tree
+        # "Perfect" tree for getting blocks
+        #tree = SequenceNode([
+        #    Look(self),
+        #    FallbackNode([
+        #        SequenceNode([
+        #            CanDigBlock(self),
+        #            ReleaseDir(self),
+        #            StartDig(self)
+        #        ]),
+        #        PressDir(self)
+        #    ])
+        #])
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())

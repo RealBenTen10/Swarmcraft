@@ -5,6 +5,7 @@ import importlib
 from importlib import util
 import inspect
 import os
+import time
 import sys
 import traceback
 from pathlib import Path
@@ -20,6 +21,7 @@ from deap import gp
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir
 from swarmcraft.btree.nodes.sensing import CanDigBlock
+from agents import forage
 
 
 def sequence_1_child(child1):
@@ -37,8 +39,15 @@ def fallback_2_child(child1, child2):
 def fallback_3_child(child1, child2, child3):
     return bt.FallbackNode([child1, child2, child3])
 
+def evaluate_bt(individual, toolbox=None):
+    # individual, = mutUniform(individual, toolbox.pset())
+    # print_individual(individual)
+    # Transform the tree expression in a callable function
+    toplevel = toolbox.compile(expr=individual)
+    print("Toplevel: ", toplevel)
+    return 1
 
-def generate_pset():
+def generate_pset(agents):
     pset = gp.PrimitiveSet("MAIN", [], bt.ControlNode)
 
     pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
@@ -48,17 +57,29 @@ def generate_pset():
     pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
     pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
+    pset.addPrimitive(StartDig(agents), [], bt.ActionNode)
 
+    return pset
 
-    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+def set_toolbox(pset):
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
     toolbox.register("expr", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-    return pset
+    toolbox.register("evaluate", evaluate_bt, toolbox=toolbox)
+
+    return toolbox
+
+def create_hall_of_fame():
+    hof = tools.HallOfFame(1)
+    return hof
+
+_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
+_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
 
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
@@ -187,11 +208,25 @@ class ServerShell(cmd.Cmd):
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
-            #exp.initialize()
+            agents = exp.initialize()
+            pset = generate_pset(agents)
             for i in range(1, num_runs+1):
+                tree = _nodes[0]([
+                    _terminals[4](agents),
+                    _nodes[1]([
+                        _nodes[0]([
+                            _terminals[3](agents),
+                            _terminals[2](agents),
+                            _terminals[1](agents)
+                        ]),
+                        _terminals[0](agents)
+                    ])
+                ])
+                agents.set_tree(tree)
+                exp.set_round()
                 print("-"*20)
                 print(f"Run {i}/{num_runs}")
-                agents = exp.initialize()
+                #agents = exp.initialize()
                 exp.run()
             exp.cleanup()
         except KeyError as e:

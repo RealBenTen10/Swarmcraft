@@ -9,7 +9,7 @@ from swarmcraft import BlockTypes
 
 START_LOCATION = (20, -55, 20)
 class ForageEnvironment(Environment):
-    def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(100, 100, 100),
+    def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(20, 10, 20),
                  resource_min_size=1, resource_max_size=2, resource_count=1):
         super().__init__(minecraft_server, origin, size)
         self.resource_min_size = resource_min_size
@@ -36,6 +36,7 @@ class ForageEnvironment(Environment):
                         self.resource_positions.append(b_pos)
         '''
         # Create Blocks around agent for dig
+    def set_blocks(self):
         for j in range(1,5):
             for i in range(1,2):
                 self.minecraft_server.send(

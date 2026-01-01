@@ -30,28 +30,33 @@ class ForageExperiment(Experiment):
         super().initialize() # initialize and reset environment
         self.minecraft_server.send('say initialized foraging environment')
         # print("Amount of agents: ", self.init_agent_count)
-        for agent in self.agents:
-            agent.get_bot(uid=f'forager_{self.total_agents_existed}')
-            agent.reset()
+
         self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
         return self.agents[0]
 
+    def set_agents(self):
+        for agent in self.agents:
+            agent.get_bot(uid=f'forager_{self.total_agents_existed}')
+            agent.reset()
+
+    def set_environment(self):
+        self.environment.reset()
+        self.environment.initialize()
+        self.environment.set_blocks()
+
+    def set_round(self):
+        self.set_agents()
+        self.set_environment()
+
     @override
     def run(self):
-        start_time = time.time()
         # teleport agents to center of arena
         for agent in self.agents:
             self.minecraft_server.send(f'command tp {agent.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
 
-        # TODO
-        #   implement deap in a separate file
-        #   let deep create a behavior tree and feed the fitness
-        #   just translate deap BT to swarmcraft BT (input and output doesn't matter)
-        #
-        #   For beginning just two types of wool
-        #   One current mission the other negative points
-        #
+        time.sleep(1)
+        start_time = time.time()
         while time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval: # controlled update
                 for agent in self.agents:
@@ -62,7 +67,7 @@ class ForageExperiment(Experiment):
                 self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
 
                 self.last_update_time = time.time()
-
+        fitness = 0
         for agent in self.agents:
             print("Run finished... Evaluating")
             remaining_blocks = agent.sensing.get_blocks_in_arena()
@@ -72,5 +77,6 @@ class ForageExperiment(Experiment):
             agent.reset()
             print("Unbinding bot")
             self.pooler.unbind_bot(agent)
-            print("Destroying agent")
-            agent.destroy()
+            ### print("Destroying agent")
+            ### agent.destroy()
+        return fitness
