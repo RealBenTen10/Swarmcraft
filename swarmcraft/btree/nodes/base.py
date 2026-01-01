@@ -7,8 +7,12 @@ from swarmcraft.agent import Agent
 
 # implements behavior tree nodes
 # inspiration from https://arxiv.org/pdf/1709.00084
+class BehaviorTreeNode():
+    def __init__(self):
+        pass
 
-class ControlNode(object):
+
+class ControlNode(BehaviorTreeNode):
     """
     Base class for control nodes
     """
@@ -225,7 +229,7 @@ class SParallelNode(ControlNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}(m="{self.m}"){[child for child in self.children]}'
 
-class ActionNode(object):
+class ActionNode(BehaviorTreeNode):
     """
     Action nodes perform actions when they are ticked.
     To implement your own action, inherit from this class and override tick().

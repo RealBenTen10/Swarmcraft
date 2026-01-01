@@ -28,6 +28,14 @@ class Agent(object):
         else:
             raise Exception('Could not bind bot! (No free bots left)')
 
+    def get_bot(self, uid):
+        if self.pooler.bind_bot(self): # ask the pooler for a bot
+            self.sensing = Sensing(self)
+            self.actuation = Actuation(self)
+            self.id = uid # internal id (use this for sending chats over the internal server, or tracking individual agents instead of bots)
+            self.message_server.register(self) # register yourself with the message server
+        else:
+            raise Exception('Could not bind bot! (No free bots left)')
     def update(self):
         """Tick this agent's behavior trees, or perform other work."""
         pass

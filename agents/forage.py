@@ -3,7 +3,7 @@ import time
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.actuation import PressDir, Look, StartDig, ReleaseDir
 from swarmcraft.btree.nodes.sensing import CanDigBlock
-from swarmcraft.btree.nodes.base import SSequenceNode, SequenceNode, FallbackNode
+from swarmcraft.btree.nodes.base import SequenceNode, FallbackNode
 from swarmcraft.btree.nodes.misc import RandomNode
 
 

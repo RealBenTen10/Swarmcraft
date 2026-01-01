@@ -11,6 +11,58 @@ from pathlib import Path
 from typing import Any
 import javascript.connection
 
+from deap import algorithms
+from deap import base
+from deap import creator
+from deap import tools
+from deap import gp
+
+import swarmcraft.btree.nodes.base as bt
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir
+from swarmcraft.btree.nodes.sensing import CanDigBlock
+
+
+def sequence_1_child(child1):
+    return bt.SequenceNode([child1])
+
+def sequence_2_child(child1, child2):
+    return bt.SequenceNode([child1, child2])
+
+def fallback_1_child(child1):
+    return bt.FallbackNode([child1])
+
+def fallback_2_child(child1, child2):
+    return bt.FallbackNode([child1, child2])
+
+def fallback_3_child(child1, child2, child3):
+    return bt.FallbackNode([child1, child2, child3])
+
+
+def generate_pset():
+    pset = gp.PrimitiveSet("MAIN", [], bt.ControlNode)
+
+    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+
+    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+
+    pset.addPrimitive(PressDir, )
+    pset.addPrimitive(math.sin, 1)
+    pset.addEphemeralConstant("rand101", partial(random.randint, -1, 1))
+    pset.renameArguments(ARG0='x')
+
+    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+
+    toolbox = base.Toolbox()
+    toolbox.register("expr", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
+    toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    toolbox.register("compile", gp.compile, pset=pset)
+    return pset
+
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 
@@ -142,7 +194,7 @@ class ServerShell(cmd.Cmd):
             for i in range(1, num_runs+1):
                 print("-"*20)
                 print(f"Run {i}/{num_runs}")
-                exp.initialize()
+                agents = exp.initialize()
                 exp.run()
             exp.cleanup()
         except KeyError as e:
@@ -158,6 +210,7 @@ class ServerShell(cmd.Cmd):
                     print('Experiment cleanup error - you may need to restart Swarmcraft')
                     print(e)
                     traceback.print_tb(e.__traceback__)
+
 
     def do_clear(self, args):
         """Clear an area"""

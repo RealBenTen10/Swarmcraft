@@ -41,6 +41,7 @@ class ForageExperiment(Experiment):
             #a.sensing.get_blocks_in_arena()
         self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
+        return self.agents
 
     @override
     def run(self):
