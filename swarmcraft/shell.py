@@ -31,6 +31,9 @@ def sequence_1_child(child1):
 def sequence_2_child(child1, child2):
     return bt.SequenceNode([child1, child2])
 
+def sequence_3_child(child1, child2, child3):
+    return bt.SequenceNode([child1, child2, child2])
+
 def fallback_1_child(child1):
     return bt.FallbackNode([child1])
 
@@ -52,29 +55,33 @@ def generate_pset(agents):
     pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
 
     pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    #pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
- #   pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-  #  pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-   # pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-
-    #pset.addPrimitive( , bt.ControlNode)
-    #pset.addPrimitive(bt.SequenceNode, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    #pset.addPrimitive(bt.FallbackNode, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-
+    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
     def action_dig():
         return StartDig(agents)
     #pset.addTerminal(action_dig, bt.ActionNode)
+    pset.addPrimitive(action_dig, [], bt.ActionNode)
+
     def look():
         return Look(agents)
     #pset.addTerminal(look, bt.ActionNode)
+    pset.addPrimitive(look, [], bt.ActionNode)
+
     def move():
         return PressDir(agents)
-    pset.addTerminal(move, bt.ActionNode)
+    #pset.addTerminal(move, bt.ActionNode)
+    pset.addPrimitive(move, [], bt.ActionNode)
+
     def stop():
         return ReleaseDir(agents)
 #    pset.addTerminal(stop, bt.ActionNode)
+    pset.addPrimitive(stop, [], bt.ActionNode)
+
 
     print("Primitives: ", pset.primitives)
     return pset
@@ -238,20 +245,21 @@ class ServerShell(cmd.Cmd):
                 # agents = exp.initialize()
                 fitness = exp.run()
                 print("Fitness: ", fitness)
-                return fitness
+                fitness_score = 16 - fitness["blue_wool"]
+                return fitness_score
             toolbox.register("evaluate", evaluate_bt)
             toolbox.register("select", tools.selTournament, tournsize=7)
             toolbox.register("mate", gp.cxOnePoint)
             toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
             toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-            pop = toolbox.population(n=1)
+            #pop = toolbox.population(n=1)
             hof = create_hall_of_fame()
             stats = tools.Statistics(lambda ind: ind.fitness.values)
             stats.register("avg", numpy.mean)
             stats.register("std", numpy.std)
             generations = 2
-            algorithms.eaSimple(pop, toolbox, 0.5, 0.2, generations, stats, hof)
-            print("Result: ", pop, hof, stats)
+            algorithms.eaSimple(1, toolbox, 0.5, 0.2, generations, stats, hof)
+            print("Result: ", hof, stats)
             '''
             for i in range(1, num_runs+1):
                 tree = _nodes[0]([
