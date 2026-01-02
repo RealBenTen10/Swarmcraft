@@ -61,7 +61,6 @@ class SequenceNode(ControlNode):
         return 'success'
 
     def __repr__(self) -> str:
-        # TODO which one is correct?
         # return f"{__class__.__name__}(){[child for child in self.children]}"
         return f"{__class__.__name__}(){[child for child in self.children]}"
 
