@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 import javascript.connection
 
+import numpy
 from deap import algorithms
 from deap import base
 from deap import creator
@@ -48,17 +49,34 @@ def evaluate_bt(individual, toolbox=None):
     return 1
 
 def generate_pset(agents):
-    pset = gp.PrimitiveSet("MAIN", [], bt.ControlNode)
+    pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
 
     pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    #pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
-    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+ #   pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+  #  pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+   # pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
-    pset.addPrimitive(StartDig(agents), [], bt.ActionNode)
+    #pset.addPrimitive( , bt.ControlNode)
+    #pset.addPrimitive(bt.SequenceNode, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    #pset.addPrimitive(bt.FallbackNode, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
+
+    def action_dig():
+        return StartDig(agents)
+    #pset.addTerminal(action_dig, bt.ActionNode)
+    def look():
+        return Look(agents)
+    #pset.addTerminal(look, bt.ActionNode)
+    def move():
+        return PressDir(agents)
+    pset.addTerminal(move, bt.ActionNode)
+    def stop():
+        return ReleaseDir(agents)
+#    pset.addTerminal(stop, bt.ActionNode)
+
+    print("Primitives: ", pset.primitives)
     return pset
 
 def set_toolbox(pset):
@@ -66,11 +84,10 @@ def set_toolbox(pset):
     creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
     toolbox = base.Toolbox()
-    toolbox.register("expr", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
+    toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2)
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-    toolbox.register("evaluate", evaluate_bt, toolbox=toolbox)
 
     return toolbox
 
@@ -210,6 +227,32 @@ class ServerShell(cmd.Cmd):
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
             agents = exp.initialize()
             pset = generate_pset(agents)
+            toolbox = set_toolbox(pset)
+
+            def evaluate_bt(individual):
+                new_tree = gp.compile(individual, pset)
+                print("New tree: ", new_tree)
+                agents.set_tree(new_tree)
+                exp.set_round()
+                print("-" * 20)
+                # agents = exp.initialize()
+                fitness = exp.run()
+                print("Fitness: ", fitness)
+                return fitness
+            toolbox.register("evaluate", evaluate_bt)
+            toolbox.register("select", tools.selTournament, tournsize=7)
+            toolbox.register("mate", gp.cxOnePoint)
+            toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
+            toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+            pop = toolbox.population(n=1)
+            hof = create_hall_of_fame()
+            stats = tools.Statistics(lambda ind: ind.fitness.values)
+            stats.register("avg", numpy.mean)
+            stats.register("std", numpy.std)
+            generations = 2
+            algorithms.eaSimple(pop, toolbox, 0.5, 0.2, generations, stats, hof)
+            print("Result: ", pop, hof, stats)
+            '''
             for i in range(1, num_runs+1):
                 tree = _nodes[0]([
                     _terminals[4](agents),
@@ -228,6 +271,7 @@ class ServerShell(cmd.Cmd):
                 print(f"Run {i}/{num_runs}")
                 #agents = exp.initialize()
                 exp.run()
+            '''
             exp.cleanup()
         except KeyError as e:
             print("Experiment not found")

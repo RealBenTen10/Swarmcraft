@@ -7,7 +7,7 @@ from swarmcraft.agent import Agent
 
 # implements behavior tree nodes
 # inspiration from https://arxiv.org/pdf/1709.00084
-class BehaviorTreeNode():
+class BehaviorTreeNode(object):
     def __init__(self):
         pass
 
@@ -49,7 +49,7 @@ class SequenceNode(ControlNode):
     This is a stateless node, meaning that each tick will result in all children being ticked from left to right.
     For a stateful node that remembers its last ticked child, see SSequenceNode.
     """
-    def __init__(self, children=None):
+    def __init__(self, children=None, *kwargs):
         super().__init__(children)
 
     @override
@@ -61,6 +61,8 @@ class SequenceNode(ControlNode):
         return 'success'
 
     def __repr__(self) -> str:
+        # TODO which one is correct?
+        # return f"{__class__.__name__}(){[child for child in self.children]}"
         return f"{__class__.__name__}(){[child for child in self.children]}"
 
 class SSequenceNode(ControlNode):

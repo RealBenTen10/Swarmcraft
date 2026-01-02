@@ -18,6 +18,7 @@ class ForageAgent(Agent):
 
     def set_tree(self, tree):
         self.tree = tree
+        print(self.tree)
         # "Perfect" tree for getting blocks
         #tree = SequenceNode([
         #    Look(self),
