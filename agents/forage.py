@@ -61,6 +61,31 @@ class ForageAgent(Agent):
             print(f"Error while resetting agent: {e}")
             pass
 
+    def movement_for_evaluation(self):
+        self.sensing.get_position()
+
+    def evaluation(
+            self,
+            remaining_blocks,
+            color,
+            initial_blocks,
+            reward_multiplier=1,
+            penalty_multiplier=1
+    ):
+        evaluation = 0
+        print("blocks: ", initial_blocks, remaining_blocks)
+        for block, initial_count in initial_blocks.items():
+            remaining_count = remaining_blocks.get(block, 0)
+            diff = initial_count - remaining_count
+
+            if block == color:
+                evaluation += diff * reward_multiplier
+            else:
+                evaluation -= diff * penalty_multiplier
+
+        return evaluation
+
+
 class SmartForageAgent(Agent):
     def __init__(self, pooler, message_server, uid, start_location, env, parent_uid=None):
         super().__init__(pooler, message_server, uid)

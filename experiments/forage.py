@@ -40,17 +40,17 @@ class ForageExperiment(Experiment):
             agent.get_bot(uid=f'forager_{self.total_agents_existed}')
             agent.reset()
 
-    def set_environment(self):
+    def set_environment(self, blocks):
         self.environment.reset()
         self.environment.initialize()
-        self.environment.set_blocks()
+        self.environment.set_blocks(blocks)
 
-    def set_round(self):
+    def set_round(self, blocks):
         self.set_agents()
-        self.set_environment()
+        self.set_environment(blocks)
 
     @override
-    def run(self):
+    def run(self, mission, blocks):
         # teleport agents to center of arena
         for agent in self.agents:
             self.minecraft_server.send(f'command tp {agent.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
@@ -70,9 +70,9 @@ class ForageExperiment(Experiment):
         fitness = 0
         for agent in self.agents:
             #print("Run finished... Evaluating")
-            remaining_blocks = agent.sensing.get_blocks_in_arena()
+            remaining_blocks = agent.sensing.get_blocks_in_arena(ORIGIN, SIZE, blocks)
             #print("Got: ", remaining_blocks)
-            fitness = agent.sensing.evaluation(remaining_blocks, "blue_wool", 4)
+            fitness = agent.evaluation(remaining_blocks, mission, blocks)
             #print("Resetting agent")
             agent.reset()
             #print("Unbinding bot")

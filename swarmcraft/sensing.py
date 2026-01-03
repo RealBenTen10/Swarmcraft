@@ -246,22 +246,24 @@ class Sensing(object):
         except IndexError:
             return None
 
-    def get_blocks_in_arena(self, origin=(10, -60, 10), size=(100, 100, 100)):
+    def get_blocks_in_arena(self, origin, size, blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}):
+        # Initialize counts for the specific blocks we care about
+        block_count = {key: 0 for key in blocks}
 
-        block_count = {
-            'blue_wool': 0,
-            'orange_wool': 0,
-            'brown_wool': 0,
-            'green_wool': 0
-        }
-        for x in range(size[0]):
-            for y in range(size[2]):
-                position = Vec3(origin[0] + x, -59, origin[2] + y)
-                if self.bot.canDigBlock(self.bot.blockAt(position)):
-                    # print(f"Block at {position} is {self.bot.blockAt(position)['name']} and \
-                    # {self.bot.canDigBlock(self.bot.blockAt(position))}")
-                    # 'name' is enough for evaluation - get "blue_wool", etc.
-                    block_count[self.bot.blockAt(position)['name']] += 1
+        # We only scan the interior (avoiding the bedrock walls at index 0 and size-1)
+        # Range starts at 1 and goes up to size - 1
+        for x in range(1, size[0] - 1):
+            for z in range(1, size[2] - 1):
+                # Coordinates must match the y_pos used in set_blocks (origin[1] + 1)
+                position = Vec3(origin[0] + x, origin[1] + 1, origin[2] + z)
+
+                block = self.bot.blockAt(position)
+
+                # Check if block exists and if it's one of our target wool types
+                if block and block['name'] in block_count:
+                    # We only count it if it's actually diggable (not air/bedrock)
+                    block_count[block['name']] += 1
+
         return block_count
 
     def evaluation(self, remaining_blocks, color, block_number, reward_multiplier=1, penalty_multiplier=1):
@@ -275,7 +277,7 @@ class Sensing(object):
         return evaluation
 
 
-    def get_blocks_in_arena_2(self, origin=(10, -60, 10), size=(100, 100, 100)):
+    def old_get_blocks_in_arena_old(self, origin=(10, -60, 10), size=(100, 100, 100)):
         radius = 5
         block_positions = []
         for x in range(-radius, radius + 1):

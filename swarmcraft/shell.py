@@ -239,7 +239,7 @@ class ServerShell(cmd.Cmd):
             toolbox = set_toolbox(pset)
 
             # --- Define Evaluation Function (Closure) ---
-            def evaluate_bt(individual):
+            def evaluate_bt(individual, mission="blue_wool"):
 
                 # print("Set new tree")
                 new_tree = gp.compile(individual, pset)
@@ -249,10 +249,12 @@ class ServerShell(cmd.Cmd):
                 # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
                 agents.set_tree(new_tree)
 
-                exp.set_round()
-
+                # init arena, etc.
+                # decide on which blocks to randomly allocate in arena
+                blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}
+                exp.set_round(blocks)
                 # Run simulation
-                fitness = exp.run()
+                fitness = exp.run(mission, blocks)
                 # print(f"Fitness: {fitness}")
                 try:
                     print("Individual: ", str(individual), " has fitness: ", fitness)
