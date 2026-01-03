@@ -247,8 +247,7 @@ class Sensing(object):
             return None
 
     def get_blocks_in_arena(self, origin=(10, -60, 10), size=(100, 100, 100)):
-        # TODO
-        # Return dictionary with count per wool type
+
         block_count = {
             'blue_wool': 0,
             'orange_wool': 0,

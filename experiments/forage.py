@@ -72,7 +72,7 @@ class ForageExperiment(Experiment):
             print("Run finished... Evaluating")
             remaining_blocks = agent.sensing.get_blocks_in_arena()
             print("Got: ", remaining_blocks)
-            fitness = agent.sensing.evaluation(remaining_blocks, "blue_wool", 16)
+            fitness = agent.sensing.evaluation(remaining_blocks, "blue_wool", 4)
             print("Resetting agent")
             agent.reset()
             print("Unbinding bot")

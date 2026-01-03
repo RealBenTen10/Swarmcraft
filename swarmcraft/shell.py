@@ -32,7 +32,7 @@ def sequence_2_child(child1, child2):
     return bt.SequenceNode([child1, child2])
 
 def sequence_3_child(child1, child2, child3):
-    return bt.SequenceNode([child1, child2, child2])
+    return bt.SequenceNode([child1, child2, child3])
 
 def fallback_1_child(child1):
     return bt.FallbackNode([child1])
@@ -43,47 +43,52 @@ def fallback_2_child(child1, child2):
 def fallback_3_child(child1, child2, child3):
     return bt.FallbackNode([child1, child2, child3])
 
-def evaluate_bt(individual, toolbox=None):
-    # individual, = mutUniform(individual, toolbox.pset())
-    # print_individual(individual)
-    # Transform the tree expression in a callable function
-    toplevel = toolbox.compile(expr=individual)
-    print("Toplevel: ", toplevel)
-    return 1
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
 def generate_pset(agents):
-    pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
+    # 1. Define the PSet
+    # NOTE: If you want the root of the tree to potentially be a single Action,
+    # the return type here should probably be the generic bt.BehaviorTreeNode,
+    # not strictly bt.ControlNode.
+    pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
-    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    # 2. Add Control Nodes (The branches)
+    # These take children (BehaviorTreeNode) and return a BehaviorTreeNode
+    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
-    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    # 3. Add Leaf Nodes (The Actions)
+    # The trick: Input args are [], Return type is BehaviorTreeNode.
 
-    def action_dig():
+    # helper to instantiate the class with agents
+    def make_dig():
         return StartDig(agents)
-    #pset.addTerminal(action_dig, bt.ActionNode)
-    pset.addPrimitive(action_dig, [], bt.ActionNode)
 
-    def look():
+    def make_look():
         return Look(agents)
-    #pset.addTerminal(look, bt.ActionNode)
-    pset.addPrimitive(look, [], bt.ActionNode)
 
-    def move():
+    def make_move():
         return PressDir(agents)
-    #pset.addTerminal(move, bt.ActionNode)
-    pset.addPrimitive(move, [], bt.ActionNode)
 
-    def stop():
+    def make_stop():
         return ReleaseDir(agents)
-#    pset.addTerminal(stop, bt.ActionNode)
-    pset.addPrimitive(stop, [], bt.ActionNode)
 
+    def make_sense():
+        return CanDigBlock(agents)
 
-    print("Primitives: ", pset.primitives)
+    # Register them as primitives with 0-arity (Leaves)
+    # We provide a unique 'name' (4th argument) to ensure DEAP differentiates them
+    pset.addPrimitive(make_dig, [], bt.BehaviorTreeNode, name="Dig")
+    pset.addPrimitive(make_look, [], bt.BehaviorTreeNode, name="Look")
+    pset.addPrimitive(make_move, [], bt.BehaviorTreeNode, name="Move")
+    pset.addPrimitive(make_stop, [], bt.BehaviorTreeNode, name="Stop")
+    pset.addPrimitive(make_sense, [], bt.BehaviorTreeNode, name="CanDig")
+
     return pset
 
 def set_toolbox(pset):
@@ -233,10 +238,13 @@ class ServerShell(cmd.Cmd):
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
             agents = exp.initialize()
+            print("Set pset")
             pset = generate_pset(agents)
+            print("set toolbox")
             toolbox = set_toolbox(pset)
 
             def evaluate_bt(individual):
+                print("set new tree")
                 new_tree = gp.compile(individual, pset)
                 print("New tree: ", new_tree)
                 agents.set_tree(new_tree)
@@ -245,20 +253,19 @@ class ServerShell(cmd.Cmd):
                 # agents = exp.initialize()
                 fitness = exp.run()
                 print("Fitness: ", fitness)
-                fitness_score = 16 - fitness["blue_wool"]
-                return fitness_score
+                return fitness,
             toolbox.register("evaluate", evaluate_bt)
             toolbox.register("select", tools.selTournament, tournsize=7)
             toolbox.register("mate", gp.cxOnePoint)
             toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
             toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-            #pop = toolbox.population(n=1)
+            pop = toolbox.population(n=1)
             hof = create_hall_of_fame()
             stats = tools.Statistics(lambda ind: ind.fitness.values)
             stats.register("avg", numpy.mean)
             stats.register("std", numpy.std)
-            generations = 2
-            algorithms.eaSimple(1, toolbox, 0.5, 0.2, generations, stats, hof)
+            generations = 3
+            algorithms.eaSimple(pop, toolbox, 0.5, 0.2, generations, stats, hof)
             print("Result: ", hof, stats)
             '''
             for i in range(1, num_runs+1):
