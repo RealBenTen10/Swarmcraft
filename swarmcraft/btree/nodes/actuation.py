@@ -25,7 +25,7 @@ class PressDir(ActionNode):
         self.key = random.choice([el.value for el in MovementKeys])
 
     def tick(self) -> str:
-        print("Moving")
+        print(f"Moving {self.key}")
         self.agent.actuation.start_move(self.key)
         return 'success'
 

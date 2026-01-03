@@ -91,8 +91,8 @@ def set_toolbox(pset):
     toolbox.register("compile", gp.compile, pset=pset)
     return toolbox
 
-_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
-_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
+#_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
+#_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
 
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
@@ -217,13 +217,14 @@ class ServerShell(cmd.Cmd):
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
-        num_runs = 2
+        generations = 1
+        counter = 0
 
         if len(args) > 0:
             # Safety check if at is empty
             if at: num_runs = int(at[0])
 
-        print(f"Doing {num_runs} runs")
+        print(f"Doing {generations} runs")
 
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
@@ -239,6 +240,7 @@ class ServerShell(cmd.Cmd):
 
             # --- Define Evaluation Function (Closure) ---
             def evaluate_bt(individual):
+
                 # print("Set new tree")
                 new_tree = gp.compile(individual, pset)
                 # print("New tree: ", new_tree)
@@ -252,6 +254,10 @@ class ServerShell(cmd.Cmd):
                 # Run simulation
                 fitness = exp.run()
                 # print(f"Fitness: {fitness}")
+                try:
+                    print("Individual: ", str(individual), " has fitness: ", fitness)
+                except:
+                    print("Ind: ", individual)
                 return fitness,  # Tuple required!
 
             toolbox.register("evaluate", evaluate_bt)
@@ -271,20 +277,25 @@ class ServerShell(cmd.Cmd):
             stats.register("std", numpy.std)
             stats.register("max", numpy.max)
 
-            generations = 3
-
             # cxpb = 0 because crossover is impossible with 1 individual
             # mutpb = 1.0 implies we ALWAYS mutate the single agent (Random Walk)
             # algorithms.eaSimple(pop, toolbox, cxpb=0, mutpb=1.0, ngen=generations, stats=stats, halloffame=hof)
             # mu=1 (keep 1 parent), lambda_=1 (generate 1 child), cxpb=0, mutpb=1.0
+            ''' 
+            TODO
+            Decide on which EA to use
+            It has to be able to handle one agent (instead of many)
+            Use old BT to generate new BT
+            So also adjust GA configuration
+            '''
             algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
                                       halloffame=hof)
-
+            #print("Hof: ", hof)
             print("Result HOF: ", hof[0])
             exp.cleanup()
 
         except KeyError as e:
-            print(f"Experiment '{exp_name}' not found")
+            print(f"Experiment '{exp_name}' not found: ", e)
         except Exception as e:
             print("Experiment error")
             print(e)

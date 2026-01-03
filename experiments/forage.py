@@ -69,14 +69,12 @@ class ForageExperiment(Experiment):
                 self.last_update_time = time.time()
         fitness = 0
         for agent in self.agents:
-            print("Run finished... Evaluating")
+            #print("Run finished... Evaluating")
             remaining_blocks = agent.sensing.get_blocks_in_arena()
-            print("Got: ", remaining_blocks)
+            #print("Got: ", remaining_blocks)
             fitness = agent.sensing.evaluation(remaining_blocks, "blue_wool", 4)
-            print("Resetting agent")
+            #print("Resetting agent")
             agent.reset()
-            print("Unbinding bot")
+            #print("Unbinding bot")
             self.pooler.unbind_bot(agent)
-            ### print("Destroying agent")
-            ### agent.destroy()
         return fitness

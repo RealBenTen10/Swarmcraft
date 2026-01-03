@@ -93,14 +93,14 @@ class Actuation(object):
                     self.agent.bot.chat('I started digging!')
             else:
                 if len(blocks_positions) > 0:
-                    print(f"{self.agent.get_uid()} in {self.agent.sensing.get_username()} starting to dig")
-
+                    #print(f"{self.agent.get_uid()} in {self.agent.sensing.get_username()} starting to dig")
+                    print("Digging")
                     self.agent.bot.dig(self.agent.bot.blockAt(blocks_positions[0]))
                     self.agent.bot.chat('I started digging!')
             return True
         except Exception as e:
             self.agent.bot.chat(f"I had an error while digging")
-            # print(f"Error during dig: {e}")
+            print(f"Error during dig: {e}")
         return False
 
         #if self.agent.bot.targetDigBlock is None:

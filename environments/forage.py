@@ -10,12 +10,14 @@ from swarmcraft import BlockTypes
 START_LOCATION = (20, -55, 20)
 class ForageEnvironment(Environment):
     def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(20, 10, 20),
-                 resource_min_size=1, resource_max_size=2, resource_count=1):
+                 resource_min_size=1, resource_max_size=2, resource_count=1,
+                 blocks = {'blue_wool': 4,'orange_wool': 4,'brown_wool': 0,'green_wool': 0}):
         super().__init__(minecraft_server, origin, size)
         self.resource_min_size = resource_min_size
         self.resource_max_size = resource_max_size
         self.resource_count = resource_count
         self.resource_positions = []
+        self.blocks = blocks
 
     @override
     def initialize(self):
@@ -35,18 +37,29 @@ class ForageEnvironment(Environment):
                         self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BlockTypes.ORANGE_WOOL.value}')
                         self.resource_positions.append(b_pos)
         '''
-        # Create Blocks around agent for dig
+
     def set_blocks(self):
-        for j in range(1,5):
-            for i in range(1,2):
-                self.minecraft_server.send(
-                f'setblock {START_LOCATION[0]+j} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
-                self.minecraft_server.send(
-                    f'setblock {START_LOCATION[0] - j} {self.origin[1] + i} {START_LOCATION[2]} minecraft:{BlockTypes.BLUE_WOOL.value}')
-                self.minecraft_server.send(
-                f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]+j} minecraft:{BlockTypes.BLUE_WOOL.value}')
-                self.minecraft_server.send(
-                    f'setblock {START_LOCATION[0]} {self.origin[1] + i} {START_LOCATION[2]-j} minecraft:{BlockTypes.BLUE_WOOL.value}')
+        """Spawns wool blocks within the bedrock perimeter at unique locations"""
+        occupied_coords = set()
+
+        for block_type, count in self.blocks.items():
+            for _ in range(count):
+                while True:
+                    # 1. Generate candidate coordinates inside the arena
+                    x_pos = random.randint(self.origin[0] + 1, self.origin[0] + self.size[0] - 2)
+                    z_pos = random.randint(self.origin[2] + 1, self.origin[2] + self.size[2] - 2)
+                    y_pos = self.origin[1] + 1
+
+                    coord = (x_pos, y_pos, z_pos)
+
+                    # 2. Check if this spot is already taken by another wool block
+                    if coord not in occupied_coords:
+                        # 3. Mark as occupied and send the command
+                        occupied_coords.add(coord)
+                        self.minecraft_server.send(
+                            f'setblock {x_pos} {y_pos} {z_pos} minecraft:{block_type}'
+                        )
+                        break
 
 
     def get_point_in_environment(self):
