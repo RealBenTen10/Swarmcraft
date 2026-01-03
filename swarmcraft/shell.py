@@ -47,65 +47,49 @@ creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
 def generate_pset(agents):
-    # 1. Define the PSet
-    # NOTE: If you want the root of the tree to potentially be a single Action,
-    # the return type here should probably be the generic bt.BehaviorTreeNode,
-    # not strictly bt.ControlNode.
+    """
+    Creates the Primitive Set (PSet) for DEAP.
+    Nodes are mapped to 0-arity primitives (leaves) to handle arguments.
+    """
     pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
-    # 2. Add Control Nodes (The branches)
-    # These take children (BehaviorTreeNode) and return a BehaviorTreeNode
+    # Branches
     pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
-    # 3. Add Leaf Nodes (The Actions)
-    # The trick: Input args are [], Return type is BehaviorTreeNode.
+    # Leaves (Actions)
+    # We use local helper functions to capture the 'agents' object
+    def make_dig(): return StartDig(agents)
+    def make_look(): return Look(agents)
+    def make_move(): return PressDir(agents)
+    def make_stop(): return ReleaseDir(agents)
+    def make_sense(): return CanDigBlock(agents)
 
-    # helper to instantiate the class with agents
-    def make_dig():
-        return StartDig(agents)
+    #pset.addPrimitive(make_dig, [], bt.BehaviorTreeNode, name="Dig")
+    #pset.addPrimitive(make_look, [], bt.BehaviorTreeNode, name="Look")
+    #pset.addPrimitive(make_move, [], bt.BehaviorTreeNode, name="Move")
+    #pset.addPrimitive(make_stop, [], bt.BehaviorTreeNode, name="Stop")
+    #pset.addPrimitive(make_sense, [], bt.BehaviorTreeNode, name="CanDig")
 
-    def make_look():
-        return Look(agents)
-
-    def make_move():
-        return PressDir(agents)
-
-    def make_stop():
-        return ReleaseDir(agents)
-
-    def make_sense():
-        return CanDigBlock(agents)
-
-    # Register them as primitives with 0-arity (Leaves)
-    # We provide a unique 'name' (4th argument) to ensure DEAP differentiates them
-    pset.addPrimitive(make_dig, [], bt.BehaviorTreeNode, name="Dig")
-    pset.addPrimitive(make_look, [], bt.BehaviorTreeNode, name="Look")
-    pset.addPrimitive(make_move, [], bt.BehaviorTreeNode, name="Move")
-    pset.addPrimitive(make_stop, [], bt.BehaviorTreeNode, name="Stop")
-    pset.addPrimitive(make_sense, [], bt.BehaviorTreeNode, name="CanDig")
+    pset.addTerminal(StartDig(agents), bt.BehaviorTreeNode, name="Dig")
+    pset.addTerminal(Look(agents), bt.BehaviorTreeNode, name="Look")
+    pset.addTerminal(PressDir(agents), bt.BehaviorTreeNode, name="Move")
+    pset.addTerminal(ReleaseDir(agents), bt.BehaviorTreeNode, name="Stop")
+    pset.addTerminal(CanDigBlock(agents), bt.BehaviorTreeNode, name="CanDig")
 
     return pset
 
 def set_toolbox(pset):
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
-
     toolbox = base.Toolbox()
     toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2)
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
-
     return toolbox
-
-def create_hall_of_fame():
-    hof = tools.HallOfFame(1)
-    return hof
 
 _nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
 _terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
@@ -225,71 +209,82 @@ class ServerShell(cmd.Cmd):
 
     def do_run(self, args):
         """Run an experiment"""
+        # Assuming 'self' has: experiments, pooler, server, messenger
+        # Assuming LOG_DIR is defined globally or imported
+        LOG_DIR = "./logs"  # Placeholder if not defined elsewhere
+
         at = args.split()
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
         num_runs = 2
-        print(at)
-        if len(args) > 0: num_runs = int(at[0])
+
+        if len(args) > 0:
+            # Safety check if at is empty
+            if at: num_runs = int(at[0])
+
         print(f"Doing {num_runs} runs")
 
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
+
+            # Initialize world and get agents
             agents = exp.initialize()
+
             print("Set pset")
             pset = generate_pset(agents)
-            print("set toolbox")
+            print("Set toolbox")
             toolbox = set_toolbox(pset)
 
+            # --- Define Evaluation Function (Closure) ---
             def evaluate_bt(individual):
-                print("set new tree")
+                # print("Set new tree")
                 new_tree = gp.compile(individual, pset)
-                print("New tree: ", new_tree)
+                # print("New tree: ", new_tree)
+
+                # Update the agents with the new behavior tree
+                # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
                 agents.set_tree(new_tree)
+
                 exp.set_round()
-                print("-" * 20)
-                # agents = exp.initialize()
+
+                # Run simulation
                 fitness = exp.run()
-                print("Fitness: ", fitness)
-                return fitness,
+                # print(f"Fitness: {fitness}")
+                return fitness,  # Tuple required!
+
             toolbox.register("evaluate", evaluate_bt)
-            toolbox.register("select", tools.selTournament, tournsize=7)
+
+            # --- GA Configuration ---
+            # Modified for Population = 1
+            toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
             toolbox.register("mate", gp.cxOnePoint)
             toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
             toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+
             pop = toolbox.population(n=1)
-            hof = create_hall_of_fame()
+            hof = tools.HallOfFame(1)
+
             stats = tools.Statistics(lambda ind: ind.fitness.values)
             stats.register("avg", numpy.mean)
             stats.register("std", numpy.std)
+            stats.register("max", numpy.max)
+
             generations = 3
-            algorithms.eaSimple(pop, toolbox, 0.5, 0.2, generations, stats, hof)
-            print("Result: ", hof, stats)
-            '''
-            for i in range(1, num_runs+1):
-                tree = _nodes[0]([
-                    _terminals[4](agents),
-                    _nodes[1]([
-                        _nodes[0]([
-                            _terminals[3](agents),
-                            _terminals[2](agents),
-                            _terminals[1](agents)
-                        ]),
-                        _terminals[0](agents)
-                    ])
-                ])
-                agents.set_tree(tree)
-                exp.set_round()
-                print("-"*20)
-                print(f"Run {i}/{num_runs}")
-                #agents = exp.initialize()
-                exp.run()
-            '''
+
+            # cxpb = 0 because crossover is impossible with 1 individual
+            # mutpb = 1.0 implies we ALWAYS mutate the single agent (Random Walk)
+            # algorithms.eaSimple(pop, toolbox, cxpb=0, mutpb=1.0, ngen=generations, stats=stats, halloffame=hof)
+            # mu=1 (keep 1 parent), lambda_=1 (generate 1 child), cxpb=0, mutpb=1.0
+            algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
+                                      halloffame=hof)
+
+            print("Result HOF: ", hof[0])
             exp.cleanup()
+
         except KeyError as e:
-            print("Experiment not found")
+            print(f"Experiment '{exp_name}' not found")
         except Exception as e:
             print("Experiment error")
             print(e)
@@ -297,10 +292,9 @@ class ServerShell(cmd.Cmd):
             if exp is not None:
                 try:
                     exp.cleanup()
-                except Exception as e:
-                    print('Experiment cleanup error - you may need to restart Swarmcraft')
-                    print(e)
-                    traceback.print_tb(e.__traceback__)
+                except Exception as cleanup_error:
+                    print('Experiment cleanup error')
+                    print(cleanup_error)
 
 
     def do_clear(self, args):
