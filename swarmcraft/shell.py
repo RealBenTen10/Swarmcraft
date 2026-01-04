@@ -46,6 +46,10 @@ def fallback_3_child(child1, child2, child3):
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 
+# Class for color of type string
+class WoolColor(str):
+    pass
+
 def generate_pset(agents):
     """
     Creates the Primitive Set (PSet) for DEAP.
@@ -66,9 +70,7 @@ def generate_pset(agents):
         return StartDig(agents, color)
     def make_sense(color):
         return CanDigBlock(agents, color)
-    # Class for color of type string
-    class WoolColor(str):
-        pass
+
     # Primitives for Dig
     pset.addPrimitive(make_dig, [WoolColor], bt.BehaviorTreeNode, name="Dig")
     pset.addPrimitive(make_sense, [WoolColor], bt.BehaviorTreeNode, name="CanDig")
@@ -213,26 +215,28 @@ class ServerShell(cmd.Cmd):
         # Assuming 'self' has: experiments, pooler, server, messenger
         # Assuming LOG_DIR is defined globally or imported
         LOG_DIR = "./logs"  # Placeholder if not defined elsewhere
-
         at = args.split()
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
-        generations = args[0] if len(args) > 0 else 3
+
+        generations = int(at[0]) if len(args) > 0 else 3
+        agent_count = int(at[1]) if len(args) > 0 else 1
         counter = 0
 
         if len(args) > 0:
             # Safety check if at is empty
             if at: num_runs = int(at[0])
 
-        print(f"Doing {generations} runs")
+        print(f"Doing {generations} runs with {agent_count} agents")
 
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
 
             # Initialize world and get agents
-            agents = exp.initialize()
+
+            agents = exp.initialize(agent_count)
 
             print("Set pset")
             pset = generate_pset(agents)
@@ -241,7 +245,7 @@ class ServerShell(cmd.Cmd):
 
             # --- Define Evaluation Function (Closure) ---
             def evaluate_bt(individual, mission="blue_wool"):
-
+                print("ind: ", individual)
                 # print("Set new tree")
                 new_tree = gp.compile(individual, pset)
                 # print("New tree: ", new_tree)
@@ -259,8 +263,8 @@ class ServerShell(cmd.Cmd):
                 # print(f"Fitness: {fitness}")
                 try:
                     print("Individual: ", str(individual), " has fitness: ", fitness)
-                except:
-                    print("Ind: ", individual)
+                except Exception as e:
+                    print("Ind: ", individual, " because ", e)
                 return fitness,  # Tuple required!
 
             #toolbox = base.Toolbox()
@@ -275,7 +279,7 @@ class ServerShell(cmd.Cmd):
             # Modified for Population = 1
             toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
             toolbox.register("mate", gp.cxOnePoint) # crossover for more than one individual?
-            toolbox.register("expr_mut", gp.genGrow, min_=0, max_=2) # leafs can have different depth
+            toolbox.register("expr_mut", gp.genGrow, min_=0, max_=1) # leafs can have different depth
             toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
             # algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
             #                                       halloffame=hof)
