@@ -55,7 +55,14 @@ class IsHoldingItem(ActionNode):
         return f'{__class__.__name__}()'
 
 class CanDigBlock(ActionNode):
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.color = args[0] if len(args) > 0 else ""
+
     def tick(self, color = "blue_wool") -> str:
+        color = self.color
+        # print("Looking for Color: ", color)
         radius = 2
         block_positions = []
         for x in range(-radius, radius + 1):

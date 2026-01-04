@@ -73,7 +73,7 @@ class ForageAgent(Agent):
             penalty_multiplier=1
     ):
         evaluation = 0
-        print("blocks: ", initial_blocks, remaining_blocks)
+        #print("blocks: ", initial_blocks, remaining_blocks)
         for block, initial_count in initial_blocks.items():
             remaining_count = remaining_blocks.get(block, 0)
             diff = initial_count - remaining_count

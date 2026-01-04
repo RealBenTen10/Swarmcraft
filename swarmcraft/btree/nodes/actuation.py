@@ -25,7 +25,7 @@ class PressDir(ActionNode):
         self.key = random.choice([el.value for el in MovementKeys])
 
     def tick(self) -> str:
-        print(f"Moving {self.key}")
+        #print(f"Moving {self.key}")
         self.agent.actuation.start_move(self.key)
         return 'success'
 
@@ -152,10 +152,13 @@ class StartDig(ActionNode):
     If the agent could not start digging, returns 'failure'
     Use sensing.IsDigging to check if agent is digging or not
     """
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.color = args[0] if len(args) > 0 else ""
     def tick(self) -> str:
         if self.agent.sensing.is_digging():
             return 'running'
-        if self.agent.actuation.start_dig():
+        if self.agent.actuation.start_dig(self.color):
             return 'success'
         return 'failure'
 

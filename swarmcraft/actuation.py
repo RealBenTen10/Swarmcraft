@@ -77,31 +77,45 @@ class Actuation(object):
         """
         self.agent.bot.look(direction[0], direction[1], True)
 
-    def start_dig(self):
+    def start_dig(self, color):
         """
-        Start mining the block at the bot's cursor
-        Returns false if already mining or block is not present or the block cannot be mined
+        Start mining a block of a specific color in proximity.
+        Returns True if a valid block was found and digging started, False otherwise.
         """
+        # TODO add constraint that Dig can only be executed when stopped? Or combine Move with CanDig and Stop
+
+        # 1. Get positions of all potentially diggable blocks nearby
         blocks_positions = self.agent.sensing.can_dig_block_in_proximity()
-        async_task = False
+
+        if not blocks_positions:
+            return False
+
         try:
-            if async_task:
-                @AsyncTask(start=True)
-                def break_block(task):
-                    for block in blocks_positions:
-                        self.agent.bot.dig(self.agent.bot.blockAt(block))
-                    self.agent.bot.chat('I started digging!')
-            else:
-                if len(blocks_positions) > 0:
-                    #print(f"{self.agent.get_uid()} in {self.agent.sensing.get_username()} starting to dig")
-                    print("Digging")
-                    self.agent.bot.dig(self.agent.bot.blockAt(blocks_positions[0]))
-                    self.agent.bot.chat('I started digging!')
-            return True
+            # 2. Iterate through positions to find the correct color
+            for pos in blocks_positions:
+                block = self.agent.bot.blockAt(pos)
+
+                # 3. Check if the block exists and the color (name) matches
+                # We use 'minecraft:' + color if your pset provides "blue_wool"
+                # but the bot returns "minecraft:blue_wool"
+                if block and block['name'] == color:
+                    print(f"Target color {color} found at {pos}. Digging...")
+
+                    # 4. Start digging the specific block found
+                    self.agent.bot.dig(block)
+                    self.agent.bot.chat(f'I started digging {color}!')
+
+                    # Return True immediately after finding and starting the dig
+                    return True
+
+            # If the loop finishes without finding the color
+            #print(f"No blocks with color {color} found in proximity.")
+            return False
+
         except Exception as e:
             self.agent.bot.chat(f"I had an error while digging")
             print(f"Error during dig: {e}")
-        return False
+            return False
 
         #if self.agent.bot.targetDigBlock is None:
         #    if self.agent.sensing.can_dig_cursor_block():

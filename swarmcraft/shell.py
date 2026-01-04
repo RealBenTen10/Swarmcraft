@@ -61,31 +61,32 @@ def generate_pset(agents):
     pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
-    # Leaves (Actions)
-    # We use local helper functions to capture the 'agents' object
-    def make_dig(): return StartDig(agents)
-    def make_look(): return Look(agents)
-    def make_move(): return PressDir(agents)
-    def make_stop(): return ReleaseDir(agents)
-    def make_sense(): return CanDigBlock(agents)
+    # functions for Dig
+    def make_dig(color):
+        return StartDig(agents, color)
+    def make_sense(color):
+        return CanDigBlock(agents, color)
+    # Class for color of type string
+    class WoolColor(str):
+        pass
+    # Primitives for Dig
+    pset.addPrimitive(make_dig, [WoolColor], bt.BehaviorTreeNode, name="Dig")
+    pset.addPrimitive(make_sense, [WoolColor], bt.BehaviorTreeNode, name="CanDig")
+    # The wool color constants for Dig
+    pset.addTerminal("blue_wool", WoolColor, name="BlueWool")
+    pset.addTerminal("orange_wool", WoolColor, name="OrangeWool")
 
-    #pset.addPrimitive(make_dig, [], bt.BehaviorTreeNode, name="Dig")
-    #pset.addPrimitive(make_look, [], bt.BehaviorTreeNode, name="Look")
-    #pset.addPrimitive(make_move, [], bt.BehaviorTreeNode, name="Move")
-    #pset.addPrimitive(make_stop, [], bt.BehaviorTreeNode, name="Stop")
-    #pset.addPrimitive(make_sense, [], bt.BehaviorTreeNode, name="CanDig")
-
-    pset.addTerminal(StartDig(agents), bt.BehaviorTreeNode, name="Dig")
+    #pset.addTerminal(StartDig(agents), bt.BehaviorTreeNode, name="Dig") # Digs everything
     pset.addTerminal(Look(agents), bt.BehaviorTreeNode, name="Look")
     pset.addTerminal(PressDir(agents), bt.BehaviorTreeNode, name="Move")
     pset.addTerminal(ReleaseDir(agents), bt.BehaviorTreeNode, name="Stop")
-    pset.addTerminal(CanDigBlock(agents), bt.BehaviorTreeNode, name="CanDig")
+    #pset.addTerminal(CanDigBlock(agents), bt.BehaviorTreeNode, name="CanDig") # Looks for anything that can be dug
 
     return pset
 
 def set_toolbox(pset):
     toolbox = base.Toolbox()
-    toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2)
+    toolbox.register("expr", gp.genGrow, pset=pset, min_=0, max_=2)
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
@@ -217,7 +218,7 @@ class ServerShell(cmd.Cmd):
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
-        generations = 1
+        generations = args[0] if len(args) > 0 else 3
         counter = 0
 
         if len(args) > 0:
@@ -262,15 +263,22 @@ class ServerShell(cmd.Cmd):
                     print("Ind: ", individual)
                 return fitness,  # Tuple required!
 
+            #toolbox = base.Toolbox()
+            #toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2)
+            #toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
+            #toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+            #toolbox.register("compile", gp.compile, pset=pset)
+
             toolbox.register("evaluate", evaluate_bt)
 
             # --- GA Configuration ---
             # Modified for Population = 1
             toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
-            toolbox.register("mate", gp.cxOnePoint)
-            toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
+            toolbox.register("mate", gp.cxOnePoint) # crossover for more than one individual?
+            toolbox.register("expr_mut", gp.genGrow, min_=0, max_=2) # leafs can have different depth
             toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-
+            # algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
+            #                                       halloffame=hof)
             pop = toolbox.population(n=1)
             hof = tools.HallOfFame(1)
 
