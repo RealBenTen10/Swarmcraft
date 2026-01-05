@@ -221,7 +221,7 @@ class ServerShell(cmd.Cmd):
         exp = None
 
         generations = int(at[0]) if len(args) > 0 else 3
-        agent_count = int(at[1]) if len(args) > 0 else 1
+        agent_count = int(at[1]) if len(args) > 1 else 1
         counter = 0
 
         if len(args) > 0:
