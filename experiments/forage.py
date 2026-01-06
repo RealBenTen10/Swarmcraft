@@ -10,22 +10,21 @@ from swarmcraft.experiment import Experiment
 
 ORIGIN = (10, -60, 10)
 SIZE = (20, 10, 20)
-START_LOCATION = (20, -55, 20)
+START_LOCATION = (20, -57, 20)
 
 
 class ForageExperiment(Experiment):
     def __init__(self, pooler, minecraft_server, message_server, *args):
         super().__init__(pooler, minecraft_server, message_server)
         self.last_update_time = None
-        self.update_interval = 1.  # how many seconds to wait between experiment updates
+        self.update_interval = 0.5  # how many seconds to wait between experiment updates
         self.init_agent_count = 1
         self.max_time_sec = 30
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0
         self.pooler.create_bot()
-        self.agents = [ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION,
-                            self.environment, tree=None)]
+        self.agents = None
 
     @override
     def initialize(self, agent_count):
@@ -33,16 +32,24 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send('say initialized foraging environment')
         # print("Amount of agents: ", self.init_agent_count)
 
-        self.minecraft_server.send('say initialized foraging agents')
         self.last_update_time = time.time()
+
+        self.agents = []
         if agent_count > 1:
-            self.agents = []
-            for i in range(0, agent_count):
-                self.agents.append(
-                    ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION,
-                                self.environment, tree=None))
-            return self.agents
-        return self.agents[0]
+            for i in range(agent_count):
+                if len(self.pooler.free_bots) == 0:
+                    self.pooler.create_bot()
+                a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION,
+                                self.environment, tree=None)
+                self.total_agents_existed += 1
+                self.current_agent_count += 1
+                a.reset()
+                self.agents.append(a)
+        else:
+            self.agents = [ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION,
+                            self.environment, tree=None)]
+        self.minecraft_server.send('say initialized foraging agents')
+        return self.agents
 
     def set_agents(self):
         for agent in self.agents:
@@ -65,17 +72,12 @@ class ForageExperiment(Experiment):
             self.minecraft_server.send(
                 f'command tp {agent.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}')
 
-        time.sleep(1)
+        time.sleep(1) # to ensure agents starts when on ground and in arena
         start_time = time.time()
         while time.time() - start_time < self.max_time_sec:
             if time.time() - self.last_update_time > self.update_interval:  # controlled update
                 for agent in self.agents:
                     agent.update()
-
-                # do logging
-                #self.log_agents()
-                #self.write_to_experiment_log({'time': time.time(), 'agents': self.current_agent_count})
-
                 self.last_update_time = time.time()
         # fitness currently returns global reward (not per agent)
         fitness = 0

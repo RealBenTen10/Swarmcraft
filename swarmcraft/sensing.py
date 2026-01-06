@@ -178,7 +178,7 @@ class Sensing(object):
         Check the surrounding for blocks
         Is a diamond shape with side length 3
         """
-        radius = 2
+        radius = 1
         block_positions = []
         for x in range(-radius, radius + 1):
             for y in range(-radius, radius + 1):

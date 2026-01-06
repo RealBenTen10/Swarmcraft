@@ -58,10 +58,10 @@ def generate_pset(agents):
     pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
     # Branches
-    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
@@ -88,11 +88,24 @@ def generate_pset(agents):
 
 def set_toolbox(pset):
     toolbox = base.Toolbox()
-    toolbox.register("expr", gp.genGrow, pset=pset, min_=0, max_=2)
+    toolbox.register("expr", gp.genGrow, pset=pset, min_=0, max_=1) # first tree
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
+    # --- GA Configuration ---
+    # Modified for Population = 1
+    toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
+    toolbox.register("mate", gp.cxOnePoint)  # crossover for more than one individual?
+    toolbox.register("expr_mut", gp.genGrow, min_=0, max_=4)  # leafs can have different depth # used for mutation
+    toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
     return toolbox
+
+def set_stats():
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", numpy.mean)
+    stats.register("std", numpy.std)
+    stats.register("max", numpy.max)
+    return stats
 
 #_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
 #_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
@@ -212,96 +225,82 @@ class ServerShell(cmd.Cmd):
 
     def do_run(self, args):
         """Run an experiment"""
-        # Assuming 'self' has: experiments, pooler, server, messenger
-        # Assuming LOG_DIR is defined globally or imported
-        LOG_DIR = "./logs"  # Placeholder if not defined elsewhere
+        LOG_DIR = "./logs"
         at = args.split()
         exp_name = "ForageExperiment"
         exp_args = ['1']
         exp = None
 
-        generations = int(at[0]) if len(args) > 0 else 3
-        agent_count = int(at[1]) if len(args) > 1 else 1
-        counter = 0
+        # Generations: how often should the individual evolve
+        generations = int(at[0]) if len(at) > 0 else 2
+        # Agent count: how many agents
+        agent_count = int(at[1]) if len(at) > 1 else 1
+        # Number runs per environment: on how many envs should the controller be tested
+        number_runs_per_env = int(at[2]) if len(at) > 2 else 1
+        # global counter for current generation
+        counter = 1
 
         if len(args) > 0:
             # Safety check if at is empty
             if at: num_runs = int(at[0])
 
-        print(f"Doing {generations} runs with {agent_count} agents")
+        print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_env} repetitions per generation")
 
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
 
             # Initialize world and get agents
-
+            # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
             agents = exp.initialize(agent_count)
 
             print("Set pset")
-            pset = generate_pset(agents)
+            pset = generate_pset(agents[0])
             print("Set toolbox")
             toolbox = set_toolbox(pset)
 
             # --- Define Evaluation Function (Closure) ---
-            def evaluate_bt(individual, mission="blue_wool"):
-                print("ind: ", individual)
-                # print("Set new tree")
-                new_tree = gp.compile(individual, pset)
-                # print("New tree: ", new_tree)
+            def evaluate_bt(individual, mission = "blue_wool", blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}):
+                nonlocal counter
+                if counter > generations / 2:
+                    mission = "orange_wool"
+                print(f"Run {counter}/{generations + 1} with mission {mission} and blocks \n{blocks}")
+                counter += 1
+                print("Tree of Individual: ", individual)
 
+                new_tree = gp.compile(individual, pset)
                 # Update the agents with the new behavior tree
                 # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
-                agents.set_tree(new_tree)
+                agents[0].set_tree(new_tree)
+                # test controller on n environments
+                fitness = 0
+                for i in range(number_runs_per_env):
+                    print(f"Testing Controller on environment {i+1}/{number_runs_per_env}")
+                    # init arena, etc.
+                    # decide on which blocks to randomly allocate in arena
+                    exp.set_round(blocks)
+                    # Run simulation
+                    fitness += exp.run(mission, blocks)
+                # average reward over n environments
+                fitness = fitness/number_runs_per_env
 
-                # init arena, etc.
-                # decide on which blocks to randomly allocate in arena
-                blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}
-                exp.set_round(blocks)
-                # Run simulation
-                fitness = exp.run(mission, blocks)
-                # print(f"Fitness: {fitness}")
                 try:
-                    print("Individual: ", str(individual), " has fitness: ", fitness)
+                    print("Tree: ", str(individual), " has fitness: ", fitness)
                 except Exception as e:
                     print("Ind: ", individual, " because ", e)
-                return fitness,  # Tuple required!
-
-            #toolbox = base.Toolbox()
-            #toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2)
-            #toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
-            #toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-            #toolbox.register("compile", gp.compile, pset=pset)
+                return fitness,  # Tuple required
 
             toolbox.register("evaluate", evaluate_bt)
 
-            # --- GA Configuration ---
-            # Modified for Population = 1
-            toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
-            toolbox.register("mate", gp.cxOnePoint) # crossover for more than one individual?
-            toolbox.register("expr_mut", gp.genGrow, min_=0, max_=1) # leafs can have different depth
-            toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-            # algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
-            #                                       halloffame=hof)
             pop = toolbox.population(n=1)
             hof = tools.HallOfFame(1)
 
-            stats = tools.Statistics(lambda ind: ind.fitness.values)
-            stats.register("avg", numpy.mean)
-            stats.register("std", numpy.std)
-            stats.register("max", numpy.max)
+            stats = set_stats()
 
             # cxpb = 0 because crossover is impossible with 1 individual
             # mutpb = 1.0 implies we ALWAYS mutate the single agent (Random Walk)
             # algorithms.eaSimple(pop, toolbox, cxpb=0, mutpb=1.0, ngen=generations, stats=stats, halloffame=hof)
             # mu=1 (keep 1 parent), lambda_=1 (generate 1 child), cxpb=0, mutpb=1.0
-            ''' 
-            TODO
-            Decide on which EA to use
-            It has to be able to handle one agent (instead of many)
-            Use old BT to generate new BT
-            So also adjust GA configuration
-            '''
             algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
                                       halloffame=hof)
             #print("Hof: ", hof)

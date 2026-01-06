@@ -7,7 +7,7 @@ from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
 from swarmcraft import BlockTypes
 
-START_LOCATION = (20, -55, 20)
+START_LOCATION = (20, -57, 20)
 class ForageEnvironment(Environment):
     def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(20, 10, 20),
                  resource_min_size=1, resource_max_size=2, resource_count=1):
@@ -42,6 +42,7 @@ class ForageEnvironment(Environment):
         self.blocks = blocks
 
         occupied_coords = set()
+        occupied_coords.add(START_LOCATION)
 
         for block_type, count in self.blocks.items():
             for _ in range(count):

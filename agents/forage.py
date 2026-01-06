@@ -15,6 +15,7 @@ class ForageAgent(Agent):
         # define btree - random walk
         self.tree = None
         self.parent_uid = parent_uid
+        self.positions = []
 
     def set_tree(self, tree):
         self.tree = tree
@@ -34,6 +35,7 @@ class ForageAgent(Agent):
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())
+        self.movement_tracker()
         self.tree.tick()
 
     def log(self):
@@ -61,8 +63,11 @@ class ForageAgent(Agent):
             print(f"Error while resetting agent: {e}")
             pass
 
-    def movement_for_evaluation(self):
-        self.sensing.get_position()
+    def movement_tracker(self):
+        pos = self.sensing.get_position()
+        rounded = tuple(round(x) for x in pos)
+        if rounded not in self.positions:
+            self.positions.append(rounded)
 
     def evaluation(
             self,
@@ -83,6 +88,8 @@ class ForageAgent(Agent):
             else:
                 evaluation -= diff * penalty_multiplier
 
+        evaluation += len(self.positions)*0.01
+        self.positions = []
         return evaluation
 
 
