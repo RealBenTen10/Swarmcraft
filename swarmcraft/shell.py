@@ -54,16 +54,18 @@ def generate_pset(agents):
     """
     Creates the Primitive Set (PSet) for DEAP.
     Nodes are mapped to 0-arity primitives (leaves) to handle arguments.
+    Adjusted gp.generate to handle tree generation correctly.
+    Missing prim and term raised errors.
     """
-    pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
+    pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
 
     # Branches
-    #pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    #pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
 
     # functions for Dig
     def make_dig(color):
@@ -72,23 +74,23 @@ def generate_pset(agents):
         return CanDigBlock(agents, color)
 
     # Primitives for Dig
-    pset.addPrimitive(make_dig, [WoolColor], bt.BehaviorTreeNode, name="Dig")
-    pset.addPrimitive(make_sense, [WoolColor], bt.BehaviorTreeNode, name="CanDig")
+    pset.addPrimitive(make_dig, [WoolColor], bt.ActionNode, name="Dig")
+    pset.addPrimitive(make_sense, [WoolColor], bt.ActionNode, name="CanDig")
     # The wool color constants for Dig
     pset.addTerminal("blue_wool", WoolColor, name="BlueWool")
     pset.addTerminal("orange_wool", WoolColor, name="OrangeWool")
 
     #pset.addTerminal(StartDig(agents), bt.BehaviorTreeNode, name="Dig") # Digs everything
-    pset.addTerminal(Look(agents), bt.BehaviorTreeNode, name="Look")
-    pset.addTerminal(PressDir(agents), bt.BehaviorTreeNode, name="Move")
-    pset.addTerminal(ReleaseDir(agents), bt.BehaviorTreeNode, name="Stop")
+    pset.addTerminal(Look(agents), bt.ActionNode, name="Look")
+    pset.addTerminal(PressDir(agents), bt.ActionNode, name="Move")
+    pset.addTerminal(ReleaseDir(agents), bt.ActionNode, name="Stop")
     #pset.addTerminal(CanDigBlock(agents), bt.BehaviorTreeNode, name="CanDig") # Looks for anything that can be dug
 
     return pset
 
 def set_toolbox(pset):
     toolbox = base.Toolbox()
-    toolbox.register("expr", gp.genGrow, pset=pset, min_=0, max_=1) # first tree
+    toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2) # first tree
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("compile", gp.compile, pset=pset)
@@ -96,7 +98,7 @@ def set_toolbox(pset):
     # Modified for Population = 1
     toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
     toolbox.register("mate", gp.cxOnePoint)  # crossover for more than one individual?
-    toolbox.register("expr_mut", gp.genGrow, min_=0, max_=4)  # leafs can have different depth # used for mutation
+    toolbox.register("expr_mut", gp.genGrow, min_=1, max_=2)  # leafs can have different depth # used for mutation
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
     return toolbox
 
@@ -264,7 +266,7 @@ class ServerShell(cmd.Cmd):
                 nonlocal counter
                 if counter > generations / 2:
                     mission = "orange_wool"
-                print(f"Run {counter}/{generations + 1} with mission {mission} and blocks \n{blocks}")
+                print(f"Run {counter}/{generations + 1} with mission {mission} and blocks {blocks}")
                 counter += 1
                 print("Tree of Individual: ", individual)
 
@@ -275,9 +277,12 @@ class ServerShell(cmd.Cmd):
                 # test controller on n environments
                 fitness = 0
                 for i in range(number_runs_per_env):
-                    print(f"Testing Controller on environment {i+1}/{number_runs_per_env}")
+                    #print(f"Testing Controller on environment {i+1}/{number_runs_per_env}")
                     # init arena, etc.
                     # decide on which blocks to randomly allocate in arena
+                    # TODO
+                    # Move the random generation of positions to another function
+                    # It should be possible to use the same environment 2+ times
                     exp.set_round(blocks)
                     # Run simulation
                     fitness += exp.run(mission, blocks)

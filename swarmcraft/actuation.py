@@ -99,7 +99,7 @@ class Actuation(object):
                 # We use 'minecraft:' + color if your pset provides "blue_wool"
                 # but the bot returns "minecraft:blue_wool"
                 if block and block['name'] == color:
-                    print(f"Target color {color} found at {pos}. Digging...")
+                    #print(f"Target color {color} found at {pos}. Digging...")
 
                     # 4. Start digging the specific block found
                     self.agent.bot.dig(block)

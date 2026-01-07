@@ -39,6 +39,9 @@ class ForageEnvironment(Environment):
 
     def set_blocks(self, blocks = {'blue_wool': 4,'orange_wool': 4,'brown_wool': 0,'green_wool': 0}):
         """Spawns wool blocks within the bedrock perimeter at unique locations"""
+        # TODO
+        # Move the random generation of positions to another function
+        # It should be possible to use the same environment 2+ times
         self.blocks = blocks
 
         occupied_coords = set()
