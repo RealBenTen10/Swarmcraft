@@ -1,3 +1,6 @@
+@max
+Still using the docs branch :)
+
 # Swarmcraft
 This is a framework for minecraft-based multi-agent simulations.
 Users can create behavior-tree powered agents and run experiments in custom environments.
