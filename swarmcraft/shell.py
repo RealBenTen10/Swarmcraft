@@ -97,10 +97,10 @@ def set_toolbox(pset, population_count):
     # --- GA Configuration ---
     # Modified for Population = 1
     if population_count > 1:
-        tournsize = round(population_count/10) if round(population_count/10)>2 else 3 if population_count > 3 else population_count
+        tournsize = population_count//4 if population_count//4 > 2 else 3 if population_count > 3 else population_count
         toolbox.register("select", tools.selTournament, tournsize=tournsize)
     else:
-        toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
+        toolbox.register("select", tools.selBest)
     toolbox.register("mate", gp.cxOnePoint)  # crossover for more than one individual?
     toolbox.register("expr_mut", gp.genGrow, min_=1, max_=2)  # leafs can have different depth # used for mutation
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
@@ -237,23 +237,25 @@ class ServerShell(cmd.Cmd):
         exp_args = ['1']
         exp = None
 
+        # Agent count: how many agents
+        # agent_count = int(at[0]) if len(at) > 0 else 1
+        # for swam - will add this later in the project
+        # out of scope for seminar
+        agent_count = 1
         # Generations: how often should the individual evolve
         generations = int(at[0]) if len(at) > 0 else 5
-        # Agent count: how many agents
-        agent_count = int(at[1]) if len(at) > 1 else 1
-        agent_count = 1
-        # Number runs per environment: on how many envs should the controller be tested
-        number_runs_per_gen = int(at[2]) if len(at) > 2 else 1
         # number of population
-        population_count = int(at[3]) if len(at) > 3 else 5
+        population_count = int(at[1]) if len(at) > 1 else 5
+        # Number runs per environment: on how many envs should the controller be tested
+        number_runs_per_gen = int(at[2]) if len(at) > 2 else 2
         # which EA?
-        simple = False # use eaSimple
+        simple = at[3]==1 if len(at) > 3 else False
         # crossover rate
-        crossover_rate = 0.3
+        crossover_rate = int(at[4]) if len(at) > 4 else 0.3
         # mutation probability
-        mutation_prob = 0.5
-        # global counter for current generation
-        counter = 0
+        mutation_prob = int(at[5]) if len(at) > 5 else 0.5
+        # current generation for occasional prints
+        current_gen = -1
 
         if len(args) > 0:
             # Safety check if at is empty
@@ -272,36 +274,12 @@ class ServerShell(cmd.Cmd):
             toolbox = set_toolbox(pset, population_count)
 
             # --- Define Evaluation Function (Closure) ---
-            def evaluate_bt(individual, mission = "blue_wool", blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}):
-                nonlocal counter
-
-                # The first 'population_count' runs are Gen 0.
-                # Everything after is part of the LAMBDA offspring cycles.
-                if counter < population_count:
-                    generation = 0
-                    individual_idx = counter
-                else:
-                    # Subtract initial pop, then divide by LAMBDA to find the generation index
-                    offset_counter = counter - population_count
-                    generation = (offset_counter // LAMBDA) + 1
-                    individual_idx = offset_counter % LAMBDA
-
-                # Total expected individuals to evaluate
-                total_individuals = population_count + (generations * LAMBDA)
-
-                # Mission switch logic: halfway through the total expected evaluations
-                if counter > total_individuals / 2:
-                    mission = "orange_wool"
-
-                print(f"Evaluation {counter + 1}/{total_individuals}")
-                print(
-                    f"Run generation {generation}/{generations} | Individual {individual_idx+1} of {population_count if generation == 0 else LAMBDA}")
-                print(f"Mission: {mission} | Blocks: {blocks}")
-
-                counter += 1
-
-                print("Tree of Individual:", individual)
-
+            def evaluate_bt(individual, mission = "blue_wool", blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}, gen=0):
+                nonlocal current_gen
+                if current_gen!=gen:
+                    current_gen = gen
+                    print(f"Run generation {gen}/{generations}")
+                    print(f"Mission: {mission} | Blocks: {blocks}")
                 new_tree = gp.compile(individual, pset)
                 # Update the agents with the new behavior tree
                 # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
@@ -329,7 +307,7 @@ class ServerShell(cmd.Cmd):
             toolbox.register("evaluate", evaluate_bt)
 
             pop = toolbox.population(n=population_count)
-            hof = tools.HallOfFame(1)
+            hof = tools.HallOfFame(5)
 
             stats = set_stats()
             if population_count == 1:
@@ -337,11 +315,10 @@ class ServerShell(cmd.Cmd):
             while crossover_rate + mutation_prob > 1.0:
                 crossover_rate -= 0.001
                 mutation_prob -= 0.001
-            # cxpb = 0 because crossover is impossible with 1 individual
-            # mutpb = 1.0 implies we ALWAYS mutate the single agent (Random Walk)
-            # mu=1 (keep 1 parent), lambda_=1 (generate 1 child), cxpb=0, mutpb=1.0
+            # mu=1 (keep 1 parent), lambda_=1 (generate 1 child)
             print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_gen} repetitions per generation.\nUsing {population_count} genomes with crossover rate {crossover_rate} and mutation probability {mutation_prob}")
             if simple:
+                print("Using EA simple")
                 algorithms.eaSimple(pop, toolbox, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof, verbose=True)
             else:
                 MU = population_count
