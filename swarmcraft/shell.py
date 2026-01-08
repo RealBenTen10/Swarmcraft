@@ -18,6 +18,7 @@ from deap import base
 from deap import creator
 from deap import tools
 from deap import gp
+from deap.algorithms import eaSimple
 
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir
@@ -54,8 +55,7 @@ def generate_pset(agents):
     """
     Creates the Primitive Set (PSet) for DEAP.
     Nodes are mapped to 0-arity primitives (leaves) to handle arguments.
-    Adjusted gp.generate to handle tree generation correctly.
-    Missing prim and term raised errors.
+    Adjusted gp.generate to handle tree generation correctly. Missing prim and term raised errors.
     """
     pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
 
@@ -88,7 +88,7 @@ def generate_pset(agents):
 
     return pset
 
-def set_toolbox(pset):
+def set_toolbox(pset, population_count):
     toolbox = base.Toolbox()
     toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2) # first tree
     toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
@@ -96,7 +96,11 @@ def set_toolbox(pset):
     toolbox.register("compile", gp.compile, pset=pset)
     # --- GA Configuration ---
     # Modified for Population = 1
-    toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
+    if population_count > 1:
+        tournsize = round(population_count/10) if round(population_count/10)>2 else 3 if population_count > 3 else population_count
+        toolbox.register("select", tools.selTournament, tournsize=tournsize)
+    else:
+        toolbox.register("select", tools.selBest)  # Tournament doesn't work well with N=1
     toolbox.register("mate", gp.cxOnePoint)  # crossover for more than one individual?
     toolbox.register("expr_mut", gp.genGrow, min_=1, max_=2)  # leafs can have different depth # used for mutation
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
@@ -118,7 +122,7 @@ from swarmcraft.environment import Environment
 LOG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
 class ServerShell(cmd.Cmd):
-    intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\n"
+    intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\nType 'run' followed by generation, agent_count, number_runs_per_gen, population_count. All values as integers.\n"
     prompt = "swarmcraft > "
     file = None
 
@@ -234,20 +238,26 @@ class ServerShell(cmd.Cmd):
         exp = None
 
         # Generations: how often should the individual evolve
-        generations = int(at[0]) if len(at) > 0 else 2
+        generations = int(at[0]) if len(at) > 0 else 5
         # Agent count: how many agents
         agent_count = int(at[1]) if len(at) > 1 else 1
+        agent_count = 1
         # Number runs per environment: on how many envs should the controller be tested
-        number_runs_per_env = int(at[2]) if len(at) > 2 else 1
+        number_runs_per_gen = int(at[2]) if len(at) > 2 else 1
+        # number of population
+        population_count = int(at[3]) if len(at) > 3 else 5
+        # which EA?
+        simple = False # use eaSimple
+        # crossover rate
+        crossover_rate = 0.3
+        # mutation probability
+        mutation_prob = 0.5
         # global counter for current generation
-        counter = 1
+        counter = 0
 
         if len(args) > 0:
             # Safety check if at is empty
             if at: num_runs = int(at[0])
-
-        print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_env} repetitions per generation")
-
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
@@ -259,16 +269,38 @@ class ServerShell(cmd.Cmd):
             print("Set pset")
             pset = generate_pset(agents[0])
             print("Set toolbox")
-            toolbox = set_toolbox(pset)
+            toolbox = set_toolbox(pset, population_count)
 
             # --- Define Evaluation Function (Closure) ---
             def evaluate_bt(individual, mission = "blue_wool", blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}):
                 nonlocal counter
-                if counter > generations / 2:
+
+                # The first 'population_count' runs are Gen 0.
+                # Everything after is part of the LAMBDA offspring cycles.
+                if counter < population_count:
+                    generation = 0
+                    individual_idx = counter
+                else:
+                    # Subtract initial pop, then divide by LAMBDA to find the generation index
+                    offset_counter = counter - population_count
+                    generation = (offset_counter // LAMBDA) + 1
+                    individual_idx = offset_counter % LAMBDA
+
+                # Total expected individuals to evaluate
+                total_individuals = population_count + (generations * LAMBDA)
+
+                # Mission switch logic: halfway through the total expected evaluations
+                if counter > total_individuals / 2:
                     mission = "orange_wool"
-                print(f"Run {counter}/{generations + 1} with mission {mission} and blocks {blocks}")
+
+                print(f"Evaluation {counter + 1}/{total_individuals}")
+                print(
+                    f"Run generation {generation}/{generations} | Individual {individual_idx+1} of {population_count if generation == 0 else LAMBDA}")
+                print(f"Mission: {mission} | Blocks: {blocks}")
+
                 counter += 1
-                print("Tree of Individual: ", individual)
+
+                print("Tree of Individual:", individual)
 
                 new_tree = gp.compile(individual, pset)
                 # Update the agents with the new behavior tree
@@ -276,38 +308,46 @@ class ServerShell(cmd.Cmd):
                 agents[0].set_tree(new_tree)
                 # test controller on n environments
                 fitness = 0
-                for i in range(number_runs_per_env):
+                for i in range(number_runs_per_gen):
+                    #print(f"Testing individual {individual_count}: {i+1}/{number_runs_per_gen}")
                     #print(f"Testing Controller on environment {i+1}/{number_runs_per_env}")
                     # init arena, etc.
                     # decide on which blocks to randomly allocate in arena
-                    # TODO
-                    # Move the random generation of positions to another function
-                    # It should be possible to use the same environment 2+ times
+                    # TODO Move the random generation of positions to another function. It should be possible to use the same environment 2+ times (really needed?)
                     exp.set_round(blocks)
                     # Run simulation
                     fitness += exp.run(mission, blocks)
                 # average reward over n environments
-                fitness = fitness/number_runs_per_env
+                fitness = fitness/number_runs_per_gen
 
                 try:
                     print("Tree: ", str(individual), " has fitness: ", fitness)
                 except Exception as e:
-                    print("Ind: ", individual, " because ", e)
+                    print("Ind: ", individual, " err'd because ", e)
                 return fitness,  # Tuple required
 
             toolbox.register("evaluate", evaluate_bt)
 
-            pop = toolbox.population(n=1)
+            pop = toolbox.population(n=population_count)
             hof = tools.HallOfFame(1)
 
             stats = set_stats()
-
+            if population_count == 1:
+                crossover_rate = 0
+            while crossover_rate + mutation_prob > 1.0:
+                crossover_rate -= 0.001
+                mutation_prob -= 0.001
             # cxpb = 0 because crossover is impossible with 1 individual
             # mutpb = 1.0 implies we ALWAYS mutate the single agent (Random Walk)
-            # algorithms.eaSimple(pop, toolbox, cxpb=0, mutpb=1.0, ngen=generations, stats=stats, halloffame=hof)
             # mu=1 (keep 1 parent), lambda_=1 (generate 1 child), cxpb=0, mutpb=1.0
-            algorithms.eaMuPlusLambda(pop, toolbox, mu=1, lambda_=1, cxpb=0, mutpb=1.0, ngen=generations, stats=stats,
-                                      halloffame=hof)
+            print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_gen} repetitions per generation.\nUsing {population_count} genomes with crossover rate {crossover_rate} and mutation probability {mutation_prob}")
+            if simple:
+                algorithms.eaSimple(pop, toolbox, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof, verbose=True)
+            else:
+                MU = population_count
+                LAMBDA = MU * 3
+                print(f"Using mu = {MU} and lambda = {LAMBDA}")
+                algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof)
             #print("Hof: ", hof)
             print("Result HOF: ", hof[0])
             exp.cleanup()

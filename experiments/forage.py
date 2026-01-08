@@ -89,5 +89,6 @@ class ForageExperiment(Experiment):
             #print("Resetting agent")
             agent.reset()
             #print("Unbinding bot")
+            # Do I need this?
             self.pooler.unbind_bot(agent)
         return fitness

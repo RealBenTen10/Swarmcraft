@@ -45,7 +45,7 @@ class ForageEnvironment(Environment):
         self.blocks = blocks
 
         occupied_coords = set()
-        occupied_coords.add(START_LOCATION)
+        occupied_coords.add((20, self.origin[1] + 1, 20))
 
         for block_type, count in self.blocks.items():
             for _ in range(count):
