@@ -57,34 +57,39 @@ def generate_pset(agents):
     Nodes are mapped to 0-arity primitives (leaves) to handle arguments.
     Adjusted gp.generate to handle tree generation correctly. Missing prim and term raised errors.
     """
-    pset = gp.PrimitiveSetTyped("MAIN", [], bt.ControlNode)
+    pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
     # Branches
-    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.ControlNode)
+    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
     # functions for Dig
     def make_dig(color):
         return StartDig(agents, color)
     def make_sense(color):
         return CanDigBlock(agents, color)
-
+    # CHANGED
     # Primitives for Dig
-    pset.addPrimitive(make_dig, [WoolColor], bt.ActionNode, name="Dig")
-    pset.addPrimitive(make_sense, [WoolColor], bt.ActionNode, name="CanDig")
+    #pset.addPrimitive(make_dig, [WoolColor], bt.ActionNode, name="Dig")
+    #pset.addPrimitive(make_sense, [WoolColor], bt.ActionNode, name="CanDig")
     # The wool color constants for Dig
-    pset.addTerminal("blue_wool", WoolColor, name="BlueWool")
-    pset.addTerminal("orange_wool", WoolColor, name="OrangeWool")
+    #pset.addTerminal("blue_wool", WoolColor, name="BlueWool")
+    #pset.addTerminal("orange_wool", WoolColor, name="OrangeWool")
 
-    #pset.addTerminal(StartDig(agents), bt.BehaviorTreeNode, name="Dig") # Digs everything
-    pset.addTerminal(Look(agents), bt.ActionNode, name="Look")
-    pset.addTerminal(PressDir(agents), bt.ActionNode, name="Move")
-    pset.addTerminal(ReleaseDir(agents), bt.ActionNode, name="Stop")
-    #pset.addTerminal(CanDigBlock(agents), bt.BehaviorTreeNode, name="CanDig") # Looks for anything that can be dug
+    ## CHANGED
+    pset.addTerminal(StartDig(agents, "blue_wool"), bt.BehaviorTreeNode, name="DigBlue") # Digs blue
+    pset.addTerminal(StartDig(agents, "orange_wool"), bt.BehaviorTreeNode, name="DigOrange") # Digs orange
+    #pset.addTerminal(StartDig(agents), bt.ActionNode, name="Dig") # Digs everything
+    pset.addTerminal(Look(agents), bt.BehaviorTreeNode, name="Look")
+    pset.addTerminal(PressDir(agents), bt.BehaviorTreeNode, name="Move")
+    pset.addTerminal(ReleaseDir(agents), bt.BehaviorTreeNode, name="Stop")
+    pset.addTerminal(CanDigBlock(agents, "blue_wool"), bt.BehaviorTreeNode, name="SenseBlue") # Looks for blue
+    pset.addTerminal(CanDigBlock(agents, "orange_wool"), bt.BehaviorTreeNode, name="SenseOrange") # Looks for orange
+    #pset.addTerminal(CanDigBlock(agents), bt.ActionNode, name="CanDig") # Looks for anything that can be dug
 
     return pset
 
@@ -101,7 +106,7 @@ def set_toolbox(pset, population_count):
         toolbox.register("select", tools.selTournament, tournsize=tournsize)
     else:
         toolbox.register("select", tools.selBest)
-    toolbox.register("mate", gp.cxOnePoint)  # crossover for more than one individual?
+    toolbox.register("mate", gp.cxOnePoint)
     toolbox.register("expr_mut", gp.genGrow, min_=1, max_=2)  # leafs can have different depth # used for mutation
     toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
     return toolbox
@@ -122,7 +127,7 @@ from swarmcraft.environment import Environment
 LOG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
 class ServerShell(cmd.Cmd):
-    intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\nType 'run' followed by generation, agent_count, number_runs_per_gen, population_count. All values as integers.\n"
+    intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\nType 'run' followed by generation, population, number_runs_per_gen, simple, crossover and mutation. \nAll values as integers. Default values are set\n"
     prompt = "swarmcraft > "
     file = None
 
@@ -243,11 +248,11 @@ class ServerShell(cmd.Cmd):
         # out of scope for seminar
         agent_count = 1
         # Generations: how often should the individual evolve
-        generations = int(at[0]) if len(at) > 0 else 5
+        generations = int(at[0]) if len(at) > 0 else 50
         # number of population
         population_count = int(at[1]) if len(at) > 1 else 5
         # Number runs per environment: on how many envs should the controller be tested
-        number_runs_per_gen = int(at[2]) if len(at) > 2 else 2
+        number_runs_per_gen = int(at[2]) if len(at) > 2 else 1
         # which EA?
         simple = at[3]==1 if len(at) > 3 else False
         # crossover rate
@@ -257,9 +262,6 @@ class ServerShell(cmd.Cmd):
         # current generation for occasional prints
         current_gen = -1
 
-        if len(args) > 0:
-            # Safety check if at is empty
-            if at: num_runs = int(at[0])
         try:
             exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
             exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
@@ -319,14 +321,21 @@ class ServerShell(cmd.Cmd):
             print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_gen} repetitions per generation.\nUsing {population_count} genomes with crossover rate {crossover_rate} and mutation probability {mutation_prob}")
             if simple:
                 print("Using EA simple")
-                algorithms.eaSimple(pop, toolbox, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof, verbose=True)
+                population_, logbook_ = algorithms.eaSimple(pop, toolbox, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof, verbose=True)
             else:
                 MU = population_count
                 LAMBDA = MU * 3
                 print(f"Using mu = {MU} and lambda = {LAMBDA}")
-                algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof)
+                population_, logbook_ = algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof)
             #print("Hof: ", hof)
             print("Result HOF: ", hof[0])
+            print("*"*50)
+            try:
+                print("pop: ", str(population_))
+                print("*"*50)
+            except:
+                pass
+            print("log: ", logbook_)
             exp.cleanup()
 
         except KeyError as e:
