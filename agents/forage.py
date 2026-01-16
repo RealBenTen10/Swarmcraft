@@ -17,21 +17,24 @@ class ForageAgent(Agent):
         self.parent_uid = parent_uid
         self.positions = []
 
-    def set_tree(self, tree):
-        self.tree = tree
+    def set_tree(self, tree, mission="blue_wool"):
+        #self.tree = tree
         # print("tree set: ", self.tree)
         # "Perfect" tree for getting blocks
-        #tree = SequenceNode([
-        #    Look(self),
-        #    FallbackNode([
-        #        SequenceNode([
-        #            CanDigBlock(self),
-        #            ReleaseDir(self),
-        #            StartDig(self)
-        #        ]),
-        #        PressDir(self)
-        #    ])
-        #])
+        perfect_tree = True
+        if perfect_tree:
+            tree = SequenceNode([
+                Look(self),
+                FallbackNode([
+                    SequenceNode([
+                        CanDigBlock(self, mission),
+                        ReleaseDir(self),
+                        StartDig(self, mission)
+                    ]),
+                    PressDir(self)
+                ])
+            ])
+        self.tree = tree
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())

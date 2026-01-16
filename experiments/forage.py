@@ -19,7 +19,7 @@ class ForageExperiment(Experiment):
         self.last_update_time = None
         self.update_interval = 0.5  # how many seconds to wait between experiment updates
         self.init_agent_count = 1
-        self.max_time_sec = 30
+        self.max_time_sec = 60
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0

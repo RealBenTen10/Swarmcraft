@@ -60,12 +60,12 @@ def generate_pset(agents):
     pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
     # Branches
-    pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
     pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    #pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
 
     # functions for Dig
     def make_dig(color):
@@ -103,7 +103,9 @@ def set_toolbox(pset, population_count):
     # Modified for Population = 1
     if population_count > 1:
         tournsize = population_count//4 if population_count//4 > 2 else 3 if population_count > 3 else population_count
+        tournsize = 3
         toolbox.register("select", tools.selTournament, tournsize=tournsize)
+        print("Using tournsize: ", tournsize)
     else:
         toolbox.register("select", tools.selBest)
     toolbox.register("mate", gp.cxOnePoint)
@@ -248,17 +250,17 @@ class ServerShell(cmd.Cmd):
         # out of scope for seminar
         agent_count = 1
         # Generations: how often should the individual evolve
-        generations = int(at[0]) if len(at) > 0 else 50
+        generations = int(at[0]) if len(at) > 0 else 100
         # number of population
-        population_count = int(at[1]) if len(at) > 1 else 5
+        population_count = int(at[1]) if len(at) > 1 else 30
         # Number runs per environment: on how many envs should the controller be tested
-        number_runs_per_gen = int(at[2]) if len(at) > 2 else 1
+        number_runs_per_gen = int(at[2]) if len(at) > 2 else 2
         # which EA?
         simple = at[3]==1 if len(at) > 3 else False
         # crossover rate
-        crossover_rate = int(at[4]) if len(at) > 4 else 0.3
+        crossover_rate = int(at[4]) if len(at) > 4 else 0.4
         # mutation probability
-        mutation_prob = int(at[5]) if len(at) > 5 else 0.5
+        mutation_prob = int(at[5]) if len(at) > 5 else 0.2
         # current generation for occasional prints
         current_gen = -1
 
@@ -285,7 +287,7 @@ class ServerShell(cmd.Cmd):
                 new_tree = gp.compile(individual, pset)
                 # Update the agents with the new behavior tree
                 # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
-                agents[0].set_tree(new_tree)
+                agents[0].set_tree(new_tree, mission=mission)
                 # test controller on n environments
                 fitness = 0
                 for i in range(number_runs_per_gen):
@@ -298,7 +300,8 @@ class ServerShell(cmd.Cmd):
                     # Run simulation
                     fitness += exp.run(mission, blocks)
                 # average reward over n environments
-                fitness = fitness/number_runs_per_gen
+                size_penalty = 0.01 * len(individual) # added size penalty against bloating
+                fitness = (fitness/number_runs_per_gen) - size_penalty
 
                 try:
                     print("Tree: ", str(individual), " has fitness: ", fitness)
@@ -309,7 +312,7 @@ class ServerShell(cmd.Cmd):
             toolbox.register("evaluate", evaluate_bt)
 
             pop = toolbox.population(n=population_count)
-            hof = tools.HallOfFame(5)
+            hof = tools.HallOfFame(10)
 
             stats = set_stats()
             if population_count == 1:
