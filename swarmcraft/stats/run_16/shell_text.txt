@@ -1,0 +1,239 @@
+Loaded environments:
+	ForageEnvironment: <class 'envrionments.forage.ForageEnvironment'>
+Loading experiments from /home/ben/PycharmProjects/swarmcraft/experiments
+Loaded experiments:
+	ForageEvolved: <class 'experiments.forage_evolved.ForageEvolved'>
+	ForageExperiment: <class 'experiments.forage.ForageExperiment'>
+	Test: <class 'experiments.test.Test'>
+	ExampleExperiment: <class 'experiments.example.ExampleExperiment'>
+Shell for swarmcraft simulator. Type help or ? to list commands.
+Type 'run' followed by generation, population, number_runs_per_gen, simple, crossover and mutation.
+All values as integers. Default values are set
+
+swarmcraft > run 30 2 1
+adding bot UUpUbNVk
+Log dir: logs/ForageExperiment-2026-01-16_10-58
+Set pset
+Set toolbox
+Using tournsize:  3
+Doing 31 runs with 1 agents and 1 repetitions per generation.
+Using 2 genomes with crossover rate 0.4 and mutation probability 0.2
+Using mu = 2 and lambda = 6
+Saving data to: stats/run_16
+Tree:  sequence_2_child(Look, Move)  has fitness:  2.7600000000000002
+Tree:  fallback_2_child(SenseBlue, SenseBlue)  has fitness:  2.6500000000000004
+Tree:  sequence_2_child(Look, fallback_2_child(Look, DigOrange))  has fitness:  1.75
+Tree:  fallback_2_child(Look, SenseBlue)  has fitness:  1.8
+gen	nevals	avg  	std  	max
+1  	2     	2.705	0.055	2.76
+Tree:  fallback_2_child(SenseBlue, Look)  has fitness:  3.74
+Tree:  fallback_2_child(Look, SenseBlue)  has fitness:  4.75
+Tree:  sequence_2_child(Look, SenseBlue)  has fitness:  1.71
+Tree:  sequence_2_child(Move, Move)  has fitness:  3.7
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 spawn listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  4.64
+2  	5     	4.19 	0.45 	4.64
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 death listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 error listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 mount listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+Tree:  fallback_2_child(SenseBlue, DigBlue)  has fitness:  3.7800000000000002
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 chat listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 whisper listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 soundEffectHeard listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 dismount listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 windowOpen listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 windowClose listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 sleep listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 wake listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 diggingCompleted listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+[JSE] (node:513112) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 diggingAborted listeners added to [EventEmitter]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+
+Tree:  fallback_2_child(fallback_2_child(DigOrange, DigBlue), Look)  has fitness:  2.66
+Tree:  fallback_2_child(SenseBlue, SenseBlue)  has fitness:  1.72
+3  	3     	4.19 	0.45 	4.64
+Tree:  fallback_2_child(SenseBlue, DigBlue)  has fitness:  3.7900000000000005
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.7800000000000002
+Tree:  fallback_2_child(SenseBlue, sequence_2_child(Move, SenseOrange))  has fitness:  2.75
+Tree:  fallback_2_child(SenseBlue, DigBlue)  has fitness:  2.69
+Tree:  fallback_2_child(DigBlue, Look)  has fitness:  2.68
+4  	5     	4.64 	0    	4.64
+Tree:  sequence_2_child(DigBlue, sequence_2_child(SenseBlue, SenseBlue))  has fitness:  2.79
+Tree:  fallback_2_child(DigOrange, Stop)  has fitness:  3.7100000000000004
+Tree:  sequence_2_child(fallback_2_child(Stop, SenseBlue), SenseBlue)  has fitness:  3.7
+5  	3     	4.64 	0    	4.64
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.7600000000000002
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  3.6500000000000004
+Tree:  sequence_2_child(DigBlue, fallback_2_child(Move, Look))  has fitness:  1.76
+6  	3     	4.64 	0    	4.64
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.86
+7  	1     	4.64 	0    	4.64
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.7900000000000005
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.8099999999999998
+Tree:  sequence_2_child(fallback_2_child(Look, DigBlue), SenseBlue)  has fitness:  4.62
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.74
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  0.74
+8  	5     	4.63 	0.01 	4.64
+Tree:  fallback_2_child(Look, Look)  has fitness:  1.44
+Tree:  sequence_2_child(DigBlue, fallback_2_child(Look, DigBlue))  has fitness:  3.66
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.5900000000000003
+Tree:  sequence_2_child(DigBlue, fallback_2_child(Look, DigBlue))  has fitness:  2.81
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  3.7900000000000005
+9  	5     	4.63 	0.01 	4.64
+Tree:  sequence_2_child(sequence_2_child(Move, Stop), SenseBlue)  has fitness:  0.6799999999999999
+Tree:  sequence_2_child(fallback_2_child(Look, DigBlue), SenseBlue)  has fitness:  0.75
+Tree:  sequence_2_child(DigBlue, sequence_2_child(SenseOrange, SenseBlue))  has fitness:  2.7700000000000005
+Tree:  sequence_2_child(DigBlue, fallback_2_child(Move, Stop))  has fitness:  0.72
+Tree:  sequence_2_child(DigBlue, fallback_2_child(Move, SenseBlue))  has fitness:  3.5300000000000002
+10 	5     	4.63 	0.01 	4.64
+Tree:  sequence_2_child(fallback_2_child(Look, DigBlue), DigBlue)  has fitness:  3.79
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  4.77
+Tree:  sequence_2_child(Stop, Look)  has fitness:  0.74
+11 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, fallback_2_child(SenseOrange, DigOrange))  has fitness:  2.7
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.7900000000000005
+12 	2     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, sequence_2_child(DigBlue, sequence_2_child(DigOrange, SenseBlue)))  has fitness:  3.74
+Tree:  fallback_2_child(sequence_2_child(DigBlue, DigOrange), DigBlue)  has fitness:  1.69
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.73
+13 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, sequence_2_child(SenseBlue, SenseOrange))  has fitness:  2.91
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.8099999999999998
+14 	2     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.48
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.7500000000000004
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.8000000000000003
+15 	3     	4.77 	0    	4.77
+Tree:  fallback_2_child(DigOrange, Stop)  has fitness:  3.81
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  1.77
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.68
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.7100000000000004
+16 	4     	4.77 	0    	4.77
+Tree:  sequence_2_child(sequence_2_child(SenseOrange, Move), SenseBlue)  has fitness:  3.6
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.72
+17 	2     	4.77 	0    	4.77
+Tree:  sequence_2_child(sequence_2_child(Look, Look), SenseBlue)  has fitness:  2.7300000000000004
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.6
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.66
+18 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  0.66
+Tree:  sequence_2_child(SenseBlue, Stop)  has fitness:  3.7500000000000004
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  4.76
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  1.61
+19 	4     	4.77 	0    	4.77
+Tree:  sequence_2_child(sequence_2_child(Look, Stop), SenseBlue)  has fitness:  1.66
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.83
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.69
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.72
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.81
+20 	5     	4.77 	0    	4.77
+Tree:  fallback_2_child(Look, Stop)  has fitness:  1.6300000000000001
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.72
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  3.7
+21 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigOrange, Look)  has fitness:  2.7600000000000002
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  1.72
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  3.7900000000000005
+Tree:  sequence_2_child(DigBlue, fallback_2_child(DigBlue, DigOrange))  has fitness:  1.5999999999999999
+Tree:  fallback_2_child(Look, fallback_2_child(Stop, SenseBlue))  has fitness:  4.7
+22 	5     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.69
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.57
+Tree:  fallback_2_child(SenseOrange, Move)  has fitness:  1.64
+23 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.7
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  2.8000000000000003
+24 	2     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.8200000000000003
+Tree:  sequence_2_child(DigBlue, sequence_2_child(SenseBlue, SenseOrange))  has fitness:  3.74
+Tree:  sequence_2_child(DigBlue, DigBlue)  has fitness:  1.8
+25 	3     	4.77 	0    	4.77
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.5700000000000003
+Tree:  sequence_2_child(sequence_2_child(DigOrange, Look), SenseBlue)  has fitness:  1.73
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  0.75
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  1.8299999999999998
+Tree:  sequence_2_child(fallback_2_child(fallback_2_child(SenseOrange, Look), DigOrange), SenseBlue)  has fitness:  1.72
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  3.68
+26 	6     	3.67 	1.1  	4.77
+Tree:  sequence_2_child(SenseBlue, DigBlue)  has fitness:  2.74
+Tree:  sequence_2_child(SenseBlue, fallback_2_child(Move, SenseBlue))  has fitness:  3.5900000000000003
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  1.8
+Tree:  sequence_2_child(sequence_2_child(DigBlue, Stop), SenseBlue)  has fitness:  1.75
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.7900000000000005
+27 	5     	4.18 	0.59 	4.77
+Tree:  sequence_2_child(fallback_2_child(fallback_2_child(Stop, Stop), SenseOrange), SenseBlue)  has fitness:  2.64
+Tree:  sequence_2_child(DigBlue, sequence_2_child(Stop, Move))  has fitness:  3.72
+Tree:  fallback_2_child(SenseOrange, Move)  has fitness:  2.6
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  3.7600000000000002
+28 	4     	4.265	0.505	4.77
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  2.69
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  1.7
+Tree:  sequence_2_child(SenseBlue, fallback_2_child(Stop, Stop))  has fitness:  4.71
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  1.8
+29 	4     	4.77 	0    	4.77
+Tree:  sequence_2_child(DigBlue, sequence_2_child(DigOrange, SenseBlue))  has fitness:  3.64
+Tree:  sequence_2_child(DigBlue, sequence_2_child(Move, Stop))  has fitness:  0.69
+Tree:  sequence_2_child(SenseBlue, SenseBlue)  has fitness:  1.71
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  2.72
+Tree:  sequence_2_child(DigBlue, SenseBlue)  has fitness:  3.8000000000000003
+30 	5     	4.77 	0    	4.77
+Result HOF:  sequence_2_child(SenseBlue, fallback_2_child(Stop, Stop))
+**************************************************
+pop:  [[<deap.gp.Primitive object at 0x7a4dfb49ac50>, <deap.gp.Terminal object at 0x7a4dfb4af9c0>, <deap.gp.Terminal object at 0x7a4dfb4afb00>], [<deap.gp.Primitive object at 0x7a4dfb49ac50>, <deap.gp.Terminal object at 0x7a4dfb4af9c0>, <deap.gp.Terminal object at 0x7a4dfb4afb00>]]
+**************************************************
+log:  gen	nevals	avg  	std  	max
+1  	2     	2.705	0.055	2.76
+2  	5     	4.19 	0.45 	4.64
+3  	3     	4.19 	0.45 	4.64
+4  	5     	4.64 	0    	4.64
+5  	3     	4.64 	0    	4.64
+6  	3     	4.64 	0    	4.64
+7  	1     	4.64 	0    	4.64
+8  	5     	4.63 	0.01 	4.64
+9  	5     	4.63 	0.01 	4.64
+10 	5     	4.63 	0.01 	4.64
+11 	3     	4.77 	0    	4.77
+12 	2     	4.77 	0    	4.77
+13 	3     	4.77 	0    	4.77
+14 	2     	4.77 	0    	4.77
+15 	3     	4.77 	0    	4.77
+16 	4     	4.77 	0    	4.77
+17 	2     	4.77 	0    	4.77
+18 	3     	4.77 	0    	4.77
+19 	4     	4.77 	0    	4.77
+20 	5     	4.77 	0    	4.77
+21 	3     	4.77 	0    	4.77
+22 	5     	4.77 	0    	4.77
+23 	3     	4.77 	0    	4.77
+24 	2     	4.77 	0    	4.77
+25 	3     	4.77 	0    	4.77
+26 	6     	3.67 	1.1  	4.77
+27 	5     	4.18 	0.59 	4.77
+28 	4     	4.265	0.505	4.77
+29 	4     	4.77 	0    	4.77
+30 	5     	4.77 	0    	4.77@article{article,
+author = {French, Robert},
+year = {1999},
+month = {05},
+pages = {128-135},
+title = {Catastrophic forgetting in connectionist networks},
+volume = {3},
+journal = {Trends in cognitive sciences},
+doi = {10.1016/S1364-6613(99)01294-2}
+}

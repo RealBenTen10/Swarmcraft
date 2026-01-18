@@ -282,8 +282,8 @@ class ServerShell(cmd.Cmd):
                 nonlocal current_gen
                 if current_gen!=gen:
                     current_gen = gen
-                    print(f"Run generation {gen}/{generations}")
-                    print(f"Mission: {mission} | Blocks: {blocks}")
+                    #print(f"Run generation {gen}/{generations}")
+                    #print(f"Mission: {mission} | Blocks: {blocks}")
                 new_tree = gp.compile(individual, pset)
                 # Update the agents with the new behavior tree
                 # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
