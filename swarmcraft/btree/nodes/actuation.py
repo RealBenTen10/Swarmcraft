@@ -211,8 +211,8 @@ class SendMessage(ActionNode):
         """
         super().__init__(agent)
         self.message = args[0] if len(args) > 0 else None
-        self.target_id = args[1] if len(args) > 1 else None
-        self.dist = float(args[2]) if len(args) > 2 else None
+        self.target_id = args[1] if len(args) > 1 else None # Broadcast -
+        self.dist = float(args[2]) if len(args) > 2 else None # set this to fixed distance (e.g. 5)
         if self.message is None and self.target_id is None and self.dist is None:
             self.randomize_params()
 
@@ -231,7 +231,7 @@ class SendMessage(ActionNode):
                 return 'success'
         else:
             if self.dist != -1:
-                self.agent.actuation.send_global_message_ranged(self.message, self.dist)
+                self.agent.actuation.send_global_message_ranged(self.message, self.dist) # broadcast?
                 return 'success'
             else:
                 self.agent.actuation.send_global_message(self.message)
