@@ -14,12 +14,12 @@ START_LOCATION = (20, -57, 20)
 
 
 class ForageExperiment(Experiment):
-    def __init__(self, pooler, minecraft_server, message_server, *args):
+    def __init__(self, pooler, minecraft_server, message_server, run_duration = 60, *args):
         super().__init__(pooler, minecraft_server, message_server)
         self.last_update_time = None
         self.update_interval = 0.5  # how many seconds to wait between experiment updates
         self.init_agent_count = 1
-        self.max_time_sec = 60
+        self.max_time_sec = run_duration
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)
         self.total_agents_existed = 0
         self.current_agent_count = 0
@@ -31,7 +31,9 @@ class ForageExperiment(Experiment):
         super().initialize()  # initialize and reset environment
         self.minecraft_server.send('say initialized foraging environment')
         # print("Amount of agents: ", self.init_agent_count)
-
+        if self.agents is not None:
+            for agent in self.agents:
+                self.pooler.unbind_bot(agent)
         self.last_update_time = time.time()
 
         self.agents = []
@@ -53,7 +55,9 @@ class ForageExperiment(Experiment):
 
     def set_agents(self):
         for agent in self.agents:
-            agent.get_bot(uid=f'forager_{self.total_agents_existed}')
+            if len(self.pooler.free_bots) == 0:
+                self.pooler.create_bot()
+            agent.get_bot(uid=agent.id)
             agent.reset()
 
     def set_environment(self, blocks):

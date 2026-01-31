@@ -1,3 +1,4 @@
+'''
 from copy import deepcopy
 from typing import override
 import time
@@ -137,3 +138,4 @@ class ForageEvolved(Experiment):
 
                 # when did this update take place?
                 self.last_update_time = time.time()
+'''

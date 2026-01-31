@@ -10,7 +10,7 @@ class Agent(object):
     """Agents are program-controlled minecraft player characters.
     They can interact with their environment and send each other messages.
     """
-    def __init__(self, pooler: Pooler, message_server: MessageServer, uid=None):
+    def __init__(self, pooler: Pooler, message_server: MessageServer, uid):
         """Default agent constructor binds to a free bot from the pooler, sets up actuation and sensing, and registers with message server.
 
         :param pooler: active pooler instance. Made available in experiments.
@@ -22,7 +22,7 @@ class Agent(object):
         self.message_server = message_server
         self.sensing = None
         self.actuation = None
-        self.id = None
+        self.id = uid
 
     def get_bot(self, uid):
         if self.pooler.bind_bot(self): # ask the pooler for a bot

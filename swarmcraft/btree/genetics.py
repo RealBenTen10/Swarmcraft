@@ -13,259 +13,267 @@ _functions = [SequenceNode, FallbackNode]
 # terminals/actions (mutable)
 _terminals = []
 
-def add_terminal(terminal: type[ActionNode]):
-    """
-    Add a terminal to the pool
-    """
-    _terminals.append(terminal)
+class GP(object):
 
-def add_terminals(terminals: list[type[ActionNode]]):
-    """
-    Add terminals to the pool
-    """
-    for terminal in terminals:
-        add_terminal(terminal)
+    def __init__(self):
+        self._terminals = []
+        self._functions = [SequenceNode, FallbackNode]
 
-def remove_terminal(terminal: type[ActionNode]):
-    """
-    Remove a terminal from the pool
-    """
-    _terminals.remove(terminal)
+    def add_terminal(self, terminal: type[ActionNode]):
+        """
+        Add a terminal to the pool
+        """
+        self._terminals.append(terminal)
 
-def remove_terminals(terminals: list[type[ActionNode]]):
-    """
-    Remove terminals from the pool
-    """
-    for terminal in terminals:
-        remove_terminal(terminal)
+    def add_terminals(self, terminals: list[type[ActionNode]]):
+        """
+        Add terminals to the pool
+        """
+        for terminal in terminals:
+            self.add_terminal(terminal)
 
-def reset_terminals():
-    """
-    Clear the terminal pool
-    """
-    _terminals.clear()
+    def remove_terminal(self, terminal: type[ActionNode]):
+        """
+        Remove a terminal from the pool
+        """
+        self._terminals.remove(terminal)
 
-def write_genome(root: ControlNode):
-    """
-    Tree to genome string
-    """
-    return root.__repr__()
+    def remove_terminals(self, terminals: list[type[ActionNode]]):
+        """
+        Remove terminals from the pool
+        """
+        for terminal in terminals:
+            self.remove_terminal(terminal)
 
-def bind_tree_to_agent(tree, agent: Agent):
-    """
-    Bind a behavior tree to an agent
-    Depth-first traverse of the tree, setting the agent attribute of each node without children to the given agent
-    """
-    if hasattr(tree, 'children'):
-        for child in tree.children:
-            bind_tree_to_agent(child, agent)
-    else:
-        tree.agent = agent
+    def reset_terminals(self):
+        """
+        Clear the terminal pool
+        """
+        self._terminals.clear()
 
-def generate_maxdepth(depth: int, agent: Agent, min_spread = 1, max_spread = 5):
-    """
-    Generate a fully populated behavior tree of a given depth, bound to an agent
+    def write_genome(self, root: ControlNode):
+        """
+        Tree to genome string
+        """
+        return root.__repr__()
 
-    @param depth: depth of the tree
-    @param agent: agent to bind to terminal nodes
-    @param min_spread: minimum number of children of internal nodes
-    @param max_spread: maximum number of children of internal nodes
-    """
-    def build_subtree(d):
-        # if at maximum depth, initialize a random terminal
-        if d >= depth:
-            t = random.choice(_terminals)(agent)
-            if type(t) is ActionNode:
-                print("uh oh!!")
-            t.randomize_params()
-            return t
-        # otherwise, initialize a random control with a random number of children
-        n_children = random.randint(min_spread, max_spread)
-        children = [build_subtree(d + 1) for _ in range(n_children)]
-        node = random.choice(_functions)(children)
-        return node
-    return build_subtree(0)
+    def bind_tree_to_agent(self, tree, agent: Agent):
+        """
+        Bind a behavior tree to an agent
+        Depth-first traverse of the tree, setting the agent attribute of each node without children to the given agent
+        """
+        if hasattr(tree, 'children'):
+            for child in tree.children:
+                self.bind_tree_to_agent(child, agent)
+        else:
+            tree.agent = agent
 
-def generate_minmax(min_depth: int, max_depth: int, agent: Agent, min_spread = 1, max_spread = 5):
-    """
-    Generate a behavior tree with a minimum and maximum depth, bound to an agent
-    Branches are grown until they reach their minimum
-    Once at minimum depth, branches have a 50% chance of being terminated
-    Branches are always terminated at maximum depth
+    def generate_maxdepth(self, depth: int, agent: Agent, min_spread = 1, max_spread = 5):
+        """
+        Generate a fully populated behavior tree of a given depth, bound to an agent
 
-    @param min_depth: minimum depth of the tree
-    @param max_depth: maximum depth of the tree
-    @param agent: agent to bind to terminal nodes
-    @param min_spread: minimum number of children of internal nodes
-    @param max_spread: maximum number of children of internal nodes
-    """
-    def build_subtree(d):
-        if d < min_depth:
-            # if not yet at minimum depth, initialize a random control with a random number of children
+        @param depth: depth of the tree
+        @param agent: agent to bind to terminal nodes
+        @param min_spread: minimum number of children of internal nodes
+        @param max_spread: maximum number of children of internal nodes
+        """
+        def build_subtree(d):
+            # if at maximum depth, initialize a random terminal
+            if d >= depth:
+                t = random.choice(self._terminals)(agent)
+                if type(t) is ActionNode:
+                    print("uh oh!!")
+                t.randomize_params()
+                return t
+            # otherwise, initialize a random control with a random number of children
             n_children = random.randint(min_spread, max_spread)
             children = [build_subtree(d + 1) for _ in range(n_children)]
-            node = random.choice(_functions)(children)
+            node = random.choice(self._functions)(children)
             return node
-        if d >= max_depth:
-            # if at maximum depth, initialize a random terminal
-            t = random.choice(_terminals)(agent)
-            t.randomize_params()
-            return t
-        # roll the dice
-        if random.random() < 0.5:
-            # if we broke off, add a terminal
-            t = random.choice(_terminals)(agent)
-            t.randomize_params()
-            return t
-        # if we didn't, continue as  before
-        n_children = random.randint(min_spread, max_spread)
-        children = [build_subtree(d + 1) for _ in range(n_children)]
-        node = random.choice(_functions)(children)
-        return node
-    return build_subtree(0)
+        return build_subtree(0)
 
-def crossover(a: ControlNode, b: ControlNode, a_agent: Agent, b_agent: Agent):
-    """
-    Crossover between two behavior trees
-    """
-    def get_kth_node_with_parent_and_index(node, k):
-        def helper(node, k, count, parent, index_in_parent):
-            if node is None:
-                return None, None, None, count
+    def generate_minmax(self, min_depth: int, max_depth: int, agent: Agent, min_spread = 1, max_spread = 5):
+        """
+        Generate a behavior tree with a minimum and maximum depth, bound to an agent
+        Branches are grown until they reach their minimum
+        Once at minimum depth, branches have a 50% chance of being terminated
+        Branches are always terminated at maximum depth
 
-            count += 1
-            if count == k:
-                return node, parent, index_in_parent, count
-
-            if hasattr(node, 'children'):
-                for i, child in enumerate(node.children):
-                    result, result_parent, child_index, count = helper(
-                        child, k, count, node, i
-                    )
-                    if result is not None:
-                        return result, result_parent, child_index, count
-
-            return None, None, None, count
-
-        result, parent, index, _ = helper(node, k, 0, None, None)
-        return result, parent, index
-
-    # get subtrees, their parent nodes, and the places of those subtrees in the parent node child lists
-    a_sub, a_place, a_index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
-    b_sub, b_place, b_index = get_kth_node_with_parent_and_index(b, random.randint(0, b.size() - 1))
-
-    # swap
-    a_place.children[a_index] = b_sub
-    b_place.children[b_index] = a_sub
-
-    # rebind agents
-    bind_tree_to_agent(a, a_agent)
-    bind_tree_to_agent(b, b_agent)
-
-def mutate_and_rebind(a: ControlNode, agent: Agent):
-    """
-    Mutate a behavior tree
-    Select a random node in a tree, and replace it with a newly generated subtree of lesser or equivalent depth
-    """
-    def get_kth_node_with_parent_and_index(node, k):
-        def helper(node, k, count, parent, index_in_parent):
-            if node is None:
-                return None, None, None, count
-
-            count += 1
-            if count == k:
-                return node, parent, index_in_parent, count
-
-            if hasattr(node, 'children'):
-                for i, child in enumerate(node.children):
-                    result, result_parent, child_index, count = helper(
-                        child, k, count, node, i
-                    )
-                    if result is not None:
-                        return result, result_parent, child_index, count
-
-            return None, None, None, count
-
-        result, parent, index, _ = helper(node, k, 0, None, None)
-        return result, parent, index
-
-    # select a subtree, its parent node, and the place of that subtree in the parent node child list
-    _, place, index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
-    # generate a new subtree
-    new = generate_minmax(1, a.size(), None)
-    # bind the new subtree to the agent
-    bind_tree_to_agent(new, agent)
-    # replace the old subtree with the new one
-    place.children[index] = new
-
-def read_genome(dna: str, agent: Agent, global_pos=0) -> ControlNode:
-    """
-    Genome string to tree
-    """
-    # start of the parameters
-    param_start_i = dna.find('(')
-    depth = 1 # nesting depth
-    place = param_start_i + 1
-    while depth != 0:
-        if dna[place] == '(':
-            depth += 1
-        elif dna[place] == ')':
-            depth -= 1
-        place += 1
-    children_start_i = place
-    depth = 1
-    while depth != 0 and place < len(dna):
-        if dna[place] == '[':
-            depth += 1
-        elif dna[place] == ']':
-            depth -= 1
-        place += 1
-    name = dna[0:param_start_i] # node name
-    params = dna[param_start_i:children_start_i].strip('()').split(', ') # node parameters (list of strings)
-
-    children_str = dna[children_start_i:place] # node children string - still needs to be split
-    children = [] # list of child nodes
-    bdepth = 0 # for tracking bracket nesting
-    pdepth = 0 # for tracking parenthesis nesting
-    current_child = [] # dna string for the current child
-
-    for c in children_str[1:-1]: # skip the outside brackets
-        # increase depths according to character discovered
-        if c == '[':
-            bdepth += 1
-        elif c == ']':
-            bdepth -= 1
-        elif c == '(':
-            pdepth += 1
-        elif c == ')':
-            pdepth -= 1
-        # when we find a comma, and are at the top level of both nesting possibilities, we have found a complete top level child genome string
-        elif c == ',' and bdepth == 0 and pdepth == 0:
-            children.append(read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos)) # build the node for that child string
-            current_child = [] # clear the buffer
-            continue
-        current_child.append(c) # add character to the child string buffer
-
-    # construct the last child if there's still stuff in the buffer
-    if current_child:
-        children.append(read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos))
-
-    # check the available functions (inner nodes) and initialize one with the children if we find the right one
-    node = None
-    for fun in _functions:
-        if fun.__name__ == name:
-            node = fun(children)
-    if node is not None:
-        return node
-
-    # check all the terminals in the pool and initialize one with the parameters if we find the right one
-    for term in _terminals:
-        if term.__name__ == name:
-            try:
-                node = term(agent, *params)
+        @param min_depth: minimum depth of the tree
+        @param max_depth: maximum depth of the tree
+        @param agent: agent to bind to terminal nodes
+        @param min_spread: minimum number of children of internal nodes
+        @param max_spread: maximum number of children of internal nodes
+        """
+        def build_subtree(d):
+            if d < min_depth:
+                # if not yet at minimum depth, initialize a random control with a random number of children
+                n_children = random.randint(min_spread, max_spread)
+                children = [build_subtree(d + 1) for _ in range(n_children)]
+                node = random.choice(self._functions)(children)
                 return node
-            except Exception as e:
-                print(e)
-                print(name, params)
+            if d >= max_depth:
+                # if at maximum depth, initialize a random terminal
+                t = random.choice(self._terminals)(agent)
+                t.randomize_params()
+                return t
+            # roll the dice
+            if random.random() < 0.5:
+                # if we broke off, add a terminal
+                t = random.choice(self._terminals)(agent)
+                t.randomize_params()
+                return t
+            # if we didn't, continue as  before
+            n_children = random.randint(min_spread, max_spread)
+            children = [build_subtree(d + 1) for _ in range(n_children)]
+            node = random.choice(self._functions)(children)
+            return node
+        return build_subtree(0)
 
-    raise ValueError(f'Could not reconstruct behavior tree - unknown node {name} near position {global_pos}')
+    def crossover(self, a: ControlNode, b: ControlNode, a_agent: Agent, b_agent: Agent):
+        """
+        Crossover between two behavior trees
+        """
+        def get_kth_node_with_parent_and_index(node, k):
+            def helper(node, k, count, parent, index_in_parent):
+                if node is None:
+                    return None, None, None, count
+
+                count += 1
+                if count == k:
+                    return node, parent, index_in_parent, count
+
+                if hasattr(node, 'children'):
+                    for i, child in enumerate(node.children):
+                        result, result_parent, child_index, count = helper(
+                            child, k, count, node, i
+                        )
+                        if result is not None:
+                            return result, result_parent, child_index, count
+
+                return None, None, None, count
+
+            result, parent, index, _ = helper(node, k, 0, None, None)
+            return result, parent, index
+
+        # get subtrees, their parent nodes, and the places of those subtrees in the parent node child lists
+        a_sub, a_place, a_index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
+        b_sub, b_place, b_index = get_kth_node_with_parent_and_index(b, random.randint(0, b.size() - 1))
+
+        # swap
+        a_place.children[a_index] = b_sub
+        b_place.children[b_index] = a_sub
+
+        # rebind agents
+        self.bind_tree_to_agent(a, a_agent)
+        self.bind_tree_to_agent(b, b_agent)
+
+    def mutate_and_rebind(self, a: ControlNode, agent: Agent):
+        """
+        Mutate a behavior tree
+        Select a random node in a tree, and replace it with a newly generated subtree of lesser or equivalent depth
+        """
+        def get_kth_node_with_parent_and_index(node, k):
+            def helper(node, k, count, parent, index_in_parent):
+                if node is None:
+                    return None, None, None, count
+
+                count += 1
+                if count == k:
+                    return node, parent, index_in_parent, count
+
+                if hasattr(node, 'children'):
+                    for i, child in enumerate(node.children):
+                        result, result_parent, child_index, count = helper(
+                            child, k, count, node, i
+                        )
+                        if result is not None:
+                            return result, result_parent, child_index, count
+
+                return None, None, None, count
+
+            result, parent, index, _ = helper(node, k, 0, None, None)
+            return result, parent, index
+
+        # select a subtree, its parent node, and the place of that subtree in the parent node child list
+        _, place, index = get_kth_node_with_parent_and_index(a, random.randint(0, a.size() - 1))
+        # generate a new subtree
+        new = self.generate_minmax(1, a.size(), None)
+        # bind the new subtree to the agent
+        self.bind_tree_to_agent(new, agent)
+        # replace the old subtree with the new one
+        place.children[index] = new
+
+    def read_genome(self, dna: str, agent: Agent, global_pos=0) -> ControlNode:
+        """
+        Genome string to tree
+        """
+        # start of the parameters
+        param_start_i = dna.find('(')
+        depth = 1 # nesting depth
+        place = param_start_i + 1
+        while depth != 0:
+            if dna[place] == '(':
+                depth += 1
+            elif dna[place] == ')':
+                depth -= 1
+            place += 1
+        children_start_i = place
+        depth = 1
+        while depth != 0 and place < len(dna):
+            if dna[place] == '[':
+                depth += 1
+            elif dna[place] == ']':
+                depth -= 1
+            place += 1
+        name = dna[0:param_start_i] # node name
+        params = dna[param_start_i:children_start_i].strip('()').split(', ') # node parameters (list of strings)
+
+        children_str = dna[children_start_i:place] # node children string - still needs to be split
+        children = [] # list of child nodes
+        bdepth = 0 # for tracking bracket nesting
+        pdepth = 0 # for tracking parenthesis nesting
+        current_child = [] # dna string for the current child
+
+        for c in children_str[1:-1]: # skip the outside brackets
+            # increase depths according to character discovered
+            if c == '[':
+                bdepth += 1
+            elif c == ']':
+                bdepth -= 1
+            elif c == '(':
+                pdepth += 1
+            elif c == ')':
+                pdepth -= 1
+            # when we find a comma, and are at the top level of both nesting possibilities, we have found a complete top level child genome string
+            elif c == ',' and bdepth == 0 and pdepth == 0:
+                children.append(self.read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos)) # build the node for that child string
+                current_child = [] # clear the buffer
+                continue
+            current_child.append(c) # add character to the child string buffer
+
+        # construct the last child if there's still stuff in the buffer
+        if current_child:
+            children.append(self.read_genome(''.join(current_child).strip(), agent, children_start_i + global_pos))
+
+        # check the available functions (inner nodes) and initialize one with the children if we find the right one
+        node = None
+        for fun in self._functions:
+            if fun.__name__ == name:
+                node = fun(children)
+        if node is not None:
+            return node
+
+        # check all the terminals in the pool and initialize one with the parameters if we find the right one
+        for term in self._terminals:
+            if term.__name__ == name:
+                try:
+                    node = term(agent, *params)
+                    return node
+                except Exception as e:
+                    print(e)
+                    print(name, params)
+
+        raise ValueError(f'Could not reconstruct behavior tree - unknown node {name} near position {global_pos}')
+
+    if __name__ ==

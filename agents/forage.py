@@ -9,7 +9,7 @@ from swarmcraft.btree.nodes.misc import RandomNode
 
 class ForageAgent(Agent):
     def __init__(self, pooler, message_server, uid, start_location, env, tree, parent_uid=None):
-        super().__init__(pooler, message_server)
+        super().__init__(pooler, message_server, uid)
         self.start_location = start_location
         self.env = env
         # define btree - random walk
@@ -17,23 +17,8 @@ class ForageAgent(Agent):
         self.parent_uid = parent_uid
         self.positions = []
 
-    def set_tree(self, tree, mission="blue_wool"):
-        #self.tree = tree
-        # print("tree set: ", self.tree)
-        # "Perfect" tree for getting blocks
-        perfect_tree = True
-        if perfect_tree:
-            tree = SequenceNode([
-                Look(self),
-                FallbackNode([
-                    SequenceNode([
-                        CanDigBlock(self, mission),
-                        ReleaseDir(self),
-                        StartDig(self, mission)
-                    ]),
-                    PressDir(self)
-                ])
-            ])
+    def set_tree(self, tree):
+        print("Setting tree for ", self.id, tree)
         self.tree = tree
 
     def update(self):

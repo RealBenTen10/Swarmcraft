@@ -12,119 +12,52 @@ from pathlib import Path
 from typing import Any
 import javascript.connection
 
-import numpy
-from deap import algorithms
-from deap import base
-from deap import creator
-from deap import tools
-from deap import gp
-from deap.algorithms import eaSimple
-
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir
 from swarmcraft.btree.nodes.sensing import CanDigBlock
-from agents import forage
+from swarmcraft.experiment import Experiment
+from swarmcraft.environment import Environment
+
+from swarm_gp import (
+    register_control,
+    register_action,
+    evolve,
+    instantiate_for_swarm,
+)
+
+import random
 
 
-def sequence_1_child(child1):
-    return bt.SequenceNode([child1])
+# ============================================================
+# BEHAVIOR TREE PRIMITIVE REGISTRATION
+# ============================================================
 
-def sequence_2_child(child1, child2):
-    return bt.SequenceNode([child1, child2])
-
-def sequence_3_child(child1, child2, child3):
-    return bt.SequenceNode([child1, child2, child3])
-
-def fallback_1_child(child1):
-    return bt.FallbackNode([child1])
-
-def fallback_2_child(child1, child2):
-    return bt.FallbackNode([child1, child2])
-
-def fallback_3_child(child1, child2, child3):
-    return bt.FallbackNode([child1, child2, child3])
-
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
-
-# Class for color of type string
-class WoolColor(str):
-    pass
-
-def generate_pset(agents):
+def generate_pset():
     """
-    Creates the Primitive Set (PSet) for DEAP.
-    Nodes are mapped to 0-arity primitives (leaves) to handle arguments.
-    Adjusted gp.generate to handle tree generation correctly. Missing prim and term raised errors.
+    Replaces DEAP PrimitiveSetTyped.
+    Registers agent-independent primitives exactly once.
     """
-    pset = gp.PrimitiveSetTyped("MAIN", [], bt.BehaviorTreeNode)
 
-    # Branches
-    #pset.addPrimitive(sequence_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(sequence_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    #pset.addPrimitive(sequence_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    #pset.addPrimitive(fallback_1_child, [bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    pset.addPrimitive(fallback_2_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
-    #pset.addPrimitive(fallback_3_child, [bt.BehaviorTreeNode, bt.BehaviorTreeNode, bt.BehaviorTreeNode], bt.BehaviorTreeNode)
+    # Control nodes: fixed arity = 2
+    register_control(bt.SequenceNode, 2, 2)
+    register_control(bt.FallbackNode, 2, 2)
 
-    # functions for Dig
-    def make_dig(color):
-        return StartDig(agents, color)
-    def make_sense(color):
-        return CanDigBlock(agents, color)
-    # CHANGED
-    # Primitives for Dig
-    #pset.addPrimitive(make_dig, [WoolColor], bt.ActionNode, name="Dig")
-    #pset.addPrimitive(make_sense, [WoolColor], bt.ActionNode, name="CanDig")
-    # The wool color constants for Dig
-    #pset.addTerminal("blue_wool", WoolColor, name="BlueWool")
-    #pset.addTerminal("orange_wool", WoolColor, name="OrangeWool")
+    # Action nodes (agent-free)
+    register_action(
+        StartDig,
+        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    )
+    register_action(
+        CanDigBlock,
+        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    )
+    register_action(Look)
+    register_action(PressDir)
+    register_action(ReleaseDir)
 
-    ## CHANGED
-    pset.addTerminal(StartDig(agents, "blue_wool"), bt.BehaviorTreeNode, name="DigBlue") # Digs blue
-    pset.addTerminal(StartDig(agents, "orange_wool"), bt.BehaviorTreeNode, name="DigOrange") # Digs orange
-    #pset.addTerminal(StartDig(agents), bt.ActionNode, name="Dig") # Digs everything
-    pset.addTerminal(Look(agents), bt.BehaviorTreeNode, name="Look")
-    pset.addTerminal(PressDir(agents), bt.BehaviorTreeNode, name="Move")
-    pset.addTerminal(ReleaseDir(agents), bt.BehaviorTreeNode, name="Stop")
-    pset.addTerminal(CanDigBlock(agents, "blue_wool"), bt.BehaviorTreeNode, name="SenseBlue") # Looks for blue
-    pset.addTerminal(CanDigBlock(agents, "orange_wool"), bt.BehaviorTreeNode, name="SenseOrange") # Looks for orange
-    #pset.addTerminal(CanDigBlock(agents), bt.ActionNode, name="CanDig") # Looks for anything that can be dug
-
-    return pset
-
-def set_toolbox(pset, population_count):
-    toolbox = base.Toolbox()
-    toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=2) # first tree
-    toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    toolbox.register("compile", gp.compile, pset=pset)
-    # --- GA Configuration ---
-    # Modified for Population = 1
-    if population_count > 1:
-        tournsize = population_count//4 if population_count//4 > 2 else 3 if population_count > 3 else population_count
-        tournsize = 3
-        toolbox.register("select", tools.selTournament, tournsize=tournsize)
-        print("Using tournsize: ", tournsize)
-    else:
-        toolbox.register("select", tools.selBest)
-    toolbox.register("mate", gp.cxOnePoint)
-    toolbox.register("expr_mut", gp.genGrow, min_=1, max_=2)  # leafs can have different depth # used for mutation
-    toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-    return toolbox
-
-def set_stats():
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("avg", numpy.mean)
-    stats.register("std", numpy.std)
-    stats.register("max", numpy.max)
-    return stats
 
 #_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
 #_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
-
-from swarmcraft.experiment import Experiment
-from swarmcraft.environment import Environment
 
 LOG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
@@ -198,6 +131,106 @@ class ServerShell(cmd.Cmd):
             #super().cmdloop('')
             self.do_quit([])
 
+    def do_run(self, args):
+        """
+        Run an experiment with swarm-compatible genetic programming.
+        """
+
+        at = args.split()
+        exp_name = "ForageExperiment"
+        exp_args = ['1']
+
+        agent_count = int(at[0]) if len(at) > 0 else 2
+        generations = int(at[1]) if len(at) > 1 else 2
+        population_count = int(at[2]) if len(at) > 2 else 2
+        number_runs_per_gen = int(at[3]) if len(at) > 3 else 1
+        run_duration = int(at[4]) if len(at) > 4 else 30
+        crossover_rate = float(at[5]) if len(at) > 5 else 0.4
+        mutation_prob = float(at[6]) if len(at) > 6 else 0.2
+
+        mission = "blue_wool"
+        blocks = {
+            "blue_wool": 4,
+            "orange_wool": 4,
+            "brown_wool": 0,
+            "green_wool": 0,
+        }
+
+        current_gen = -1
+        exp = None
+
+        try:
+            exp = self.experiments[exp_name](
+                self.pooler,
+                self.server,
+                self.messenger,
+                run_duration,
+                exp_args
+            )
+
+            exp.set_log_dir(
+                Path(LOG_DIR) / f"{exp_name}-{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
+            )
+
+            # Register primitives ONCE
+            generate_pset()
+            agents = exp.initialize(agent_count)
+
+            # ====================================================
+            # FITNESS FUNCTION (CONTROLLER-LEVEL)
+            # ====================================================
+
+            def evaluate_controller(tree: Any, gen: int):
+                nonlocal current_gen
+
+                if gen != current_gen:
+                    current_gen = gen
+                    print(f"Generation {gen}/{generations}")
+
+                controllers = instantiate_for_swarm(tree, agents)
+
+                for agent, controller in zip(agents, controllers):
+                    agent.set_tree(controller)
+
+                total_fitness = 0.0
+                for _ in range(number_runs_per_gen):
+                    exp.set_round(blocks)
+                    total_fitness += exp.run(mission, blocks)
+                size_penalty = 0.01 * tree.size()
+                return (total_fitness / number_runs_per_gen) - size_penalty
+
+            # ====================================================
+            # EVOLUTION
+            # ====================================================
+
+            population = evolve(
+                population_size=population_count,
+                generations=generations,
+                min_depth=1,
+                max_depth=3,
+                evaluate=evaluate_controller,
+                cx_prob=crossover_rate,
+                mut_prob=mutation_prob,
+            )
+
+            best = population[0]
+            print("Best controller:", best)
+
+            exp.cleanup()
+
+        except KeyError as e:
+            print(f"Experiment '{exp_name}' not found:", e)
+
+        except Exception as e:
+            print("Experiment error:", e)
+            traceback.print_tb(e.__traceback__)
+            if exp is not None:
+                try:
+                    exp.cleanup()
+                except Exception as cleanup_error:
+                    print("Cleanup error:", cleanup_error)
+
+
     def do_reloadenvs(self, args):
         """Reload environments"""
         self.load_envs(self.envs_dir)
@@ -235,125 +268,6 @@ class ServerShell(cmd.Cmd):
         while len(self.pooler.free_bots) > 0:
             b = self.pooler.free_bots.pop()
             b.quit()
-
-    def do_run(self, args):
-        """Run an experiment"""
-        LOG_DIR = "./logs"
-        at = args.split()
-        exp_name = "ForageExperiment"
-        exp_args = ['1']
-        exp = None
-
-        # Agent count: how many agents
-        # agent_count = int(at[0]) if len(at) > 0 else 1
-        # for swam - will add this later in the project
-        # out of scope for seminar
-        agent_count = 1
-        # Generations: how often should the individual evolve
-        generations = int(at[0]) if len(at) > 0 else 100
-        # number of population
-        population_count = int(at[1]) if len(at) > 1 else 30
-        # Number runs per environment: on how many envs should the controller be tested
-        number_runs_per_gen = int(at[2]) if len(at) > 2 else 2
-        # which EA?
-        simple = at[3]==1 if len(at) > 3 else False
-        # crossover rate
-        crossover_rate = int(at[4]) if len(at) > 4 else 0.4
-        # mutation probability
-        mutation_prob = int(at[5]) if len(at) > 5 else 0.2
-        # current generation for occasional prints
-        current_gen = -1
-
-        try:
-            exp = self.experiments[exp_name](self.pooler, self.server, self.messenger, exp_args)
-            exp.set_log_dir(Path(LOG_DIR) / f'{exp_name}-{datetime.now().strftime("%Y-%m-%d_%H-%M")}')
-
-            # Initialize world and get agents
-            # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
-            agents = exp.initialize(agent_count)
-
-            print("Set pset")
-            pset = generate_pset(agents[0])
-            print("Set toolbox")
-            toolbox = set_toolbox(pset, population_count)
-
-            # --- Define Evaluation Function (Closure) ---
-            def evaluate_bt(individual, mission = "blue_wool", blocks = {'blue_wool': 4, 'orange_wool': 4, 'brown_wool': 0, 'green_wool': 0}, gen=0):
-                nonlocal current_gen
-                if current_gen!=gen:
-                    current_gen = gen
-                    #print(f"Run generation {gen}/{generations}")
-                    #print(f"Mission: {mission} | Blocks: {blocks}")
-                new_tree = gp.compile(individual, pset)
-                # Update the agents with the new behavior tree
-                # NOTE: Ensure 'agents' supports set_tree. If agents is a list, loop might be needed.
-                agents[0].set_tree(new_tree, mission=mission)
-                # test controller on n environments
-                fitness = 0
-                for i in range(number_runs_per_gen):
-                    #print(f"Testing individual {individual_count}: {i+1}/{number_runs_per_gen}")
-                    #print(f"Testing Controller on environment {i+1}/{number_runs_per_env}")
-                    # init arena, etc.
-                    # decide on which blocks to randomly allocate in arena
-                    # TODO Move the random generation of positions to another function. It should be possible to use the same environment 2+ times (really needed?)
-                    exp.set_round(blocks)
-                    # Run simulation
-                    fitness += exp.run(mission, blocks)
-                # average reward over n environments
-                size_penalty = 0.01 * len(individual) # added size penalty against bloating
-                fitness = (fitness/number_runs_per_gen) - size_penalty
-
-                try:
-                    print("Tree: ", str(individual), " has fitness: ", fitness)
-                except Exception as e:
-                    print("Ind: ", individual, " err'd because ", e)
-                return fitness,  # Tuple required
-
-            toolbox.register("evaluate", evaluate_bt)
-
-            pop = toolbox.population(n=population_count)
-            hof = tools.HallOfFame(10)
-
-            stats = set_stats()
-            if population_count == 1:
-                crossover_rate = 0
-            while crossover_rate + mutation_prob > 1.0:
-                crossover_rate -= 0.001
-                mutation_prob -= 0.001
-            # mu=1 (keep 1 parent), lambda_=1 (generate 1 child)
-            print(f"Doing {generations + 1} runs with {agent_count} agents and {number_runs_per_gen} repetitions per generation.\nUsing {population_count} genomes with crossover rate {crossover_rate} and mutation probability {mutation_prob}")
-            if simple:
-                print("Using EA simple")
-                population_, logbook_ = algorithms.eaSimple(pop, toolbox, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof, verbose=True)
-            else:
-                MU = population_count
-                LAMBDA = MU * 3
-                print(f"Using mu = {MU} and lambda = {LAMBDA}")
-                population_, logbook_ = algorithms.eaMuPlusLambda(pop, toolbox, mu=MU, lambda_=LAMBDA, cxpb=crossover_rate, mutpb=mutation_prob, ngen=generations, stats=stats, halloffame=hof)
-            #print("Hof: ", hof)
-            print("Result HOF: ", hof[0])
-            print("*"*50)
-            try:
-                print("pop: ", str(population_))
-                print("*"*50)
-            except:
-                pass
-            print("log: ", logbook_)
-            exp.cleanup()
-
-        except KeyError as e:
-            print(f"Experiment '{exp_name}' not found: ", e)
-        except Exception as e:
-            print("Experiment error")
-            print(e)
-            traceback.print_tb(e.__traceback__)
-            if exp is not None:
-                try:
-                    exp.cleanup()
-                except Exception as cleanup_error:
-                    print('Experiment cleanup error')
-                    print(cleanup_error)
-
 
     def do_clear(self, args):
         """Clear an area"""
