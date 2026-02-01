@@ -17,7 +17,7 @@ class ForageExperiment(Experiment):
     def __init__(self, pooler, minecraft_server, message_server, run_duration = 60, *args):
         super().__init__(pooler, minecraft_server, message_server)
         self.last_update_time = None
-        self.update_interval = 0.5  # how many seconds to wait between experiment updates
+        self.update_interval = 2.0  # how many seconds to wait between experiment updates
         self.init_agent_count = 1
         self.max_time_sec = run_duration
         self.environment = ForageEnvironment(self.minecraft_server, ORIGIN, SIZE, 1, 1, 10)

@@ -228,6 +228,8 @@ def tree_to_str(node):
         # Communication
         if hasattr(node, "message") and node.message != "":
             params.append(f'"{node.message}"')
+        if hasattr(node, "message_content") and node.message_content != "":
+            params.append(f'"{node.message_content}"')
 
 
         if params:

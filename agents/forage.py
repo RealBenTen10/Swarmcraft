@@ -46,6 +46,8 @@ class ForageAgent(Agent):
             self.pooler.reset_bot_stats(self.bot)
             self.pooler.reset_bot_control(self.bot)
             self.pooler.reset_bot_position(self.bot)
+            # clear messages for next run
+            self.sensing.messages.clear()
         except Exception as e:
             print(f"Error while resetting agent: {e}")
             pass

@@ -39,24 +39,24 @@ def generate_pset():
     register_control(bt.SequenceNode, 2, 2) # only 2 children allowed
     register_control(bt.FallbackNode, 2, 2) # only 2 children allowed
 
-    register_action(
-        StartDig,
-        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
-    )
-    register_action(
-        CanDigBlock,
-        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
-    )
-    register_action(Look)
-    register_action(PressDir)
-    register_action(ReleaseDir)
+    # register_action(
+    #     StartDig,
+    #     param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    # )
+    # register_action(
+    #     CanDigBlock,
+    #     param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    # )
+    # #register_action(Look)
+    #register_action(PressDir)
+    #register_action(ReleaseDir)
     register_action(
         SendMessage,
-        param_generators=[lambda: random.choice([1,2])]
+        param_generators=[lambda: random.choice([1])]
     )
     register_action(
         GotMessage,
-        param_generators=[lambda: random.choice([1,2])]
+        param_generators=[lambda: random.choice([1])]
     )
 
 
@@ -225,8 +225,7 @@ class ServerShell(cmd.Cmd):
                 evaluate=evaluate_controller,
             )
 
-            best = population[0]
-            print("Best controller:", best)
+            print("Best controller:", tree_to_str(population[0]))
 
             exp.cleanup()
 

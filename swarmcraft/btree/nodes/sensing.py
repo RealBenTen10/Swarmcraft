@@ -147,14 +147,15 @@ class GotMessage(ActionNode):
         No random initialization
         """
         super().__init__(agent)
-        self.message_content = args[0] if len(args) > 0 else None
+        self.message_content = str(args[0]) if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
-        self.privacy = args[2] == 'True' if len(args) > 2 else False
-        self.ttl = float(args[3]) if len(args) > 3 else 5 # messages live 5 seconds
+        self.privacy = args[2] == 'True' if len(args) > 2 else None
+        self.ttl = float(args[3]) if len(args) > 3 else 3 # messages live 3 seconds
 
     def tick(self) -> str:
         now = time.time()
-        for message in self.agent.sensing.messages:
+        #print("Looking through Messages")
+        for message in reversed(self.agent.sensing.messages):
             try:
                 content, ts_str = message.contents.rsplit("|", 1)
                 timestamp = float(ts_str)
@@ -163,17 +164,17 @@ class GotMessage(ActionNode):
                 continue
 
             if self.ttl is not None and (now - timestamp) > self.ttl:
-                print("Message expired: ", message, " Content: ", content, " and ttl: ", ts_str)
-                continue # skip this message as it has expired
-            print("Got Content: ", content, " and ttl ", ts_str)
+                # as soon as we find an expired message, the rest is also expired
+                return 'failure'
             matched = True
             if self.message_content is not None:
-                matched &= content == self.message_content
+                matched &= str(content) == self.message_content
             if self.sender_id is not None:
                 matched &= message.sender_id == self.sender_id
             if self.privacy is not None:
                 matched &= message.privacy == self.privacy
             if matched:
+                #print("Got Content: ", content, " and ttl ", ts_str)
                 return 'success'
         return 'failure'
 

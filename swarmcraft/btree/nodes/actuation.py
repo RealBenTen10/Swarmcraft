@@ -214,7 +214,7 @@ class SendMessage(ActionNode):
         super().__init__(agent)
         self.message = args[0] if len(args) > 0 else None
         self.target_id = args[1] if len(args) > 1 else None # Broadcast if set to None?
-        self.dist = float(args[2]) if len(args) > 2 else 5 # set this to fixed distance (e.g. 5)
+        self.dist = float(args[2]) if len(args) > 2 else 5 # this should be 5 blocks
         if self.message is None and self.target_id is None and self.dist is None:
             self.randomize_params()
 
@@ -226,6 +226,7 @@ class SendMessage(ActionNode):
     def tick(self) -> str:
         timestamp = time.time()
         message = f"{self.message}|{timestamp}"
+        print("Sent message: ", message)
         if self.target_id is not None:
             if self.dist != -1:
                 self.agent.actuation.send_message_ranged(message, self.target_id, self.dist)
