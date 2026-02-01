@@ -18,7 +18,6 @@ class ForageAgent(Agent):
         self.positions = []
 
     def set_tree(self, tree):
-        print("Setting tree for ", self.id, tree)
         self.tree = tree
 
     def update(self):

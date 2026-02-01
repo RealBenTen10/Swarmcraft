@@ -11,38 +11,34 @@ import traceback
 from pathlib import Path
 from typing import Any
 import javascript.connection
+import random
 
 import swarmcraft.btree.nodes.base as bt
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir
-from swarmcraft.btree.nodes.sensing import CanDigBlock
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir, SendMessage
+from swarmcraft.btree.nodes.sensing import CanDigBlock, GotMessage
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 
 from swarm_gp import (
     register_control,
     register_action,
-    evolve,
     instantiate_for_swarm,
+    ea_mu_plus_lambda,
+    tree_to_str
 )
 
-import random
-
+LOG_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, "logs")
+)
 
 # ============================================================
-# BEHAVIOR TREE PRIMITIVE REGISTRATION
+# BEHAVIOR TREE PRIMITIVE REGISTRATION (ONCE)
 # ============================================================
 
 def generate_pset():
-    """
-    Replaces DEAP PrimitiveSetTyped.
-    Registers agent-independent primitives exactly once.
-    """
+    register_control(bt.SequenceNode, 2, 2) # only 2 children allowed
+    register_control(bt.FallbackNode, 2, 2) # only 2 children allowed
 
-    # Control nodes: fixed arity = 2
-    register_control(bt.SequenceNode, 2, 2)
-    register_control(bt.FallbackNode, 2, 2)
-
-    # Action nodes (agent-free)
     register_action(
         StartDig,
         param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
@@ -54,15 +50,21 @@ def generate_pset():
     register_action(Look)
     register_action(PressDir)
     register_action(ReleaseDir)
+    register_action(
+        SendMessage,
+        param_generators=[lambda: random.choice([1,2])]
+    )
+    register_action(
+        GotMessage,
+        param_generators=[lambda: random.choice([1,2])]
+    )
 
 
-#_nodes = [bt.SequenceNode, bt.FallbackNode, bt.ActionNode]
-#_terminals = [PressDir, StartDig, ReleaseDir, CanDigBlock, Look]
-
-LOG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'logs'))
 
 class ServerShell(cmd.Cmd):
-    intro = "Shell for swarmcraft simulator. Type help or ? to list commands.\nType 'run' followed by generation, population, number_runs_per_gen, simple, crossover and mutation. \nAll values as integers. Default values are set\n"
+    commands = "Type 'run' followed by swarm_size, generation, population_count, offspring_multiplyer (lambda = mu*n), \
+    number_runs_per_gen, run_duration, crossover, mutation, max_depth and min_depth."
+    intro = f"Shell for swarmcraft simulator. Type help or ? to list commands.\n{commands}\nAll values as integers. Default values are set\n"
     prompt = "swarmcraft > "
     file = None
 
@@ -143,10 +145,16 @@ class ServerShell(cmd.Cmd):
         agent_count = int(at[0]) if len(at) > 0 else 2
         generations = int(at[1]) if len(at) > 1 else 2
         population_count = int(at[2]) if len(at) > 2 else 2
-        number_runs_per_gen = int(at[3]) if len(at) > 3 else 1
-        run_duration = int(at[4]) if len(at) > 4 else 30
-        crossover_rate = float(at[5]) if len(at) > 5 else 0.4
-        mutation_prob = float(at[6]) if len(at) > 6 else 0.2
+        # we need at least 2 individuals for crossover
+        if population_count < 2:
+            population_count = 2
+        offspring_multiplier = float(at[3]) if len(at) > 3 else 1
+        number_runs_per_gen = int(at[4]) if len(at) > 4 else 1
+        run_duration = int(at[5]) if len(at) > 5 else 30
+        crossover_rate = float(at[6]) if len(at) > 6 else 0.4
+        mutation_prob = float(at[7]) if len(at) > 7 else 0.2
+        max_depth = int(at[8]) if len(at) > 8 else 2
+        min_depth = int(at[9]) if len(at) > 9 else 1
 
         mission = "blue_wool"
         blocks = {
@@ -180,37 +188,41 @@ class ServerShell(cmd.Cmd):
             # FITNESS FUNCTION (CONTROLLER-LEVEL)
             # ====================================================
 
-            def evaluate_controller(tree: Any, gen: int):
+            def evaluate_controller(tree, gen):
+                total_fitness = 0.0
                 nonlocal current_gen
-
                 if gen != current_gen:
                     current_gen = gen
                     print(f"Generation {gen}/{generations}")
-
-                controllers = instantiate_for_swarm(tree, agents)
-
-                for agent, controller in zip(agents, controllers):
-                    agent.set_tree(controller)
-
-                total_fitness = 0.0
+                print("Current individual: ", tree_to_str(tree))
                 for _ in range(number_runs_per_gen):
                     exp.set_round(blocks)
+                    trees = instantiate_for_swarm(tree, agents)
+                    for agent, t in zip(agents, trees):
+                        agent.set_tree(t)
+                        #agent.tree = t
                     total_fitness += exp.run(mission, blocks)
-                size_penalty = 0.01 * tree.size()
-                return (total_fitness / number_runs_per_gen) - size_penalty
+                # simple parsimony pressure
+                def count_nodes(n):
+                    if isinstance(n, bt.ControlNode):
+                        return 1 + sum(count_nodes(c) for c in n.children)
+                    return 1
+
+                return (total_fitness / number_runs_per_gen) - 0.01 * count_nodes(tree)
 
             # ====================================================
             # EVOLUTION
             # ====================================================
 
-            population = evolve(
-                population_size=population_count,
+            population = ea_mu_plus_lambda(
+                mu=population_count,
+                lambda_=round(population_count*offspring_multiplier),
                 generations=generations,
-                min_depth=1,
-                max_depth=3,
+                min_depth=min_depth,
+                max_depth=max_depth,
+                cxpb=crossover_rate,
+                mutpb=mutation_prob,
                 evaluate=evaluate_controller,
-                cx_prob=crossover_rate,
-                mut_prob=mutation_prob,
             )
 
             best = population[0]

@@ -39,8 +39,8 @@ class ForageExperiment(Experiment):
         self.agents = []
         if agent_count > 1:
             for i in range(agent_count):
-                if len(self.pooler.free_bots) == 0:
-                    self.pooler.create_bot()
+                #if len(self.pooler.free_bots) == 0:
+                #    self.pooler.create_bot()
                 a = ForageAgent(self.pooler, self.message_server, f'forager_{self.total_agents_existed}', START_LOCATION,
                                 self.environment, tree=None)
                 self.total_agents_existed += 1
@@ -61,6 +61,7 @@ class ForageExperiment(Experiment):
             agent.reset()
 
     def set_environment(self, blocks):
+        #time.sleep(1)
         self.environment.reset()
         self.environment.initialize()
         self.environment.set_blocks(blocks)
@@ -83,16 +84,13 @@ class ForageExperiment(Experiment):
                 for agent in self.agents:
                     agent.update()
                 self.last_update_time = time.time()
+
         # fitness currently returns global reward (not per agent)
-        fitness = 0
+        remaining_blocks = self.agents[0].sensing.get_blocks_in_arena(ORIGIN, SIZE, blocks)
+        fitness = self.agents[0].evaluation(remaining_blocks, mission, blocks)
+
         for agent in self.agents:
-            #print("Run finished... Evaluating")
-            remaining_blocks = agent.sensing.get_blocks_in_arena(ORIGIN, SIZE, blocks)
-            #print("Got: ", remaining_blocks)
-            fitness = agent.evaluation(remaining_blocks, mission, blocks)
-            #print("Resetting agent")
             agent.reset()
-            #print("Unbinding bot")
-            # Do I need this?
             self.pooler.unbind_bot(agent)
+
         return fitness

@@ -5,7 +5,6 @@ from typing import Callable, Type
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.agent import Agent
 
-
 # ============================================================
 # 1. PRIMITIVE REGISTRY (AGENT-FREE)
 # ============================================================
@@ -36,37 +35,39 @@ def register_action(cls: Type[bt.ActionNode], param_generators=()):
 
 
 # ============================================================
-# 2. TREE GENERATION (GENOTYPE)
+# 2. TREE GENERATION (DEAP genGrow equivalent)
 # ============================================================
 
-def generate_tree(min_depth: int, max_depth: int, depth: int = 0) -> bt.BehaviorTreeNode:
-    if depth >= max_depth:
-        return _random_action()
+def generate_grow_tree(min_depth: int, max_depth: int, depth: int = 0):
+    height = random.randint(min_depth, max_depth)
 
-    if depth < min_depth or random.random() < 0.6:
+    def grow(d):
+        stop = d >= height or (d >= min_depth and random.random() < 0.5)
+        if stop:
+            return _random_action()
         prim = random.choice(CONTROL_PRIMITIVES)
         arity = random.randint(prim.min_arity, prim.max_arity)
-        children = [generate_tree(min_depth, max_depth, depth + 1) for _ in range(arity)]
-        return prim.cls(children)
+        return prim.cls([grow(d + 1) for _ in range(arity)])
 
-    return _random_action()
+    return grow(depth)
 
 
 def _random_action():
     prim = random.choice(ACTION_PRIMITIVES)
     params = [gen() for gen in prim.param_generators]
-    return prim.cls(None, *params)  # agent intentionally None
+    return prim.cls(None, *params)
 
 
 # ============================================================
 # 3. TREE UTILITIES
 # ============================================================
 
-def _collect_nodes(root):
+def collect_nodes(root, include_root=True):
     nodes = []
 
     def visit(node, parent=None, index=None):
-        nodes.append((node, parent, index))
+        if include_root or parent is not None:
+            nodes.append((node, parent, index))
         if isinstance(node, bt.ControlNode):
             for i, c in enumerate(node.children):
                 visit(c, node, i)
@@ -76,36 +77,106 @@ def _collect_nodes(root):
 
 
 # ============================================================
-# 4. GENETIC OPERATORS
+# 4. GENETIC OPERATORS (DEAP-EQUIVALENT)
 # ============================================================
 
-def crossover(a, b):
-    na, pa, ia = random.choice(_collect_nodes(a))
-    nb, pb, ib = random.choice(_collect_nodes(b))
+def cx_one_point(ind1, ind2):
+    nodes1 = collect_nodes(ind1, include_root=False)
+    nodes2 = collect_nodes(ind2, include_root=False)
 
-    if pa is None or pb is None:
-        return a, b
+    if not nodes1 or not nodes2:
+        return ind1, ind2
 
-    pa.children[ia], pb.children[ib] = nb, na
-    return a, b
+    n1, p1, i1 = random.choice(nodes1)
+    n2, p2, i2 = random.choice(nodes2)
+
+    p1.children[i1], p2.children[i2] = n2, n1
+    return ind1, ind2
 
 
-def mutate(tree, min_depth, max_depth):
-    node, parent, index = random.choice(_collect_nodes(tree))
-    new_subtree = generate_tree(0, max_depth)
+def mut_grow(ind, min_depth, max_depth):
+    nodes = collect_nodes(ind, include_root=True)
+    node, parent, index = random.choice(nodes)
+
+    new_subtree = generate_grow_tree(min_depth, max_depth)
 
     if parent is None:
         return new_subtree
 
     parent.children[index] = new_subtree
-    return tree
+    return ind
 
 
 # ============================================================
-# 5. AGENT BINDING (PHENOTYPE)
+# 5. VARIATION (DEAP varOr)
 # ============================================================
 
-def bind_agent(tree: bt.BehaviorTreeNode, agent: Agent):
+def var_or(population, lambda_, cxpb, mutpb, min_depth, max_depth):
+    offspring = []
+
+    for _ in range(lambda_):
+        op = random.random()
+
+        if op < cxpb:
+            p1, p2 = random.sample(population, 2)
+            c1, _ = cx_one_point(copy.deepcopy(p1), copy.deepcopy(p2))
+            offspring.append(c1)
+
+        elif op < cxpb + mutpb:
+            p = copy.deepcopy(random.choice(population))
+            offspring.append(mut_grow(p, min_depth, max_depth))
+
+        else:
+            offspring.append(copy.deepcopy(random.choice(population)))
+
+    return offspring
+
+
+# ============================================================
+# 6. EVOLUTION STRATEGY (μ + λ)
+# ============================================================
+
+def ea_mu_plus_lambda(
+    mu: int,
+    lambda_: int,
+    generations: int,
+    min_depth: int,
+    max_depth: int,
+    cxpb: float,
+    mutpb: float,
+    evaluate: Callable[[bt.BehaviorTreeNode, int], float],
+):
+    population = [generate_grow_tree(min_depth, max_depth) for _ in range(mu)]
+
+    for gen in range(generations):
+        fitness = {id(ind): evaluate(ind, gen) for ind in population}
+
+        offspring = var_or(
+            population,
+            lambda_,
+            cxpb,
+            mutpb,
+            min_depth,
+            max_depth
+        )
+
+        for ind in offspring:
+            fitness[id(ind)] = evaluate(ind, gen)
+
+        population = sorted(
+            population + offspring,
+            key=lambda ind: fitness[id(ind)],
+            reverse=True
+        )[:mu]
+
+    return population
+
+
+# ============================================================
+# 7. AGENT BINDING (PHENOTYPE)
+# ============================================================
+
+def bind_agent(tree, agent: Agent):
     if isinstance(tree, bt.ActionNode):
         tree.agent = agent
     elif isinstance(tree, bt.ControlNode):
@@ -113,49 +184,60 @@ def bind_agent(tree: bt.BehaviorTreeNode, agent: Agent):
             bind_agent(c, agent)
 
 
-def instantiate_for_swarm(tree, agents: list[Agent]):
-    instances = []
-    for agent in agents:
-        t = copy.deepcopy(tree)
-        bind_agent(t, agent)
-        instances.append(t)
-    return instances
+def instantiate_for_swarm(tree, agents):
+    return [
+        (lambda t: (bind_agent(t, a), t)[1])(copy.deepcopy(tree))
+        for a in agents
+    ]
 
 
-# ============================================================
-# 6. EVOLUTION LOOP (REPLACES DEAP)
-# ============================================================
+def tree_to_str(node):
+    """
+    Deterministic string representation of a Behavior Tree,
+    including parameters of action nodes.
+    """
 
-def evolve(
-    population_size: int,
-    generations: int,
-    min_depth: int,
-    max_depth: int,
-    evaluate: Callable[[bt.BehaviorTreeNode, int], float],
-    cx_prob: float,
-    mut_prob: float,
-):
-    population = [generate_tree(min_depth, max_depth) for _ in range(population_size)]
+    # -------------------------------------------------
+    # Control nodes
+    # -------------------------------------------------
+    if isinstance(node, bt.ControlNode):
+        name = node.__class__.__name__.replace("Node", "")
+        children = ", ".join(tree_to_str(c) for c in node.children)
+        return f"{name}({children})"
 
-    for gen in range(generations):
-        fitness = [(ind, evaluate(ind, gen)) for ind in population]
-        fitness.sort(key=lambda x: x[1], reverse=True)
+    # -------------------------------------------------
+    # Action nodes (leafs)
+    # -------------------------------------------------
+    if isinstance(node, bt.ActionNode):
+        name = node.__class__.__name__
+        # If additional information of ActionNode is needed
+        # Explicit parameter extraction
+        params = []
+        # block color
+        if hasattr(node, "color") and node.color != "":
+            params.append(f'"{node.color}"')
+        # direction to look at
+        if hasattr(node, "yaw") and node.yaw != "":
+            if node.yaw == -1:
+                params.append(f'"random"')
+            else:
+                params.append(f'"{node.yaw}"')
+        # PressDir - currently only "forward"
+        if hasattr(node, "key") and node.key != "":
+            params.append(f'"{node.key}"')
+        # Communication
+        if hasattr(node, "message") and node.message != "":
+            params.append(f'"{node.message}"')
 
-        elite = fitness[0][0]
-        new_pop = [elite]
 
-        while len(new_pop) < population_size:
-            p1 = copy.deepcopy(random.choice(fitness)[0])
-            p2 = copy.deepcopy(random.choice(fitness)[0])
+        if params:
+            return f"{name}({', '.join(params)})"
 
-            if random.random() < cx_prob:
-                p1, p2 = crossover(p1, p2)
+        return name
 
-            if random.random() < mut_prob:
-                p1 = mutate(p1, min_depth, max_depth)
+    # -------------------------------------------------
+    # Fallback (should not happen)
+    # -------------------------------------------------
+    return str(node)
 
-            new_pop.append(p1)
 
-        population = new_pop
-
-    return population

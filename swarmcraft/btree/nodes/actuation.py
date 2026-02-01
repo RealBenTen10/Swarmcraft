@@ -1,6 +1,7 @@
 import math
 import random
 import string
+import time
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode, AsyncActionNode
@@ -156,6 +157,7 @@ class StartDig(ActionNode):
         super().__init__(agent)
         self.color = args[0] if len(args) > 0 else ""
     def tick(self) -> str:
+        self.agent.actuation.stop()
         if self.agent.sensing.is_digging():
             return 'running'
         if self.agent.actuation.start_dig(self.color):
@@ -211,8 +213,8 @@ class SendMessage(ActionNode):
         """
         super().__init__(agent)
         self.message = args[0] if len(args) > 0 else None
-        self.target_id = args[1] if len(args) > 1 else None # Broadcast -
-        self.dist = float(args[2]) if len(args) > 2 else None # set this to fixed distance (e.g. 5)
+        self.target_id = args[1] if len(args) > 1 else None # Broadcast if set to None?
+        self.dist = float(args[2]) if len(args) > 2 else 5 # set this to fixed distance (e.g. 5)
         if self.message is None and self.target_id is None and self.dist is None:
             self.randomize_params()
 
@@ -222,19 +224,21 @@ class SendMessage(ActionNode):
         self.dist = -1
 
     def tick(self) -> str:
+        timestamp = time.time()
+        message = f"{self.message}|{timestamp}"
         if self.target_id is not None:
             if self.dist != -1:
-                self.agent.actuation.send_message_ranged(self.message, self.target_id, self.dist)
+                self.agent.actuation.send_message_ranged(message, self.target_id, self.dist)
                 return 'success'
             else:
-                self.agent.actuation.send_message(self.message, self.target_id)
+                self.agent.actuation.send_message(message, self.target_id)
                 return 'success'
         else:
             if self.dist != -1:
-                self.agent.actuation.send_global_message_ranged(self.message, self.dist) # broadcast?
+                self.agent.actuation.send_global_message_ranged(message, self.dist)
                 return 'success'
             else:
-                self.agent.actuation.send_global_message(self.message)
+                self.agent.actuation.send_global_message(message)
                 return 'success'
 
     def __repr__(self) -> str:

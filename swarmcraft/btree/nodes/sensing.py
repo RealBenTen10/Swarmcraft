@@ -1,4 +1,5 @@
 import random
+import time
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
@@ -149,12 +150,25 @@ class GotMessage(ActionNode):
         self.message_content = args[0] if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
         self.privacy = args[2] == 'True' if len(args) > 2 else False
+        self.ttl = float(args[3]) if len(args) > 3 else 5 # messages live 5 seconds
 
     def tick(self) -> str:
+        now = time.time()
         for message in self.agent.sensing.messages:
+            try:
+                content, ts_str = message.contents.rsplit("|", 1)
+                timestamp = float(ts_str)
+            except Exception as e:
+                print("Couldn't extract message: ", e)
+                continue
+
+            if self.ttl is not None and (now - timestamp) > self.ttl:
+                print("Message expired: ", message, " Content: ", content, " and ttl: ", ts_str)
+                continue # skip this message as it has expired
+            print("Got Content: ", content, " and ttl ", ts_str)
             matched = True
             if self.message_content is not None:
-                matched &= message.contents == self.message_content
+                matched &= content == self.message_content
             if self.sender_id is not None:
                 matched &= message.sender_id == self.sender_id
             if self.privacy is not None:
