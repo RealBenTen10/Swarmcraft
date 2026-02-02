@@ -226,7 +226,7 @@ class SendMessage(ActionNode):
     def tick(self) -> str:
         timestamp = time.time()
         message = f"{self.message}|{timestamp}"
-        print("Sent message: ", message)
+        #print("Sent message: ", message)
         if self.target_id is not None:
             if self.dist != -1:
                 self.agent.actuation.send_message_ranged(message, self.target_id, self.dist)

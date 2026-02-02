@@ -40,6 +40,7 @@ class Agent(object):
         """Reset this agent to an initial state.
         By default, resets agents to pooler origin, clears stats and inventory, and clears control states.
         """
+        print("here")
         self.pooler.reset_bot_position(self.bot)
         self.pooler.reset_bot_stats(self.bot)
         self.actuation.stop()

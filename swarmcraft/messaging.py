@@ -1,6 +1,6 @@
 from swarmcraft import util
 
-log_chat = True
+log_chat = False
 
 class MessageServer:
     def __init__(self):

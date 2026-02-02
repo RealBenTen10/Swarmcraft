@@ -7,35 +7,33 @@ from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
 from swarmcraft import BlockTypes
 
-START_LOCATION = (20, -57, 20)
 class ForageEnvironment(Environment):
-    def __init__(self, minecraft_server, origin: tuple[int, int, int]=(0, -60, 0), size: tuple[int, int, int]=(20, 10, 20),
-                 resource_min_size=1, resource_max_size=2, resource_count=1):
-        super().__init__(minecraft_server, origin, size)
-        self.resource_min_size = resource_min_size
-        self.resource_max_size = resource_max_size
-        self.resource_count = resource_count
+    def __init__(self, minecraft_server, origin, size):
+        super().__init__(minecraft_server)
+        self.origin = origin
+        self.size = size
         self.resource_positions = []
         self.blocks = None
 
     @override
+    def reset(self):
+        """Resets the environment
+        Clears all blocks"""
+        self.minecraft_server.send(f'setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} {self.size[0]} {self.size[1]} {self.size[2]} minecraft:{BlockTypes.AIR.value}')
+
+    @override
     def initialize(self):
-        super().initialize()
-        #self.resource_positions = []
-        # generate the resource chunks
-        '''
-        for _ in range(self.resource_count):
-            w = random.randint(self.resource_min_size, self.resource_max_size)
-            x_off = random.randint(1, self.size[0] - 2)
-            y_off = random.randint(1, self.size[2] - 2)
-            for x in range(w):
-                for y in range(w):
-                    b_pos = add_tuples(self.origin, (x + x_off, 0, y + y_off))
-                    if self.origin[0] + self.size[0] - 1 > b_pos[0] > self.origin[0] + 1 and self.origin[2] + self.size[2] - 1 > \
-                            b_pos[2] > self.origin[2] + 1:
-                        self.minecraft_server.send(f'setblock {b_pos[0]} {b_pos[1]} {b_pos[2]} minecraft:{BlockTypes.ORANGE_WOOL.value}')
-                        self.resource_positions.append(b_pos)
-        '''
+        self.minecraft_server.send(
+            f'setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} {self.size[0]} {1} {self.size[2]} minecraft:{BlockTypes.BEDROCK.value}')
+        for x in range(self.size[0]):
+            for y in range(self.size[2]):
+                if x == 0 or x == self.size[0] - 1 or y == 0 or y == self.size[2] - 1:
+                    pos = add_tuples(self.origin, (x, 1, y))
+                    self.minecraft_server.send(
+                        f'setblock {pos[0]} {pos[1]} {pos[2]} minecraft:{BlockTypes.BEDROCK.value}')
+                    self.minecraft_server.send(
+                        f'setblock {pos[0]} {pos[1] + 1} {pos[2]} minecraft:{BlockTypes.BEDROCK.value}')
+
 
     def set_blocks(self, blocks = {'blue_wool': 4,'orange_wool': 4,'brown_wool': 0,'green_wool': 0}):
         """Spawns wool blocks within the bedrock perimeter at unique locations"""
@@ -45,7 +43,9 @@ class ForageEnvironment(Environment):
         self.blocks = blocks
 
         occupied_coords = set()
-        occupied_coords.add((20, self.origin[1] + 1, 20))
+        center_x = self.origin[0] + self.size[0] // 2
+        center_z = self.origin[2] + self.size[2] // 2
+        occupied_coords.add((center_x, self.origin[1] + 1, center_z))
 
         for block_type, count in self.blocks.items():
             for _ in range(count):

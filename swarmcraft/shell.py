@@ -39,17 +39,17 @@ def generate_pset():
     register_control(bt.SequenceNode, 2, 2) # only 2 children allowed
     register_control(bt.FallbackNode, 2, 2) # only 2 children allowed
 
-    # register_action(
-    #     StartDig,
-    #     param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
-    # )
-    # register_action(
-    #     CanDigBlock,
-    #     param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
-    # )
-    # #register_action(Look)
-    #register_action(PressDir)
-    #register_action(ReleaseDir)
+    register_action(
+        StartDig,
+        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    )
+    register_action(
+        CanDigBlock,
+        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+    )
+    register_action(Look)
+    register_action(PressDir)
+    register_action(ReleaseDir)
     register_action(
         SendMessage,
         param_generators=[lambda: random.choice([1])]
@@ -63,7 +63,7 @@ def generate_pset():
 
 class ServerShell(cmd.Cmd):
     commands = "Type 'run' followed by swarm_size, generation, population_count, offspring_multiplyer (lambda = mu*n), \
-    number_runs_per_gen, run_duration, crossover, mutation, max_depth and min_depth."
+    arena_count, run_duration, crossover, mutation, max_depth and min_depth."
     intro = f"Shell for swarmcraft simulator. Type help or ? to list commands.\n{commands}\nAll values as integers. Default values are set\n"
     prompt = "swarmcraft > "
     file = None
@@ -140,16 +140,12 @@ class ServerShell(cmd.Cmd):
 
         at = args.split()
         exp_name = "ForageExperiment"
-        exp_args = ['1']
 
-        agent_count = int(at[0]) if len(at) > 0 else 2
+        swarm_size = int(at[0]) if len(at) > 0 else 10
         generations = int(at[1]) if len(at) > 1 else 2
-        population_count = int(at[2]) if len(at) > 2 else 2
-        # we need at least 2 individuals for crossover
-        if population_count < 2:
-            population_count = 2
+        population_count = (int(at[2]) if int(at[2])>1 else 2) if len(at) > 2 else 2
         offspring_multiplier = float(at[3]) if len(at) > 3 else 1
-        number_runs_per_gen = int(at[4]) if len(at) > 4 else 1
+        arena_count = int(at[4]) if len(at) > 4 else 2
         run_duration = int(at[5]) if len(at) > 5 else 30
         crossover_rate = float(at[6]) if len(at) > 6 else 0.4
         mutation_prob = float(at[7]) if len(at) > 7 else 0.2
@@ -169,11 +165,11 @@ class ServerShell(cmd.Cmd):
 
         try:
             exp = self.experiments[exp_name](
-                self.pooler,
-                self.server,
-                self.messenger,
-                run_duration,
-                exp_args
+                pooler=self.pooler,
+                minecraft_server=self.server,
+                message_server=self.messenger,
+                run_duration=run_duration,
+                arena_count=arena_count
             )
 
             exp.set_log_dir(
@@ -182,7 +178,7 @@ class ServerShell(cmd.Cmd):
 
             # Register primitives ONCE
             generate_pset()
-            agents = exp.initialize(agent_count)
+            agents = exp.initialize(swarm_size)
 
             # ====================================================
             # FITNESS FUNCTION (CONTROLLER-LEVEL)
@@ -195,20 +191,19 @@ class ServerShell(cmd.Cmd):
                     current_gen = gen
                     print(f"Generation {gen}/{generations}")
                 print("Current individual: ", tree_to_str(tree))
-                for _ in range(number_runs_per_gen):
-                    exp.set_round(blocks)
-                    trees = instantiate_for_swarm(tree, agents)
-                    for agent, t in zip(agents, trees):
-                        agent.set_tree(t)
-                        #agent.tree = t
-                    total_fitness += exp.run(mission, blocks)
-                # simple parsimony pressure
+
+                exp.set_round(blocks)
+                trees = instantiate_for_swarm(tree, agents)
+                for agent, t in zip(agents, trees):
+                    agent.set_tree(t)
+                total_fitness = exp.run(mission, blocks)
+                # get length of tree
                 def count_nodes(n):
                     if isinstance(n, bt.ControlNode):
                         return 1 + sum(count_nodes(c) for c in n.children)
                     return 1
 
-                return (total_fitness / number_runs_per_gen) - 0.01 * count_nodes(tree)
+                return total_fitness - 0.01 * count_nodes(tree)
 
             # ====================================================
             # EVOLUTION
@@ -227,7 +222,6 @@ class ServerShell(cmd.Cmd):
 
             print("Best controller:", tree_to_str(population[0]))
 
-            exp.cleanup()
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
@@ -235,11 +229,6 @@ class ServerShell(cmd.Cmd):
         except Exception as e:
             print("Experiment error:", e)
             traceback.print_tb(e.__traceback__)
-            if exp is not None:
-                try:
-                    exp.cleanup()
-                except Exception as cleanup_error:
-                    print("Cleanup error:", cleanup_error)
 
 
     def do_reloadenvs(self, args):
