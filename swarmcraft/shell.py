@@ -52,11 +52,11 @@ def generate_pset():
     register_action(ReleaseDir)
     register_action(
         SendMessage,
-        param_generators=[lambda: random.choice([1])]
+        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
     )
     register_action(
         GotMessage,
-        param_generators=[lambda: random.choice([1])]
+        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
     )
 
 
@@ -141,17 +141,30 @@ class ServerShell(cmd.Cmd):
         at = args.split()
         exp_name = "ForageExperiment"
 
-        swarm_size = int(at[0]) if len(at) > 0 else 10
-        generations = int(at[1]) if len(at) > 1 else 2
-        population_count = (int(at[2]) if int(at[2])>1 else 2) if len(at) > 2 else 2
-        offspring_multiplier = float(at[3]) if len(at) > 3 else 1
-        arena_count = int(at[4]) if len(at) > 4 else 2
+        swarm_size = int(at[0]) if len(at) > 0 else 5
+        generations = int(at[1]) if len(at) > 1 else 3
+        population_count = (int(at[2]) if int(at[2])>1 else 2) if len(at) > 2 else 5
+        offspring_multiplier = float(at[3]) if len(at) > 3 else 2
+        # If we have too many agents the server is overloaded
+        arena_count = (int(at[4]) if int(at[4])<(30//swarm_size) else 30//swarm_size) if len(at) > 4 else 30//swarm_size
+        arena_count = 2
         run_duration = int(at[5]) if len(at) > 5 else 30
         crossover_rate = float(at[6]) if len(at) > 6 else 0.4
         mutation_prob = float(at[7]) if len(at) > 7 else 0.2
         max_depth = int(at[8]) if len(at) > 8 else 2
         min_depth = int(at[9]) if len(at) > 9 else 1
-
+        # if we also want to additionally repeat individuals
+        number_repetitions = int(at[10]) if len(at) > 10 else 1
+        print("Generations: ", generations)
+        print("Swarm size: ", swarm_size)
+        print("Population size: ", population_count)
+        print("Offspring: ", population_count*offspring_multiplier)
+        print("Arenas: ", arena_count)
+        print("Run duration: ", run_duration)
+        print("Crossover rate: ", crossover_rate)
+        print("Mutation probability: ", mutation_prob)
+        print("Min and max depth: ", min_depth, " - ", max_depth)
+        print("Repetitions: ", number_repetitions)
         mission = "blue_wool"
         blocks = {
             "blue_wool": 4,
@@ -159,6 +172,8 @@ class ServerShell(cmd.Cmd):
             "brown_wool": 0,
             "green_wool": 0,
         }
+        print("Mission: ", mission)
+        print("Blocks: ", blocks)
 
         current_gen = -1
         exp = None
@@ -185,25 +200,26 @@ class ServerShell(cmd.Cmd):
             # ====================================================
 
             def evaluate_controller(tree, gen):
-                total_fitness = 0.0
+                fitness = 0.0
                 nonlocal current_gen
                 if gen != current_gen:
                     current_gen = gen
                     print(f"Generation {gen}/{generations}")
                 print("Current individual: ", tree_to_str(tree))
-
-                exp.set_round(blocks)
                 trees = instantiate_for_swarm(tree, agents)
                 for agent, t in zip(agents, trees):
                     agent.set_tree(t)
-                total_fitness = exp.run(mission, blocks)
+                for _ in range(number_repetitions):
+                    exp.set_round(blocks)
+                    fitness += exp.run(mission, blocks)
                 # get length of tree
                 def count_nodes(n):
                     if isinstance(n, bt.ControlNode):
                         return 1 + sum(count_nodes(c) for c in n.children)
                     return 1
-
-                return total_fitness - 0.01 * count_nodes(tree)
+                total_fitness = (fitness/number_repetitions) - 0.01 * count_nodes(tree)
+                print("Fitness: ", total_fitness)
+                return total_fitness
 
             # ====================================================
             # EVOLUTION
@@ -294,6 +310,7 @@ class ServerShell(cmd.Cmd):
             b.quit()
         for b in self.pooler.free_bots:
             b.quit()
+        time.sleep(2)
         self.server.stop()
         javascript.connection.stop()
         print("Server is DOWN!")

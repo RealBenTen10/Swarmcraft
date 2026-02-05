@@ -42,7 +42,7 @@ class Agent(object):
         """
         print("here")
         self.pooler.reset_bot_position(self.bot)
-        self.pooler.reset_bot_stats(self.bot)
+        #self.pooler.reset_bot_stats(self.bot)
         self.actuation.stop()
 
     def log(self) -> dict:

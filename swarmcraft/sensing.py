@@ -122,7 +122,12 @@ class Sensing(object):
         """
         Get the bot's current position.
         """
-        return self.bot.entity.position.x, self.bot.entity.position.y, self.bot.entity.position.z
+        try:
+            return self.bot.entity.position.x, self.bot.entity.position.y, self.bot.entity.position.z
+        except Exception as e:
+            print("Error: ", e)
+            print(self.bot.entity.position)
+            # Vec3 { x: 20.5, y: -59, z: 20.5 }
 
     def get_velocity(self):
         """

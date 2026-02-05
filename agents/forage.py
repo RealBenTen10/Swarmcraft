@@ -46,6 +46,7 @@ class ForageAgent(Agent):
             #self.pooler.reset_bot_stats(self.bot)
             self.pooler.reset_bot_control(self.bot)
             self.pooler.reset_bot_position(self.bot)
+            self.actuation.stop()
             # clear messages for next run
             try:
                 self.sensing.messages.clear()

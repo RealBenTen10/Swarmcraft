@@ -40,7 +40,7 @@ class ForageExperiment(Experiment):
         self.total_agents_existed = 0
         self.current_agent_count = 0
 
-        self.pooler.create_bot()
+        #self.pooler.create_bot()
 
     def compute_arena_origin(self, arena_index: int):
         dx = arena_index * (self.arena_size[0] + self.arena_distance)
@@ -104,6 +104,11 @@ class ForageExperiment(Experiment):
 
     def set_round(self, blocks):
         for agent in self.agents:
+            if agent.bot is None:
+                if len(self.pooler.free_bots) == 0:
+                    self.pooler.create_bot()
+                print("Agent had no bot!")
+                agent.get_bot(uid=agent.id)
             agent.reset()
             time.sleep(0.05)
 
@@ -132,7 +137,7 @@ class ForageExperiment(Experiment):
                 self.last_update_time = time.time()
 
         # Evaluate per arena and aggregate
-        fitness = 0.0
+        total_fitness = 0.0
         for env in self.environments:
             reference_agent = next(a for a in self.agents if a.environment is env)
             remaining_blocks = reference_agent.sensing.get_blocks_in_arena(
@@ -140,11 +145,14 @@ class ForageExperiment(Experiment):
                 env.size,
                 blocks
             )
-            fitness += reference_agent.evaluation(remaining_blocks, mission, blocks)
+            # TODO concat all visited positions
+            fitness = reference_agent.evaluation(remaining_blocks, mission, blocks)
+            print("Fitness: ", fitness)
+            total_fitness += fitness
 
         for agent in self.agents:
             agent.reset()
             #self.pooler.unbind_bot(agent)
-
-        return fitness / self.arena_count
+        print("Total fitness: ", total_fitness/self.arena_count)
+        return total_fitness / self.arena_count
 
