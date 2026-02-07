@@ -234,6 +234,8 @@ class ServerShell(cmd.Cmd):
                 cxpb=crossover_rate,
                 mutpb=mutation_prob,
                 evaluate=evaluate_controller,
+                tournsize=3,
+                n_elites=1 # always keep the best individual
             )
 
             print("Best controller:", tree_to_str(population[0]))

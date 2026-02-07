@@ -131,6 +131,51 @@ def var_or(population, lambda_, cxpb, mutpb, min_depth, max_depth):
 
     return offspring
 
+# ============================================================
+# TOURNAMENT SELECTION
+# ============================================================
+
+def tournament_selection(individuals, fitness, mu, tournsize):
+    """
+    Standard GP tournament selection.
+
+    individuals : list of trees
+    fitness     : dict[id(ind)] -> fitness
+    mu          : number of survivors
+    tournsize   : tournament size
+    """
+
+    selected = []
+
+    for _ in range(mu):
+        aspirants = random.sample(individuals, tournsize)
+
+        winner = max(
+            aspirants,
+            key=lambda ind: fitness[id(ind)]
+        )
+
+        selected.append(copy.deepcopy(winner))
+
+    return selected
+
+def select_elites(individuals, fitness, k):
+    """
+        Standard GP elitism selection.
+
+        individuals : list of trees
+        fitness     : dict[id(ind)] -> fitness
+        k          : number of elites
+        """
+    return [
+        copy.deepcopy(ind)
+        for ind in sorted(
+            individuals,
+            key=lambda i: fitness[id(i)],
+            reverse=True
+        )[:k]
+    ]
+
 
 # ============================================================
 # 6. EVOLUTION STRATEGY (μ + λ)
@@ -145,12 +190,17 @@ def ea_mu_plus_lambda(
     cxpb: float,
     mutpb: float,
     evaluate: Callable[[bt.BehaviorTreeNode, int], float],
+    tournsize: int,
+    n_elites: int,
 ):
     population = [generate_grow_tree(min_depth, max_depth) for _ in range(mu)]
 
     for gen in range(generations):
+        # always re-evaluate parents at beginning
         fitness = {id(ind): evaluate(ind, gen) for ind in population}
 
+        # var_or uses either crossover OR mutation OR neither
+        # mutation just exchanges one node at random - no shrinking, etc.
         offspring = var_or(
             population,
             lambda_,
@@ -163,11 +213,23 @@ def ea_mu_plus_lambda(
         for ind in offspring:
             fitness[id(ind)] = evaluate(ind, gen)
 
-        population = sorted(
+
+        # -------------------------
+        # ELITISM
+        # -------------------------
+        elites = select_elites(population + offspring, fitness, n_elites)
+
+        # -------------------------
+        # TOURNAMENT SELECTION
+        # -------------------------
+        survivors = tournament_selection(
             population + offspring,
-            key=lambda ind: fitness[id(ind)],
-            reverse=True
-        )[:mu]
+            fitness,
+            mu - n_elites,
+            tournsize
+        )
+
+        population = elites + survivors
 
     return population
 
