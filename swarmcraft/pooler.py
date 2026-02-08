@@ -71,4 +71,5 @@ class Pooler:
         )
 
     def reset_bot_control(self, bot):
+        time.sleep(0.01)
         bot.clearControlStates()
