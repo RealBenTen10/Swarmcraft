@@ -18,6 +18,7 @@ from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDi
 from swarmcraft.btree.nodes.sensing import CanDigBlock, GotMessage
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
+from swarmcraft import BlockTypes
 
 from swarm_gp import (
     register_control,
@@ -44,11 +45,11 @@ def generate_pset():
 
     register_action(
         StartDig,
-        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+        param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
     )
     register_action(
         CanDigBlock,
-        param_generators=[lambda: random.choice(["blue_wool", "orange_wool"])]
+        param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
     )
     register_action(Look)
     register_action(PressDir)
@@ -179,12 +180,12 @@ class ServerShell(cmd.Cmd):
         tournsize = int(at[11]) if len(at) > 11 else 3
         n_elites = int(at[12]) if len(at) > 12 else 1
 
-        mission = "blue_wool"
+        mission = BlockTypes.BLUE_WOOL.value
         blocks = {
-            "blue_wool": 4,
-            "orange_wool": 4,
-            "brown_wool": 0,
-            "green_wool": 0,
+            BlockTypes.BLUE_WOOL.value: 4,
+            BlockTypes.ORANGE_WOOL.value: 4,
+            BlockTypes.BROWN_WOOL: 0,
+            BlockTypes.GREEN_WOOL: 0,
         }
 
         # ----------------------------
@@ -213,7 +214,7 @@ class ServerShell(cmd.Cmd):
             f.write(f"generations: {generations}\n")
             f.write(f"mu (population_count): {population_count}\n")
             f.write(f"offspring_multiplier: {offspring_multiplier}\n")
-            f.write(f"lambda: {lambda_}\n")
+            f.write(f"lambda (offspring_count): {lambda_}\n")
             f.write(f"tournsize: {tournsize}\n")
             f.write(f"n_elites: {n_elites}\n")
             f.write(f"min_depth: {min_depth}\n")
@@ -246,6 +247,7 @@ class ServerShell(cmd.Cmd):
         print(f"Blocks: {blocks}")
 
         current_gen = -1
+        current_ind = 0
         exp = None
 
         try:
@@ -269,13 +271,16 @@ class ServerShell(cmd.Cmd):
             # ====================================================
 
             def evaluate_controller(tree, gen: int) -> float:
-                nonlocal current_gen
+                nonlocal current_gen, current_ind
 
                 if gen != current_gen:
                     current_gen = gen
+                    current_ind = 1
                     print(f"\n=== Generation {gen}/{generations} ===")
+                else:
+                    current_ind += 1
 
-                print("Individual:", tree_to_str(tree))
+                print(f"Individual {current_ind}/{population_count+lambda_}: {tree_to_str(tree)}")
 
                 # Bind one copy per agent
                 trees = instantiate_for_swarm(tree, agents)
@@ -317,7 +322,7 @@ class ServerShell(cmd.Cmd):
             print("\n=== RESULT ===")
             print("Best controller:", tree_to_str(best))
             print("Logs and populations saved in:", run_dir)
-            exp.cleanup()
+            #exp.cleanup()
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
@@ -387,6 +392,9 @@ class ServerShell(cmd.Cmd):
         """Send a swarmcraft command to the server"""
         res = self.server.send(str(args))
         if res is not None: print(res)
+
+    def do_creative(self):
+        self.server.send('command command /gamemode creative DarkRewind')
 
     def do_quit(self, args):
         """Stop the server and exit this shell"""
