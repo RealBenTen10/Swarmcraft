@@ -152,7 +152,14 @@ class ForageExperiment(Experiment):
 
         for agent in self.agents:
             agent.reset()
+            time.sleep(0.01)
             #self.pooler.unbind_bot(agent)
         print("Total fitness: ", total_fitness/self.arena_count)
         return total_fitness / self.arena_count
+
+    @override
+    def cleanup(self):
+        for agent in self.agents:
+            self.pooler.unbind_bot(agent=agent)
+            time.sleep(0.01)
 
