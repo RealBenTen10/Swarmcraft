@@ -43,6 +43,7 @@ class ForageAgent(Agent):
 
     def reset(self):
         try:
+            self.positions = []
             #self.pooler.reset_bot_stats(self.bot)
             self.pooler.reset_bot_control(self.bot)
             self.pooler.reset_bot_position(self.bot)
@@ -68,10 +69,36 @@ class ForageAgent(Agent):
             color,
             initial_blocks,
             reward_multiplier=1,
-            penalty_multiplier=1
+            penalty_multiplier=1,
+            unique_positions_count: int | None = None
     ):
-        evaluation = 0
-        #print("blocks: ", initial_blocks, remaining_blocks)
+        """
+        Compute fitness contribution for a run.
+
+        Parameters
+        ----------
+        remaining_blocks : dict[str, int]
+            Counts of blocks currently in the arena after the run.
+        color : str
+            Target mission color (e.g., "blue_wool").
+        initial_blocks : dict[str, int]
+            Counts of blocks originally placed at the start of the run.
+        reward_multiplier : float
+            Reward factor for digging the correct color.
+        penalty_multiplier : float
+            Penalty factor for digging wrong colors.
+        unique_positions_count : int | None
+            If provided, use this as the exploration count (swarm aggregation).
+            If None, falls back to this agent's internal self.positions length.
+
+        Returns
+        -------
+        float
+            Fitness value for (blocks destroyed +/-) + exploration reward.
+        """
+        evaluation = 0.0
+
+        # block reward/penalty
         for block, initial_count in initial_blocks.items():
             remaining_count = remaining_blocks.get(block, 0)
             diff = initial_count - remaining_count
@@ -81,7 +108,15 @@ class ForageAgent(Agent):
             else:
                 evaluation -= diff * penalty_multiplier
 
-        evaluation += len(self.positions)*0.01
-        self.positions = []
+        # exploration reward (swarm-aware)
+        explored = unique_positions_count if unique_positions_count is not None else len(self.positions)
+        evaluation += explored * 0.01
+
+        # do not clear here for swarm case; caller controls clearing
+        # (keep this to avoid surprises if caller still uses per-agent evaluation)
+        if unique_positions_count is None:
+            self.positions = []
+
         return evaluation
+
 
