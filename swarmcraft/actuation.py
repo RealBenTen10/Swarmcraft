@@ -113,8 +113,11 @@ class Actuation(object):
             return False
 
         except Exception as e:
-            self.agent.bot.chat(f"I had an error while digging")
             print(f"Error during dig: {e}")
+            try:
+                self.agent.bot.chat(f"I had an error while digging")
+            except Exception as e:
+                print(f"Error during chat: {e}")
             return False
 
         #if self.agent.bot.targetDigBlock is None:
