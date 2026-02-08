@@ -24,12 +24,15 @@ from swarm_gp import (
     register_action,
     instantiate_for_swarm,
     ea_mu_plus_lambda,
-    tree_to_str
+    tree_to_str,
+    tree_length,
+    reset_primitives,
 )
 
-LOG_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, "logs")
-)
+
+#LOG_DIR = os.path.abspath(
+#    os.path.join(os.path.dirname(__file__), os.pardir, "logs")
+#)
 
 # ============================================================
 # BEHAVIOR TREE PRIMITIVE REGISTRATION (ONCE)
@@ -136,35 +139,46 @@ class ServerShell(cmd.Cmd):
     def do_run(self, args):
         """
         Run an experiment with swarm-compatible genetic programming.
+
+        Logging / Saving
+        ---------------
+        - Creates ./logging/run_N/ (N is the next free run id)
+        - Writes ./logging/run_N/experiment_setup.txt
+        - GP writes into the same run directory:
+            ./logging/run_N/gp_log.csv
+            ./logging/run_N/populations/gen_<g>.pkl
+            ./logging/run_N/populations/latest.pkl
         """
 
         at = args.split()
         exp_name = "ForageExperiment"
 
-        swarm_size = int(at[0]) if len(at) > 0 else 5
-        generations = int(at[1]) if len(at) > 1 else 3
-        population_count = (int(at[2]) if int(at[2])>1 else 2) if len(at) > 2 else 5
-        offspring_multiplier = float(at[3]) if len(at) > 3 else 2
-        # If we have too many agents the server is overloaded
-        arena_count = (int(at[4]) if int(at[4])<(30//swarm_size) else 30//swarm_size) if len(at) > 4 else 30//swarm_size
-        arena_count = 2
+        # ----------------------------
+        # Parse CLI args (with defaults)
+        # ----------------------------
+        swarm_size = int(at[0]) if len(at) > 0 else 15
+        generations = int(at[1]) if len(at) > 1 else 30
+
+        population_count = int(at[2]) if len(at) > 2 else 15
+        population_count = population_count if population_count > 1 else 2 # crossover needs at least 2 individuals
+
+        offspring_multiplier = float(at[3]) if len(at) > 3 else 2.0
+        lambda_ = int(round(population_count * offspring_multiplier)) # lambda needs to be an integer
+
+        arena_count = int(at[4]) if len(at) > 4 else 4
+        #arena_count = int(at[4]) if len(at) > 4 else max(1, 30 // swarm_size)
+        #arena_count = min(arena_count, max(1, 30 // swarm_size))
+
         run_duration = int(at[5]) if len(at) > 5 else 30
         crossover_rate = float(at[6]) if len(at) > 6 else 0.4
         mutation_prob = float(at[7]) if len(at) > 7 else 0.2
         max_depth = int(at[8]) if len(at) > 8 else 2
         min_depth = int(at[9]) if len(at) > 9 else 1
-        # if we also want to additionally repeat individuals
         number_repetitions = int(at[10]) if len(at) > 10 else 1
-        print("Generations: ", generations)
-        print("Swarm size: ", swarm_size)
-        print("Population size: ", population_count)
-        print("Offspring: ", population_count*offspring_multiplier)
-        print("Arenas: ", arena_count)
-        print("Run duration: ", run_duration)
-        print("Crossover rate: ", crossover_rate)
-        print("Mutation probability: ", mutation_prob)
-        print("Min and max depth: ", min_depth, " - ", max_depth)
-        print("Repetitions: ", number_repetitions)
+
+        tournsize = int(at[11]) if len(at) > 11 else 3
+        n_elites = int(at[12]) if len(at) > 12 else 1
+
         mission = "blue_wool"
         blocks = {
             "blue_wool": 4,
@@ -172,8 +186,64 @@ class ServerShell(cmd.Cmd):
             "brown_wool": 0,
             "green_wool": 0,
         }
-        print("Mission: ", mission)
-        print("Blocks: ", blocks)
+
+        # ----------------------------
+        # Create ./logging/run_N folder
+        # ----------------------------
+        base_logging_dir = Path(os.getcwd()) / "logging"
+        base_logging_dir.mkdir(parents=True, exist_ok=True)
+
+        run_id = 0
+        while (base_logging_dir / f"run_{run_id}").exists():
+            run_id += 1
+
+        run_dir = base_logging_dir / f"run_{run_id}"
+        run_dir.mkdir(parents=True, exist_ok=False)
+
+        # ----------------------------
+        # Save experiment setup text
+        # ----------------------------
+        setup_path = run_dir / "experiment_setup.txt"
+        with open(setup_path, "w", encoding="utf-8") as f:
+            f.write(f"timestamp: {datetime.now().isoformat()}\n")
+            f.write(f"experiment: {exp_name}\n\n")
+
+            f.write("=== swarm / evolution parameters ===\n")
+            f.write(f"swarm_size: {swarm_size}\n")
+            f.write(f"generations: {generations}\n")
+            f.write(f"mu (population_count): {population_count}\n")
+            f.write(f"offspring_multiplier: {offspring_multiplier}\n")
+            f.write(f"lambda: {lambda_}\n")
+            f.write(f"tournsize: {tournsize}\n")
+            f.write(f"n_elites: {n_elites}\n")
+            f.write(f"min_depth: {min_depth}\n")
+            f.write(f"max_depth: {max_depth}\n")
+            f.write(f"cxpb (crossover_rate): {crossover_rate}\n")
+            f.write(f"mutpb (mutation_prob): {mutation_prob}\n")
+            f.write(f"number_repetitions: {number_repetitions}\n\n")
+
+            f.write("=== environment / experiment parameters ===\n")
+            f.write(f"arena_count: {arena_count}\n")
+            f.write(f"run_duration: {run_duration}\n")
+            f.write(f"mission: {mission}\n")
+            f.write(f"blocks: {blocks}\n")
+
+        print("=== RUN CONFIG ===")
+        print(f"Logging directory: {run_dir}")
+        print(f"Generations: {generations}")
+        print(f"Swarm size: {swarm_size}")
+        print(f"Population size (mu): {population_count}")
+        print(f"Offspring (lambda): {lambda_}")
+        print(f"Arenas: {arena_count}")
+        print(f"Run duration: {run_duration}")
+        print(f"Crossover rate: {crossover_rate}")
+        print(f"Mutation probability: {mutation_prob}")
+        print(f"Min/Max depth: {min_depth} / {max_depth}")
+        print(f"Tournament size: {tournsize}")
+        print(f"Elites: {n_elites}")
+        print(f"Repetitions: {number_repetitions}")
+        print(f"Mission: {mission}")
+        print(f"Blocks: {blocks}")
 
         current_gen = -1
         exp = None
@@ -184,62 +254,70 @@ class ServerShell(cmd.Cmd):
                 minecraft_server=self.server,
                 message_server=self.messenger,
                 run_duration=run_duration,
-                arena_count=arena_count
+                arena_count=arena_count,
             )
 
-            exp.set_log_dir(
-                Path(LOG_DIR) / f"{exp_name}-{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
-            )
-
-            # Register primitives ONCE
+            # Register primitives for THIS run (avoid duplicates across runs)
+            reset_primitives()
             generate_pset()
+
+            # Create agents once (exp.set_round resets env/agents state)
             agents = exp.initialize(swarm_size)
 
             # ====================================================
             # FITNESS FUNCTION (CONTROLLER-LEVEL)
             # ====================================================
 
-            def evaluate_controller(tree, gen):
-                fitness = 0.0
+            def evaluate_controller(tree, gen: int) -> float:
                 nonlocal current_gen
+
                 if gen != current_gen:
                     current_gen = gen
-                    print(f"Generation {gen}/{generations}")
-                print("Current individual: ", tree_to_str(tree))
+                    print(f"\n=== Generation {gen}/{generations} ===")
+
+                print("Individual:", tree_to_str(tree))
+
+                # Bind one copy per agent
                 trees = instantiate_for_swarm(tree, agents)
                 for agent, t in zip(agents, trees):
                     agent.set_tree(t)
+
+                total_reward = 0.0
                 for _ in range(number_repetitions):
                     exp.set_round(blocks)
-                    fitness += exp.run(mission, blocks)
-                # get length of tree
-                def count_nodes(n):
-                    if isinstance(n, bt.ControlNode):
-                        return 1 + sum(count_nodes(c) for c in n.children)
-                    return 1
-                total_fitness = (fitness/number_repetitions) - 0.01 * count_nodes(tree)
-                print("Fitness: ", total_fitness)
-                return total_fitness
+                    total_reward += exp.run(mission, blocks)
+
+                avg_reward = total_reward / float(number_repetitions)
+
+                # Use swarm_gp.tree_length for penalty (same definition as logging)
+                fitness_val = avg_reward - 0.01 * tree_length(tree)
+
+                print("Fitness:", fitness_val)
+                return fitness_val
 
             # ====================================================
-            # EVOLUTION
+            # EVOLUTION (WITH CSV LOGGING + POPULATION CHECKPOINTS)
             # ====================================================
 
             population = ea_mu_plus_lambda(
                 mu=population_count,
-                lambda_=round(population_count*offspring_multiplier),
+                lambda_=lambda_,
                 generations=generations,
                 min_depth=min_depth,
                 max_depth=max_depth,
                 cxpb=crossover_rate,
                 mutpb=mutation_prob,
                 evaluate=evaluate_controller,
-                tournsize=3,
-                n_elites=1 # always keep the best individual
+                tournsize=tournsize,
+                n_elites=n_elites,
+                logging_dir=run_dir,
             )
 
-            print("Best controller:", tree_to_str(population[0]))
-
+            best = population[0]
+            print("\n=== RESULT ===")
+            print("Best controller:", tree_to_str(best))
+            print("Logs and populations saved in:", run_dir)
+            exp.cleanup()
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
@@ -248,6 +326,12 @@ class ServerShell(cmd.Cmd):
             print("Experiment error:", e)
             traceback.print_tb(e.__traceback__)
 
+        finally:
+            try:
+                if exp is not None:
+                    exp.cleanup()
+            except Exception as cleanup_error:
+                print("Cleanup error:", cleanup_error)
 
     def do_reloadenvs(self, args):
         """Reload environments"""
@@ -336,4 +420,5 @@ class ServerShell(cmd.Cmd):
 
     def do_getlogdir(self):
         """Print the log directory"""
-        print(LOG_DIR)
+        pass
+        #print(LOG_DIR)
