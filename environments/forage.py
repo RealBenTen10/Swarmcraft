@@ -127,7 +127,15 @@ class ForageEnvironment(Environment):
             z = z_edge - step_idx
             self.minecraft_server.send(
                 f"setcube {self.origin[0]} {base_y} {z} "
-                f"{self.size[0]} {height} 1 minecraft:{BlockTypes.GRASS.value}"
+                f"{self.size[0]} {height} 1 minecraft:{BlockTypes.STONE_BRICK.value}"
+            )
+
+        for step_idx in range(5):
+            height = 5 - step_idx
+            z = z_edge - step_idx
+            self.minecraft_server.send(
+                f"setcube {self.origin[0]} {base_y} {z} "
+                f"{self.size[0]} {height} 1 minecraft:{BlockTypes.STONE_BRICK.value}"
             )
 
     def _build_glass_roof(self):
@@ -160,8 +168,6 @@ class ForageEnvironment(Environment):
         """
         if self._static_built:
             return
-
-        self.clean_environment(radius=20, clear_height=6)
 
         self._build_bedrock_arena()
         self._build_observer_stairs()

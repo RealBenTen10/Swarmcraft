@@ -75,7 +75,7 @@ class ForageExperiment(Experiment):
                 origin,
                 self.arena_size
             )
-            env.build_static_structures_once()
+            env.clean_environment(20, 6)
             self.environments.append(env)
 
             center = (
@@ -95,7 +95,8 @@ class ForageExperiment(Experiment):
                 self.total_agents_existed += 1
                 self.current_agent_count += 1
                 self.agents.append(agent)
-
+        for env in self.environments:
+            env.build_static_structures_once()
         for agent in self.agents:
             if len(self.pooler.free_bots) == 0:
                 self.pooler.create_bot()
