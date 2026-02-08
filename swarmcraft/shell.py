@@ -12,6 +12,9 @@ from pathlib import Path
 from typing import Any
 import javascript.connection
 import random
+import json
+from run_config import default_run_config, finalize_config, load_preset_config, apply_positional_overrides
+from run_config import mission_for_generation
 
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir, SendMessage
@@ -54,14 +57,14 @@ def generate_pset():
     register_action(Look)
     register_action(PressDir)
     register_action(ReleaseDir)
-    register_action(
-        SendMessage,
-        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
-    )
-    register_action(
-        GotMessage,
-        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
-    )
+    #register_action(
+    #    SendMessage,
+    #    param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
+    #)
+    #register_action(
+    #    GotMessage,
+    #    param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
+    #)
 
 
 
@@ -141,188 +144,136 @@ class ServerShell(cmd.Cmd):
         """
         Run an experiment with swarm-compatible genetic programming.
 
+        Configuration sources (precedence)
+        ---------------------------------
+        1) Defaults from default_run_config()
+        2) Optional preset via: run --preset <id>
+        3) Optional positional overrides (backward compatible)
+
         Logging / Saving
         ---------------
-        - Creates ./logging/run_N/ (N is the next free run id)
-        - Writes ./logging/run_N/experiment_setup.txt
+        - Creates ./logging/run_N/ (N is next free run id)
+        - Writes ./logging/run_N/experiment_setup.txt (resolved config)
         - GP writes into the same run directory:
             ./logging/run_N/gp_log.csv
             ./logging/run_N/populations/gen_<g>.pkl
             ./logging/run_N/populations/latest.pkl
         """
+        import json
+        import traceback
+        from pathlib import Path
 
-        at = args.split()
-        exp_name = "ForageExperiment"
+        from run_config import (
+            resolve_run_config,
+            create_run_directories,
+            print_run_config_summary,
+        )
 
-        # ----------------------------
-        # Parse CLI args (with defaults)
-        # ----------------------------
-        swarm_size = int(at[0]) if len(at) > 0 else 15
-        generations = int(at[1]) if len(at) > 1 else 30
+        # ============================================================
+        # 1) Resolve configuration (defaults -> preset -> positional -> finalize)
+        # ============================================================
+        run_cfg = resolve_run_config(args)
+        exp_name = run_cfg["exp_name"]
 
-        population_count = int(at[2]) if len(at) > 2 else 15
-        population_count = population_count if population_count > 1 else 2 # crossover needs at least 2 individuals
+        # ============================================================
+        # 2) Create run directory structure (./logging/run_N + populations/)
+        # ============================================================
+        run_meta = create_run_directories()  # defaults to ./logging
+        run_cfg["run_id"] = run_meta["run_id"]
+        run_cfg["run_dir"] = run_meta["run_dir"]
+        run_cfg["pop_dir"] = run_meta["pop_dir"]
+        run_cfg["timestamp"] = run_meta["timestamp"]
 
-        offspring_multiplier = float(at[3]) if len(at) > 3 else 2.0
-        lambda_ = int(round(population_count * offspring_multiplier)) # lambda needs to be an integer
+        run_dir = Path(run_cfg["run_dir"])
 
-        arena_count = int(at[4]) if len(at) > 4 else 4
-        #arena_count = int(at[4]) if len(at) > 4 else max(1, 30 // swarm_size)
-        #arena_count = min(arena_count, max(1, 30 // swarm_size))
-
-        run_duration = int(at[5]) if len(at) > 5 else 30
-        crossover_rate = float(at[6]) if len(at) > 6 else 0.4
-        mutation_prob = float(at[7]) if len(at) > 7 else 0.2
-        max_depth = int(at[8]) if len(at) > 8 else 2
-        min_depth = int(at[9]) if len(at) > 9 else 1
-        number_repetitions = int(at[10]) if len(at) > 10 else 1
-
-        tournsize = int(at[11]) if len(at) > 11 else 3
-        n_elites = int(at[12]) if len(at) > 12 else 1
-
-        mission = BlockTypes.BLUE_WOOL.value
-        blocks = {
-            BlockTypes.BLUE_WOOL.value: 4,
-            BlockTypes.ORANGE_WOOL.value: 4,
-            BlockTypes.BROWN_WOOL: 0,
-            BlockTypes.GREEN_WOOL: 0,
-        }
-
-        # ----------------------------
-        # Create ./logging/run_N folder
-        # ----------------------------
-        base_logging_dir = Path(os.getcwd()) / "logging"
-        base_logging_dir.mkdir(parents=True, exist_ok=True)
-
-        run_id = 0
-        while (base_logging_dir / f"run_{run_id}").exists():
-            run_id += 1
-
-        run_dir = base_logging_dir / f"run_{run_id}"
-        run_dir.mkdir(parents=True, exist_ok=False)
-
-        # ----------------------------
-        # Save experiment setup text
-        # ----------------------------
+        # ============================================================
+        # 3) Persist resolved setup
+        # ============================================================
         setup_path = run_dir / "experiment_setup.txt"
-        with open(setup_path, "w", encoding="utf-8") as f:
-            f.write(f"timestamp: {datetime.now().isoformat()}\n")
-            f.write(f"experiment: {exp_name}\n\n")
+        with setup_path.open("w", encoding="utf-8") as f:
+            f.write(json.dumps(run_cfg, indent=2, sort_keys=True))
 
-            f.write("=== swarm / evolution parameters ===\n")
-            f.write(f"swarm_size: {swarm_size}\n")
-            f.write(f"generations: {generations}\n")
-            f.write(f"mu (population_count): {population_count}\n")
-            f.write(f"offspring_multiplier: {offspring_multiplier}\n")
-            f.write(f"lambda (offspring_count): {lambda_}\n")
-            f.write(f"tournsize: {tournsize}\n")
-            f.write(f"n_elites: {n_elites}\n")
-            f.write(f"min_depth: {min_depth}\n")
-            f.write(f"max_depth: {max_depth}\n")
-            f.write(f"cxpb (crossover_rate): {crossover_rate}\n")
-            f.write(f"mutpb (mutation_prob): {mutation_prob}\n")
-            f.write(f"number_repetitions: {number_repetitions}\n\n")
+        # ============================================================
+        # 4) Print resolved config summary
+        # ============================================================
+        print_run_config_summary(run_cfg)
 
-            f.write("=== environment / experiment parameters ===\n")
-            f.write(f"arena_count: {arena_count}\n")
-            f.write(f"run_duration: {run_duration}\n")
-            f.write(f"mission: {mission}\n")
-            f.write(f"blocks: {blocks}\n")
-
-        print("=== RUN CONFIG ===")
-        print(f"Logging directory: {run_dir}")
-        print(f"Generations: {generations}")
-        print(f"Swarm size: {swarm_size}")
-        print(f"Population size (mu): {population_count}")
-        print(f"Offspring (lambda): {lambda_}")
-        print(f"Arenas: {arena_count}")
-        print(f"Run duration: {run_duration}")
-        print(f"Crossover rate: {crossover_rate}")
-        print(f"Mutation probability: {mutation_prob}")
-        print(f"Min/Max depth: {min_depth} / {max_depth}")
-        print(f"Tournament size: {tournsize}")
-        print(f"Elites: {n_elites}")
-        print(f"Repetitions: {number_repetitions}")
-        print(f"Mission: {mission}")
-        print(f"Blocks: {blocks}")
-
+        # ============================================================
+        # 5) Execute experiment + GP
+        # ============================================================
+        exp = None
         current_gen = -1
         current_ind = 0
-        exp = None
+
+        population_count = run_cfg["population_count"]
+        lambda_ = run_cfg["lambda_"]
+        generations = run_cfg["generations"]
 
         try:
             exp = self.experiments[exp_name](
                 pooler=self.pooler,
                 minecraft_server=self.server,
                 message_server=self.messenger,
-                run_duration=run_duration,
-                arena_count=arena_count,
+                run_duration=run_cfg["run_duration"],
+                arena_count=run_cfg["arena_count"],
             )
 
-            # Register primitives for THIS run (avoid duplicates across runs)
+            # Primitives must not accumulate across runs in the same process.
             reset_primitives()
             generate_pset()
 
-            # Create agents once (exp.set_round resets env/agents state)
-            agents = exp.initialize(swarm_size)
+            # Create agents once; exp.set_round() resets env/agents state per evaluation
+            agents = exp.initialize(run_cfg["swarm_size"])
 
-            # ====================================================
-            # FITNESS FUNCTION (CONTROLLER-LEVEL)
-            # ====================================================
-
+            # ----------------------------
+            # Fitness function
+            # ----------------------------
             def evaluate_controller(tree, gen: int) -> float:
                 nonlocal current_gen, current_ind
 
                 if gen != current_gen:
                     current_gen = gen
                     current_ind = 1
-                    print(f"\n=== Generation {gen}/{generations} ===")
+                    print(f"\n=== Generation {gen}/{run_cfg['generations']} | mission={mission_for_generation(run_cfg, gen)} ===")
                 else:
                     current_ind += 1
 
-                print(f"Individual {current_ind}/{population_count+lambda_}: {tree_to_str(tree)}")
-
-                # Bind one copy per agent
-                trees = instantiate_for_swarm(tree, agents)
-                for agent, t in zip(agents, trees):
+                # Bind one deepcopy per agent
+                bound_trees = instantiate_for_swarm(tree, agents)
+                for agent, t in zip(agents, bound_trees):
                     agent.set_tree(t)
-
+                mission = mission_for_generation(run_cfg, gen)
                 total_reward = 0.0
-                for _ in range(number_repetitions):
-                    exp.set_round(blocks)
-                    total_reward += exp.run(mission, blocks)
+                for _ in range(run_cfg["number_repetitions"]):
+                    exp.set_round(run_cfg["blocks"])
+                    total_reward += exp.run(mission, run_cfg["blocks"])
 
-                avg_reward = total_reward / float(number_repetitions)
-
-                # Use swarm_gp.tree_length for penalty (same definition as logging)
+                avg_reward = total_reward / float(run_cfg["number_repetitions"])
                 fitness_val = avg_reward - 0.01 * tree_length(tree)
 
-                print("Fitness:", fitness_val)
+                print(f"Individual {current_ind}/{population_count + lambda_}: {tree_to_str(tree)} has Fitness: {fitness_val}")
                 return fitness_val
 
-            # ====================================================
-            # EVOLUTION (WITH CSV LOGGING + POPULATION CHECKPOINTS)
-            # ====================================================
-
+            # ----------------------------
+            # Evolution
+            # ----------------------------
             population = ea_mu_plus_lambda(
-                mu=population_count,
-                lambda_=lambda_,
-                generations=generations,
-                min_depth=min_depth,
-                max_depth=max_depth,
-                cxpb=crossover_rate,
-                mutpb=mutation_prob,
+                mu=run_cfg["population_count"],
+                lambda_=run_cfg["lambda_"],
+                generations=run_cfg["generations"],
+                min_depth=run_cfg["min_depth"],
+                max_depth=run_cfg["max_depth"],
+                cxpb=run_cfg["crossover_rate"],
+                mutpb=run_cfg["mutation_prob"],
                 evaluate=evaluate_controller,
-                tournsize=tournsize,
-                n_elites=n_elites,
-                logging_dir=run_dir,
+                tournsize=run_cfg["tournsize"],
+                n_elites=run_cfg["n_elites"],
+                logging_dir=run_dir,  # gp_log.csv + populations/...
             )
 
-            best = population[0]
             print("\n=== RESULT ===")
-            print("Best controller:", tree_to_str(best))
+            print("Best controller:", tree_to_str(population[0]))
             print("Logs and populations saved in:", run_dir)
-            #exp.cleanup()
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
@@ -332,11 +283,11 @@ class ServerShell(cmd.Cmd):
             traceback.print_tb(e.__traceback__)
 
         finally:
-            try:
-                if exp is not None:
+            if exp is not None:
+                try:
                     exp.cleanup()
-            except Exception as cleanup_error:
-                print("Cleanup error:", cleanup_error)
+                except Exception as cleanup_error:
+                    print("Cleanup error:", cleanup_error)
 
     def do_reloadenvs(self, args):
         """Reload environments"""
