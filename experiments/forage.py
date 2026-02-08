@@ -52,6 +52,10 @@ class ForageExperiment(Experiment):
 
     @override
     def initialize(self, agents_per_arena):
+        self.minecraft_server.send("command gamerule doWeatherCycle false")
+        self.minecraft_server.send("command weather clear 999999")
+        self.minecraft_server.send("command gamerule doDaylightCycle false")
+        self.minecraft_server.send("command time set day")
         self.last_update_time = time.time()
 
         # Clean up previous agents
@@ -71,8 +75,7 @@ class ForageExperiment(Experiment):
                 origin,
                 self.arena_size
             )
-            env.reset()
-            env.initialize()
+            env.build_static_structures_once()
             self.environments.append(env)
 
             center = (
@@ -92,6 +95,7 @@ class ForageExperiment(Experiment):
                 self.total_agents_existed += 1
                 self.current_agent_count += 1
                 self.agents.append(agent)
+
         for agent in self.agents:
             if len(self.pooler.free_bots) == 0:
                 self.pooler.create_bot()
@@ -100,21 +104,17 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send('say initialized multi-arena foraging environment')
         return self.agents
 
-
-
     def set_round(self, blocks):
         for agent in self.agents:
             if agent.bot is None:
                 if len(self.pooler.free_bots) == 0:
                     self.pooler.create_bot()
-                print("Agent had no bot!")
                 agent.get_bot(uid=agent.id)
             agent.reset()
             time.sleep(0.05)
 
         for env in self.environments:
-            env.reset()
-            env.initialize()
+            env.reset_arena_interior()
             env.set_blocks(blocks)
 
 
@@ -126,6 +126,7 @@ class ForageExperiment(Experiment):
             self.minecraft_server.send(
                 f'command tp {agent.sensing.get_username()} {x} {y} {z}'
             )
+            time.sleep(0.01)
 
         time.sleep(1)
 
@@ -137,29 +138,58 @@ class ForageExperiment(Experiment):
                 self.last_update_time = time.time()
 
         # Evaluate per arena and aggregate
+        # Evaluate per arena and aggregate
         total_fitness = 0.0
         for env in self.environments:
-            reference_agent = next(a for a in self.agents if a.environment is env)
+            agents_in_env = [a for a in self.agents if a.environment is env]
+            if not agents_in_env:
+                continue
+
+            reference_agent = agents_in_env[0]
+
             remaining_blocks = reference_agent.sensing.get_blocks_in_arena(
                 env.origin,
                 env.size,
                 blocks
             )
-            # TODO concat all visited positions
-            fitness = reference_agent.evaluation(remaining_blocks, mission, blocks)
-            print("Fitness: ", fitness)
+
+            # aggregate unique visited positions across ALL agents in this arena
+            visited: set[tuple[int, int, int]] = set()
+            for a in agents_in_env:
+                visited.update(a.positions)
+
+            unique_positions_count = len(visited)
+
+            fitness = reference_agent.evaluation(
+                remaining_blocks=remaining_blocks,
+                color=mission,
+                initial_blocks=blocks,
+                unique_positions_count=unique_positions_count
+            )
+
+            # print(f"Arena fitness: {fitness} (unique visited positions: {unique_positions_count})")
             total_fitness += fitness
+
 
         for agent in self.agents:
             agent.reset()
             time.sleep(0.01)
-            #self.pooler.unbind_bot(agent)
-        print("Total fitness: ", total_fitness/self.arena_count)
         return total_fitness / self.arena_count
 
     @override
     def cleanup(self):
+        # Unbind bots first
         for agent in self.agents:
             self.pooler.unbind_bot(agent=agent)
             time.sleep(0.01)
+
+        # Remove all built structures and restore flatness
+        for env in self.environments:
+            env.cleanup(radius=15, clear_height=6)
+            time.sleep(0.05)
+
+        # Clear references
+        self.agents = []
+        self.environments = []
+
 
