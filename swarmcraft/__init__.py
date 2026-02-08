@@ -29,6 +29,9 @@ class BlockTypes(Enum):
     GRASS = 'grass_block'
     BEDROCK = 'bedrock'
     AIR = 'air'
+    GLASS = 'glass'
+    STONE_BRICK = 'stone_bricks'
+    STONE_BRICK_STAIRS = 'stone_brick_stairs'
 
 class MovementKeys(Enum):
     FORWARD = 'forward'
