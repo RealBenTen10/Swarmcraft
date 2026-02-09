@@ -96,14 +96,15 @@ class Actuation(object):
                 block = self.agent.bot.blockAt(pos)
 
                 # 3. Check if the block exists and the color (name) matches
-                # We use 'minecraft:' + color if your pset provides "blue_wool"
-                # but the bot returns "minecraft:blue_wool"
                 if block and block['name'] == color:
                     #print(f"Target color {color} found at {pos}. Digging...")
 
                     # 4. Start digging the specific block found
                     self.agent.bot.dig(block)
-                    self.agent.bot.chat(f'I started digging {color}!')
+                    try:
+                        self.agent.bot.chat(f'I started digging {color}!')
+                    except Exception as e:
+                        print("Chat failed while digging. Error: ", e)
 
                     # Return True immediately after finding and starting the dig
                     return True

@@ -26,7 +26,7 @@ class ForageExperiment(Experiment):
         super().__init__(pooler, minecraft_server, message_server)
 
         self.last_update_time = None
-        self.update_interval = 2.0
+        self.update_interval = 0.5
         self.max_time_sec = run_duration
 
         self.arena_origin = ORIGIN
@@ -137,6 +137,10 @@ class ForageExperiment(Experiment):
                 for agent in self.agents:
                     agent.update()
                 self.last_update_time = time.time()
+            # else:
+            #     for agent in self.agents:
+            #        agent.movement_tracker()
+            #     time.sleep(0.05)
 
         # Evaluate per arena and aggregate
         # Evaluate per arena and aggregate
