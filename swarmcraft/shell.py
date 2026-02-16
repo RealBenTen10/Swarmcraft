@@ -52,19 +52,19 @@ def generate_pset():
     )
     register_action(
         CanDigBlock,
-        param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
+        param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value, BlockTypes.BEDROCK.value])]
     )
     register_action(Look)
     register_action(PressDir)
     register_action(ReleaseDir)
-    #register_action(
-    #    SendMessage,
-    #    param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
-    #)
-    #register_action(
-    #    GotMessage,
-    #    param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
-    #)
+    register_action(
+       SendMessage,
+       param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
+    )
+    register_action(
+       GotMessage,
+       param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
+    )
 
 
 
@@ -216,6 +216,8 @@ class ServerShell(cmd.Cmd):
                 message_server=self.messenger,
                 run_duration=run_cfg["run_duration"],
                 arena_count=run_cfg["arena_count"],
+                ORIGIN=run_cfg["arena_origin"],
+                SIZE=run_cfg["arena_size"],
             )
 
             # Primitives must not accumulate across runs in the same process.
@@ -234,7 +236,9 @@ class ServerShell(cmd.Cmd):
                 if gen != current_gen:
                     current_gen = gen
                     current_ind = 1
-                    print(f"\n=== Generation {gen}/{run_cfg['generations']} | mission={mission_for_generation(run_cfg, gen)} ===")
+                    print(f"\n=== Generation {gen+1}/{run_cfg['generations']} | mission={mission_for_generation(run_cfg, gen)} ===")
+                    # set new random block positions
+                    exp.shuffle_block_positions(run_cfg["blocks"])
                 else:
                     current_ind += 1
 
@@ -245,7 +249,7 @@ class ServerShell(cmd.Cmd):
                 mission = mission_for_generation(run_cfg, gen)
                 total_reward = 0.0
                 for _ in range(run_cfg["number_repetitions"]):
-                    exp.set_round(run_cfg["blocks"])
+                    exp.set_round()
                     total_reward += exp.run(mission, run_cfg["blocks"])
 
                 avg_reward = total_reward / float(run_cfg["number_repetitions"])
@@ -351,10 +355,16 @@ class ServerShell(cmd.Cmd):
         """Stop the server and exit this shell"""
         print("Server going down...")
         """Stop the server and exit"""
-        for b in self.pooler.bound_bots:
-            b.quit()
-        for b in self.pooler.free_bots:
-            b.quit()
+        try:
+            for b in self.pooler.bound_bots:
+                b.quit()
+        except:
+            print("Couldn't quit bound bots")
+        try:
+            for b in self.pooler.free_bots:
+                b.quit()
+        except:
+            print("Couldn't quit free bots")
         time.sleep(2)
         self.server.stop()
         javascript.connection.stop()
