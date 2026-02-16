@@ -72,17 +72,26 @@ class MinecraftServer:
         if not self.running:
             warnings.warn("Server is not running")
             return None
-
-        header = len(command).to_bytes(2, byteorder='big', signed=False)
-        self.cmdsock.send(header + command.encode('utf-8'))
-        data = b''
-        count = 0
-        while count < 2:
-            piece = self.cmdsock.recv(2)
-            if not piece:
-                self.cmdsock.close()
-                return None
-            data += piece
-            count += len(piece)
-        length = int.from_bytes(data, byteorder='big', signed=False)
-        return self.cmdsock.recv(length).decode('utf-8')
+        while True:
+            try:
+                header = len(command).to_bytes(2, byteorder='big', signed=False)
+                self.cmdsock.send(header + command.encode('utf-8'))
+                data = b''
+                count = 0
+                while count < 2:
+                    piece = self.cmdsock.recv(2)
+                    if not piece:
+                        self.cmdsock.close()
+                        return None
+                    data += piece
+                    count += len(piece)
+                length = int.from_bytes(data, byteorder='big', signed=False)
+                received = self.cmdsock.recv(length).decode('utf-8')
+                #print(f"Server returned: {str(received)} for command: {command}")
+                if str(received) != "None":
+                    print(f"Server returned: {received} for command: {command}!!!")
+                    time.sleep(0.05)
+                else:
+                    return received
+            except Exception as e:
+                print("Server error: ", e)
