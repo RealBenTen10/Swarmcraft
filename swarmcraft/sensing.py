@@ -5,6 +5,7 @@ like a robot sensor suite - every agent gets one of these
 from collections import deque
 from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft.messaging import Chat
+import time
 Vec3 = require('vec3').Vec3
 
 class Sensing(object):
@@ -123,10 +124,16 @@ class Sensing(object):
         Get the bot's current position.
         """
         try:
-            return self.bot.entity.position.x, self.bot.entity.position.y, self.bot.entity.position.z
+            bot_position = self.bot.entity.position
+            return bot_position.x, bot_position.y, bot_position.z
         except Exception as e:
-            print("Error: ", e)
-            print(self.bot.entity.position)
+            print("Error while getting position: ", e)
+            try:
+                time.sleep(0.0001)
+                bot_position = self.bot.entity.position
+                return bot_position.x, bot_position.y, bot_position.z
+            except Exception as e:
+                print("Failed getting position: ", e)
             # Vec3 { x: 20.5, y: -59, z: 20.5 }
 
     def get_velocity(self):
@@ -183,15 +190,19 @@ class Sensing(object):
         Check the surrounding for blocks
         Is a diamond shape with side length 3
         """
-        radius = 1
-        block_positions = []
-        for x in range(-radius, radius + 1):
-            for y in range(-radius, radius + 1):
-                if abs(x) + abs(y) <= radius:
-                    if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
-                        block_positions.append(self.bot.entity.position.offset(x, 0, y))
-        #print(block_positions)
-        return block_positions
+        try:
+            radius = 1
+            block_positions = []
+            for x in range(-radius, radius + 1):
+                for y in range(-radius, radius + 1):
+                    if abs(x) + abs(y) <= radius:
+                        if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
+                            block_positions.append(self.bot.entity.position.offset(x, 0, y))
+            #print(block_positions)
+            return block_positions
+        except Exception as e:
+            print("Can dig error: ", e)
+            print("Bot of agent: ", self.bot)
 
 
     def get_cursor_entity(self):
