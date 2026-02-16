@@ -5,6 +5,7 @@ except for agent creation, this class does not handle agent connect/disconnect a
 agents must ask the pooler to be removed when they disconnect
 """
 import time
+import random
 from time import sleep
 from javascript import require
 
@@ -66,9 +67,14 @@ class Pooler:
         pass
 
     def reset_bot_position(self, bot):
-        self.server.send(
-            f'command tp {bot.username} {self.pooling_location[0]} {self.pooling_location[1]} {self.pooling_location[2]}'
-        )
+        dx = random.randint(-5, 5)
+        dz = random.randint(-5, 5)
+
+        x = self.pooling_location[0] + dx
+        y = self.pooling_location[1]
+        z = self.pooling_location[2] + dz
+
+        self.server.send(f"command tp {bot.username} {x} {y} {z}")
 
     def reset_bot_control(self, bot):
         time.sleep(0.01)
