@@ -150,7 +150,7 @@ class GotMessage(ActionNode):
         self.message_content = str(args[0]) if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
         self.privacy = args[2] == 'True' if len(args) > 2 else None
-        self.ttl = float(args[3]) if len(args) > 3 else 3 # messages live 3 seconds
+        self.ttl = float(args[3]) if len(args) > 3 else 1 # messages live 1 second
 
     def tick(self) -> str:
         now = time.time()
