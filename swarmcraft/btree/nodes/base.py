@@ -3,7 +3,7 @@ import threading
 from typing import override
 
 from swarmcraft.agent import Agent
-
+import time
 
 # implements behavior tree nodes
 # inspiration from https://arxiv.org/pdf/1709.00084
@@ -56,6 +56,7 @@ class SequenceNode(ControlNode):
     @override
     def tick(self):
         for child in self.children:
+            time.sleep(0.00001)
             status = child.tick()
             if status == 'running' or status == 'failure':
                 return status
@@ -109,6 +110,7 @@ class FallbackNode(ControlNode):
     @override
     def tick(self):
         for child in self.children:
+            time.sleep(0.00001)
             status = child.tick()
             if status == 'running' or status == 'success':
                 return status
