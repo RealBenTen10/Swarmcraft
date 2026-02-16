@@ -75,7 +75,7 @@ class ForageExperiment(Experiment):
                 origin,
                 self.arena_size
             )
-            env.clean_environment(20, 6)
+            env.clean_environment(20, 8)
             self.environments.append(env)
 
             center = (
@@ -83,7 +83,7 @@ class ForageExperiment(Experiment):
                 origin[1] + 1,
                 origin[2] + self.arena_size[2] // 2,
             )
-
+            time.sleep(0.0001)
             for _ in range(agents_per_arena):
                 agent = ForageAgent(
                     self.pooler,
@@ -95,9 +95,17 @@ class ForageExperiment(Experiment):
                 self.total_agents_existed += 1
                 self.current_agent_count += 1
                 self.agents.append(agent)
+        time.sleep(0.1)
         for env in self.environments:
+            time.sleep(0.001)
             env.build_static_structures_once()
+
+        for i in range(len(self.environments)-1):
+            time.sleep(0.0001)
+            self.environments[i].build_bridge_to(self.environments[i+1].origin)
+
         for agent in self.agents:
+            time.sleep(0.0001)
             if len(self.pooler.free_bots) == 0:
                 self.pooler.create_bot()
             agent.get_bot(uid=agent.id)
@@ -105,18 +113,26 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send('say initialized multi-arena foraging environment')
         return self.agents
 
-    def set_round(self, blocks):
+    def set_round(self):
         for agent in self.agents:
             if agent.bot is None:
                 if len(self.pooler.free_bots) == 0:
                     self.pooler.create_bot()
+                    time.sleep(0.0001)
                 agent.get_bot(uid=agent.id)
+                time.sleep(0.0001)
             agent.reset()
-            time.sleep(0.05)
+            time.sleep(0.001)
 
         for env in self.environments:
+            time.sleep(0.001)
             env.reset_arena_interior()
-            env.set_blocks(blocks)
+            time.sleep(0.001)
+            env.set_blocks()
+
+    def shuffle_block_positions(self, blocks):
+        for env in self.environments:
+            env.shuffle_block_positions()
 
 
     @override
@@ -149,28 +165,32 @@ class ForageExperiment(Experiment):
             agents_in_env = [a for a in self.agents if a.environment is env]
             if not agents_in_env:
                 continue
+            for agent in agents_in_env:
+                time.sleep(0.01)
+                try:
+                    remaining_blocks = agent.sensing.get_blocks_in_arena(
+                        env.origin,
+                        env.size,
+                        blocks
+                    )
+                    visited: set[tuple[int, int, int]] = set()
+                    for a in agents_in_env:
+                        time.sleep(0.001)
+                        visited.update(a.positions)
 
-            reference_agent = agents_in_env[0]
+                    unique_positions_count = len(visited)
 
-            remaining_blocks = reference_agent.sensing.get_blocks_in_arena(
-                env.origin,
-                env.size,
-                blocks
-            )
+                    fitness = agent.evaluation(
+                        remaining_blocks=remaining_blocks,
+                        color=mission,
+                        initial_blocks=blocks,
+                        unique_positions_count=unique_positions_count
+                    )
+                    break
+                except Exception as e:
+                    print("Failed to get remaining blocks: ", e)
 
             # aggregate unique visited positions across ALL agents in this arena
-            visited: set[tuple[int, int, int]] = set()
-            for a in agents_in_env:
-                visited.update(a.positions)
-
-            unique_positions_count = len(visited)
-
-            fitness = reference_agent.evaluation(
-                remaining_blocks=remaining_blocks,
-                color=mission,
-                initial_blocks=blocks,
-                unique_positions_count=unique_positions_count
-            )
 
             # print(f"Arena fitness: {fitness} (unique visited positions: {unique_positions_count})")
             total_fitness += fitness
@@ -178,7 +198,7 @@ class ForageExperiment(Experiment):
 
         for agent in self.agents:
             agent.reset()
-            time.sleep(0.01)
+            time.sleep(0.001)
         return total_fitness / self.arena_count
 
     @override
@@ -186,12 +206,12 @@ class ForageExperiment(Experiment):
         # Unbind bots first
         for agent in self.agents:
             self.pooler.unbind_bot(agent=agent)
-            time.sleep(0.01)
+            time.sleep(0.05)
 
         # Remove all built structures and restore flatness
         for env in self.environments:
             env.cleanup(radius=15, clear_height=6)
-            time.sleep(0.05)
+            time.sleep(0.01)
 
         # Clear references
         self.agents = []
