@@ -1,4 +1,5 @@
 import random
+import time
 from typing import override
 
 from swarmcraft.environment import Environment
@@ -12,7 +13,10 @@ class ForageEnvironment(Environment):
         self.origin = origin
         self.size = size
         self.resource_positions = []
+
+        # Block spec (type -> count) and fixed per-experiment positions
         self.blocks = None
+        self.blocks_position = None  # {"blue_wool": [(x,y,z), ...], ...}
 
         # Ensures bedrock walls/floor, stairs, and roof are only built once
         self._static_built = False
@@ -92,23 +96,39 @@ class ForageEnvironment(Environment):
         size : tuple[int,int,int]
             Arena dimensions (sx,sy,sz).
         """
-        # floor at y = origin.y
+        ox, oy, oz = self.origin
+        sx = self.size[0]
+        sz = self.size[2]
+        bedrock = f"minecraft:{BlockTypes.BEDROCK.value}"
+
+        # Floor: y = oy, height 1
         self.minecraft_server.send(
-            f"setcube {self.origin[0]} {self.origin[1]} {self.origin[2]} "
-            f"{self.size[0]} 1 {self.size[2]} minecraft:{BlockTypes.BEDROCK.value}"
+            f"setcube {ox} {oy} {oz} {sx} 1 {sz} {bedrock}"
         )
 
-        # perimeter walls at y = origin.y + 1 and y = origin.y + 2
-        for x in range(self.size[0]):
-            for z in range(self.size[2]):
-                if x == 0 or x == self.size[0] - 1 or z == 0 or z == self.size[2] - 1:
-                    px, py, pz = add_tuples(self.origin, (x, 1, z))
-                    self.minecraft_server.send(
-                        f"setblock {px} {py} {pz} minecraft:{BlockTypes.BEDROCK.value}"
-                    )
-                    self.minecraft_server.send(
-                        f"setblock {px} {py + 1} {pz} minecraft:{BlockTypes.BEDROCK.value}"
-                    )
+        # Walls: y = oy+1, height 2 (matches the old per-column two-block stack)
+        wall_y = oy + 1
+        wall_h = 2
+
+        # North wall (z = oz), thickness 1
+        self.minecraft_server.send(
+            f"setcube {ox} {wall_y} {oz} {sx} {wall_h} 1 {bedrock}"
+        )
+
+        # South wall (z = oz + sz - 1), thickness 1
+        self.minecraft_server.send(
+            f"setcube {ox} {wall_y} {oz + sz - 1} {sx} {wall_h} 1 {bedrock}"
+        )
+
+        # West wall (x = ox), thickness 1
+        self.minecraft_server.send(
+            f"setcube {ox} {wall_y} {oz} 1 {wall_h} {sz} {bedrock}"
+        )
+
+        # East wall (x = ox + sx - 1), thickness 1
+        self.minecraft_server.send(
+            f"setcube {ox + sx - 1} {wall_y} {oz} 1 {wall_h} {sz} {bedrock}"
+        )
 
     def _build_observer_stairs(self):
         """
@@ -121,22 +141,34 @@ class ForageEnvironment(Environment):
         """
         base_y = self.origin[1]
         z_edge = self.origin[2] - 2
+        stone = f"minecraft:{BlockTypes.STONE_BRICK.value}"
 
+        # Solid wedge (5 layers). The duplicate loop in the original code is removed.
         for step_idx in range(5):
             height = 5 - step_idx
             z = z_edge - step_idx
             self.minecraft_server.send(
                 f"setcube {self.origin[0]} {base_y} {z} "
-                f"{self.size[0]} {height} 1 minecraft:{BlockTypes.STONE_BRICK.value}"
+                f"{self.size[0]} {height} 1 {stone}"
             )
 
-        for step_idx in range(5):
-            height = 5 - step_idx
-            z = z_edge - step_idx
+        # Stairs on top (block state requires vanilla command path in your current design)
+        stairs_block = f"minecraft:{BlockTypes.STONE_BRICK_STAIRS.value}[facing=south,half=bottom]"
+        x1 = self.origin[0]
+        x2 = self.origin[0] + self.size[0] - 1
+
+        for step_idx in range(6):
+            height = 6 - step_idx
+            z = z_edge - step_idx + 1
+            y_stairs = base_y + height
             self.minecraft_server.send(
-                f"setcube {self.origin[0]} {base_y} {z} "
-                f"{self.size[0]} {height} 1 minecraft:{BlockTypes.STONE_BRICK.value}"
+                f"command fill {x1} {y_stairs} {z} {x2} {y_stairs} {z} {stairs_block}"
             )
+
+        z_ground = z_edge - 5
+        self.minecraft_server.send(
+            f"command fill {x1} {base_y} {z_ground} {x2} {base_y} {z_ground} {stairs_block}"
+        )
 
     def _build_glass_roof(self):
         """
@@ -148,9 +180,10 @@ class ForageEnvironment(Environment):
             Roof y-level = origin.y + 5
         """
         y = self.origin[1] + 5
+        glass = f"minecraft:{BlockTypes.GLASS.value}"
         self.minecraft_server.send(
-            f"setcube {self.origin[0]} {y} {self.origin[2]} "
-            f"{self.size[0]} 1 {self.size[2]} minecraft:{BlockTypes.GLASS.value}"
+            f"setcube {self.origin[0] - 1} {y} {self.origin[2] - 1} "
+            f"{self.size[0] + 2} 1 {self.size[2] + 2} {glass}"
         )
 
     def build_static_structures_once(self):
@@ -168,12 +201,77 @@ class ForageEnvironment(Environment):
         """
         if self._static_built:
             return
-
         self._build_bedrock_arena()
         self._build_observer_stairs()
         self._build_glass_roof()
-
         self._static_built = True
+
+    def build_bridge_to(self, other_origin: tuple[int, int, int]) -> None:
+        """
+        Build a 1-block-thick glass bridge between this arena's roof rectangle and another's.
+
+        Requirements (enforced):
+        - Roof heights must match (same y = origin.y + 5).
+        - Arenas must be separated along exactly one axis (x OR z), not diagonally.
+        - Roof rectangles should overlap on the perpendicular axis; otherwise we raise.
+        """
+        y1 = self.origin[1] + 5
+        y2 = other_origin[1] + 5
+        if y1 != y2:
+            raise ValueError(f"Roof heights differ (self={y1}, other={y2}); cannot build a flat bridge.")
+
+        self_xmin = self.origin[0] - 1
+        self_xmax = self.origin[0] + self.size[0]
+        self_zmin = self.origin[2] - 1
+        self_zmax = self.origin[2] + self.size[2]
+
+        oth_xmin = other_origin[0] - 1
+        oth_xmax = other_origin[0] + self.size[0]
+        oth_zmin = other_origin[2] - 1
+        oth_zmax = other_origin[2] + self.size[2]
+
+        x_separated = (self_xmax < oth_xmin) or (oth_xmax < self_xmin)
+        z_separated = (self_zmax < oth_zmin) or (oth_zmax < self_zmin)
+
+        if x_separated and z_separated:
+            raise ValueError("Roofs are diagonally separated (gap in both x and z); provide a custom bridge plan.")
+        if not x_separated and not z_separated:
+            return
+
+        glass = f"minecraft:{BlockTypes.GLASS.value}"
+
+        if x_separated:
+            # bridge along x; require overlap in z
+            z1 = max(self_zmin, oth_zmin)
+            z2 = min(self_zmax, oth_zmax)
+            if z1 > z2:
+                raise ValueError("Roofs do not overlap in z; cannot infer bridge span.")
+
+            x1 = min(self_xmax, oth_xmax)
+            x2 = max(self_xmin, oth_xmin)
+            # The above is not correct for the bridge span; compute edge-to-edge instead:
+            if self_xmax < oth_xmin:
+                x1, x2 = self_xmax, oth_xmin
+            else:
+                x1, x2 = oth_xmax, self_xmin
+
+            self.minecraft_server.send(
+                f"command fill {x1} {y1} {z1} {x2} {y1} {z2} {glass}"
+            )
+        else:
+            x1 = max(self_xmin, oth_xmin)
+            x2 = min(self_xmax, oth_xmax)
+            if x1 > x2:
+                raise ValueError("Roofs do not overlap in x; cannot infer bridge span.")
+
+            if self_zmax < oth_zmin:
+                z1, z2 = self_zmax, oth_zmin
+            else:
+                z1, z2 = oth_zmax, self_zmin
+
+            self.minecraft_server.send(
+                f"command fill {x1} {y1} {z1} {x2} {y1} {z2} {glass}"
+            )
 
     @override
     def initialize(self):
@@ -186,38 +284,83 @@ class ForageEnvironment(Environment):
         """
         self.build_static_structures_once()
 
-    def set_blocks(self, blocks=None):
+    def shuffle_block_positions(self, blocks=None):
         """
-        Spawn wool blocks within the bedrock perimeter at unique locations.
+        Compute and store a fresh random (but then fixed) set of block positions in self.blocks_position.
 
-        Important:
-        - Assumes reset_arena_interior() has been called before this, so no stale wool remains.
+        Workflow:
+        - Call shuffle_block_positions() once per experiment (or whenever you want a new layout).
+        - Each round call reset_arena_interior() then set_blocks(); set_blocks uses ONLY these stored positions.
+
+        Parameters
+        ----------
+        blocks : dict[str,int] | None
+            Block-type -> count; if None, uses default.
+        seed : int | None
+            If provided, makes the shuffle deterministic for reproducibility.
         """
         if blocks is None:
             blocks = {"blue_wool": 4, "orange_wool": 4, "brown_wool": 0, "green_wool": 0}
 
-        self.blocks = blocks
+        self.blocks = dict(blocks)
 
-        occupied_coords = set()
+        if self.size[0] < 3 or self.size[2] < 3:
+            self.blocks_position = {bt: [] for bt in self.blocks}
+            return
+
+        # Reserve center tile (agent spawn / no resource placement)
         center_x = self.origin[0] + self.size[0] // 2
         center_z = self.origin[2] + self.size[2] // 2
-        occupied_coords.add((center_x, self.origin[1] + 1, center_z))
+        reserved = (center_x, self.origin[1] + 1, center_z)
+
+        interior_w = self.size[0] - 2
+        interior_d = self.size[2] - 2
+        capacity = interior_w * interior_d - 1  # minus reserved
+        total_needed = sum(int(c) for c in self.blocks.values())
+        if total_needed > capacity:
+            raise ValueError(
+                f"Too many blocks requested ({total_needed}) for interior capacity ({capacity}) "
+                f"given arena size={self.size} and one reserved center tile."
+            )
+
+        occupied = {reserved}
+        positions: dict[str, list[tuple[int, int, int]]] = {bt: [] for bt in self.blocks}
 
         for block_type, count in self.blocks.items():
-            for _ in range(count):
+            for _ in range(int(count)):
                 while True:
                     x_pos = random.randint(self.origin[0] + 1, self.origin[0] + self.size[0] - 2)
                     z_pos = random.randint(self.origin[2] + 1, self.origin[2] + self.size[2] - 2)
                     y_pos = self.origin[1] + 1
-
                     coord = (x_pos, y_pos, z_pos)
-
-                    if coord not in occupied_coords:
-                        occupied_coords.add(coord)
-                        self.minecraft_server.send(
-                            f"setblock {x_pos} {y_pos} {z_pos} minecraft:{block_type}"
-                        )
+                    if coord not in occupied:
+                        occupied.add(coord)
+                        positions[block_type].append(coord)
                         break
+
+        self.blocks_position = positions
+
+    def set_blocks(self):
+        """
+        Spawn wool blocks at the fixed locations stored in self.blocks_position.
+
+        Contract:
+        - shuffle_block_positions() MUST be called before the first call to set_blocks().
+        - No randomness occurs here; only stored positions are used.
+        - Assumes reset_arena_interior() has been called before this.
+        """
+        if self.blocks_position is None:
+            raise RuntimeError(
+                "blocks_position is not initialized. Call shuffle_block_positions() once before set_blocks()."
+            )
+        print("Blocks: ", self.blocks_position)
+
+        for block_type, coords in self.blocks_position.items():
+            for (x_pos, y_pos, z_pos) in coords:
+                time.sleep(0.00001)
+                self.minecraft_server.send(
+                    f"setblock {x_pos} {y_pos} {z_pos} minecraft:{block_type}"
+                )
 
     def cleanup(self, radius: int = 15, clear_height: int = 6):
         """
@@ -255,7 +398,6 @@ class ForageEnvironment(Environment):
 
         # Reset static-built flag so a future initialize() rebuilds everything cleanly.
         self._static_built = False
-
 
     def get_point_in_environment(self):
         return (
