@@ -139,6 +139,7 @@ def print_run_config_summary(cfg: dict[str, Any]) -> None:
     if run_dir is not None:
         print(f"Logging directory: {run_dir}")
 
+    print(f"arena_origin={cfg['arena_origin']} arena_size={cfg['arena_size']}")
     print(
         f"swarm_size={cfg['swarm_size']} "
         f"generations={cfg['generations']} "
@@ -230,6 +231,9 @@ def default_run_config() -> dict[str, Any]:
     return {
         "exp_name": "ForageExperiment",
 
+        "arena_origin": (10, -60, 10),
+        "arena_size": (20, 10, 20),
+
         "swarm_size": 15,
         "generations": 200,
 
@@ -265,6 +269,43 @@ def default_run_config() -> dict[str, Any]:
         },
     }
 
+def _normalize_vec3(value: Any, *, name: str, default: tuple[int, int, int]) -> tuple[int, int, int]:
+    """
+    Normalize a 3D vector coming from config.
+
+    Accepts tuples/lists of length 3 (JSON will typically provide lists), converts to tuple[int,int,int],
+    and raises ValueError for invalid shapes or types.
+    """
+    if value is None:
+        return default
+
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        raise ValueError(f"'{name}' must be a list/tuple of length 3, got: {value!r}")
+
+    try:
+        x = int(value[0])
+        y = int(value[1])
+        z = int(value[2])
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"'{name}' entries must be integers, got: {value!r}") from e
+
+    return (x, y, z)
+
+
+def _normalize_arena_geometry(cfg: dict[str, Any]) -> None:
+    """
+    Ensure cfg contains normalized arena_origin and arena_size as tuple[int,int,int].
+    """
+    cfg["arena_origin"] = _normalize_vec3(
+        cfg.get("arena_origin"),
+        name="arena_origin",
+        default=(10, -60, 10),
+    )
+    cfg["arena_size"] = _normalize_vec3(
+        cfg.get("arena_size"),
+        name="arena_size",
+        default=(20, 10, 20),
+    )
 
 
 def apply_positional_overrides(cfg: dict[str, Any], argv: list[str]) -> dict[str, Any]:
@@ -434,6 +475,8 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     mission_schedule : list[dict]
         Determines the mission timeline and total generations.
     """
+    _normalize_arena_geometry(cfg)
+
     cfg["population_count"] = max(2, int(cfg.get("population_count", 2)))
     cfg["offspring_multiplier"] = float(cfg.get("offspring_multiplier", 2.0))
     cfg["lambda_"] = int(round(cfg["population_count"] * cfg["offspring_multiplier"]))
@@ -444,10 +487,8 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     cfg["mission_schedule"] = schedule
     cfg["missions_by_gen"] = missions_by_gen
 
-    # Make total generations match the schedule (authoritative)
+    # Make total generations match the schedule
     cfg["generations"] = len(missions_by_gen)
-
-    # Keep cfg["mission"] consistent for readability (first phase)
     cfg["mission"] = missions_by_gen[0] if missions_by_gen else cfg.get("mission")
 
     return cfg
