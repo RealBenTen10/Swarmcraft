@@ -353,7 +353,6 @@ class ForageEnvironment(Environment):
             raise RuntimeError(
                 "blocks_position is not initialized. Call shuffle_block_positions() once before set_blocks()."
             )
-        print("Blocks: ", self.blocks_position)
 
         for block_type, coords in self.blocks_position.items():
             for (x_pos, y_pos, z_pos) in coords:
