@@ -53,25 +53,23 @@
   "test": {
     "swarm_size": 5,
     "population_count": 20,
-    "offspring_multiplier": 3.0,
+    "offspring_multiplier": 2.0,
     "arena_count": 3,
-    "run_duration": 50,
-    "crossover_rate": 0.3,
-    "mutation_prob": 0.2,
+    "run_duration": 70,
+    "crossover_rate": 0.4,
+    "mutation_prob": 0.3,
     "min_depth": 1,
     "max_depth": 2,
     "number_repetitions": 1,
     "tournsize": 3,
     "n_elites": 1,
     "mission_schedule": [
-      { "mission": "blue_wool", "generations": 40 },
-      { "mission": "orange_wool", "generations": 20 },
-      { "mission": "blue_wool", "generations": 20 },
-      { "mission": "orange_wool", "generations": 40 }
+      { "mission": "blue_wool", "generations": 50 },
+      { "mission": "orange_wool", "generations": 20 }
     ],
     "blocks": {
-      "blue_wool": 4,
-      "orange_wool": 4,
+      "blue_wool": 5,
+      "orange_wool": 5,
       "brown_wool": 0,
       "green_wool": 0
     },
