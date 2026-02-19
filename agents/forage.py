@@ -110,7 +110,7 @@ class ForageAgent(Agent):
 
         # exploration reward (swarm-aware)
         explored = unique_positions_count if unique_positions_count is not None else len(self.positions)
-        evaluation += explored * 0.01
+        evaluation += explored * 0.001
 
         # do not clear here for swarm case; caller controls clearing
         # (keep this to avoid surprises if caller still uses per-agent evaluation)
