@@ -132,7 +132,7 @@ class ForageExperiment(Experiment):
 
     def shuffle_block_positions(self, blocks):
         for env in self.environments:
-            env.shuffle_block_positions()
+            env.shuffle_block_positions(blocks)
 
 
     @override
