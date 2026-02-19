@@ -27,9 +27,13 @@ class PressDir(ActionNode):
 
     def tick(self) -> str:
         #print(f"Moving {self.key}")
-        self.agent.actuation.start_move(self.key)
-        return 'success'
-
+        try:
+            self.agent.actuation.start_move(self.key)
+            return 'success'
+        except Exception as e:
+            print("Error while starting movement: ", e)
+            self.agent.actuation.start_move(self.key)
+            return 'success'
     def __repr__(self) -> str:
         return f'{__class__.__name__}({self.key})'
 
@@ -61,8 +65,13 @@ class Stop(ActionNode):
     Stop all movement
     """
     def tick(self) -> str:
-        self.agent.actuation.stop()
-        return 'success'
+        try:
+            self.agent.actuation.stop()
+            return 'success'
+        except Exception as e:
+            print("Failed to stop movement: ", e)
+            self.agent.actuation.stop()
+            return 'success'
 
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
