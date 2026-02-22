@@ -54,9 +54,15 @@ class Actuation(object):
         Stop moving in a given direction (like releasing a movement key)
         Direction may be any one of ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
         """
-        if direction not in [el.value for el in MovementKeys]:
-            raise ValueError('direction must be one of {}'.format([el.value for el in MovementKeys]))
-        self.agent.bot.setControlState(direction, False)
+        try:
+            if direction not in [el.value for el in MovementKeys]:
+                raise ValueError('direction must be one of {}'.format([el.value for el in MovementKeys]))
+            self.agent.bot.setControlState(direction, False)
+        except Exception as e:
+            print("Error during stop: ", e)
+            print("Agent: ", self.agent)
+            print("Bot: ", self.agent.bot)
+            self.agent.bot.setControlState(direction, False)
 
     def stop(self):
         """
