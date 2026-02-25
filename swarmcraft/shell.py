@@ -273,6 +273,7 @@ class ServerShell(cmd.Cmd):
                 tournsize=run_cfg["tournsize"],
                 n_elites=run_cfg["n_elites"],
                 logging_dir=run_dir,  # gp_log.csv + populations/...
+                resume_from=run_cfg["resume_from"],
             )
 
             print("\n=== RESULT ===")
