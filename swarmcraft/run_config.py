@@ -1,36 +1,69 @@
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
 from swarmcraft import BlockTypes
-from typing import Tuple
 
 
-def parse_run_args(args: str) -> tuple[str | None, list[str]]:
+# =============================================================================
+# CLI argument parsing (preset + resume flags + positional overrides)
+# =============================================================================
+
+def parse_run_args(args: str) -> tuple[str | None, Path | None, bool, list[str]]:
     """
     Parse the raw CLI argument string for `run`.
 
-    Parameters
-    ----------
-    args : str
-        Raw argument string passed into ServerShell.do_run.
+    Supported flags
+    ---------------
+    --preset <id>
+        Loads a preset configuration.
+    --resume
+        Interactive resume selection (lists available runs and checkpoints).
+    --resume-from <path>  (alias: --resume_from)
+        Non-interactive resume selection using an explicit checkpoint file path.
+
+    Positional arguments
+    --------------------
+    Remaining tokens (after consuming supported flags) are treated as backward-compatible
+    positional overrides.
 
     Returns
     -------
-    tuple[str | None, list[str]]
-        (preset_id, argv) where:
-        - preset_id is the value passed to `--preset` or None if not provided
-        - argv is the remaining positional argument tokens for backward-compatible overrides
+    tuple[str | None, Path | None, bool, list[str]]
+        (preset_id, resume_from_path, resume_interactive, argv)
     """
     tokens = args.split()
-    preset_id = None
+    preset_id: str | None = None
+    resume_from_path: Path | None = None
+    resume_interactive = False
+    argv: list[str] = []
 
-    if len(tokens) >= 2 and tokens[0] == "--preset":
-        preset_id = tokens[1]
-        tokens = tokens[2:]
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
 
-    return preset_id, tokens
+        if t == "--preset" and i + 1 < len(tokens):
+            preset_id = tokens[i + 1]
+            i += 2
+            continue
+
+        if t == "--resume":
+            resume_interactive = True
+            i += 1
+            continue
+
+        if t in ("--resume-from", "--resume_from") and i + 1 < len(tokens):
+            resume_from_path = Path(tokens[i + 1])
+            i += 2
+            continue
+
+        argv.append(t)
+        i += 1
+
+    return preset_id, resume_from_path, resume_interactive, argv
 
 
 def resolve_run_config(args: str) -> dict[str, Any]:
@@ -39,21 +72,23 @@ def resolve_run_config(args: str) -> dict[str, Any]:
 
     1) default_run_config()
     2) optional preset config from experiment_setups.json via `--preset <id>`
-    3) optional positional overrides (backward compatible)
-    4) finalize_config() to enforce invariants and compute derived values
-
-    Parameters
-    ----------
-    args : str
-        Raw argument string passed into ServerShell.do_run.
+    3) optional resume selection via:
+       - `--resume-from <path>` (non-interactive), OR
+       - `--resume` (interactive: user selects run_id and generation/latest)
+       In both cases, if a previous run configuration can be found, the user is shown
+       the previous settings and is asked whether to reuse them; if not, the user is
+       prompted per setting to override (blank keeps the previous value).
+    4) optional positional overrides (backward compatible)
+    5) finalize_config() to enforce invariants and compute derived values
 
     Returns
     -------
     dict[str, Any]
-        Fully resolved run configuration dict including derived key "lambda_".
+        Fully resolved run configuration dict including derived key "lambda_" and
+        (optionally) "resume_from" as a string path, suitable to pass as Path(...) later.
         Note: does not create run directories; do_run remains responsible for logging folders.
     """
-    preset_id, argv = parse_run_args(args)
+    preset_id, resume_from_path, resume_interactive, argv = parse_run_args(args)
 
     cfg = default_run_config()
 
@@ -62,12 +97,46 @@ def resolve_run_config(args: str) -> dict[str, Any]:
         for k, v in preset_cfg.items():
             cfg[k] = v
 
+    # Resume selection: explicit path wins over interactive.
+    checkpoint: Path | None = None
+    if resume_from_path is not None:
+        checkpoint = resume_from_path
+    elif resume_interactive:
+        checkpoint = prompt_resume_checkpoint()
+
+    if checkpoint is not None:
+        cfg["resume_from"] = str(checkpoint)
+
+        prev_cfg = load_previous_run_config_for_checkpoint(checkpoint)
+        if prev_cfg:
+            prev_cfg = strip_logging_keys(prev_cfg)
+            print_previous_settings(prev_cfg)
+
+            reuse = prompt_yes_no(
+                "Reuse the previous settings shown above? [Y/n]: ",
+                default_yes=True,
+            )
+            cfg.update(prev_cfg)
+
+            if not reuse:
+                cfg = prompt_overrides_for_settings(cfg)
+
+        else:
+            print(
+                "Warning: previous run settings could not be loaded (experiment_setup.txt not found or invalid JSON); "
+                "the resumed run will use the currently resolved settings."
+            )
+
     cfg = apply_positional_overrides(cfg, argv)
     cfg = finalize_config(cfg)
 
-    # keep preset_id in cfg for logging convenience
     cfg["preset_id"] = preset_id
     return cfg
+
+
+# =============================================================================
+# Run directory management (new runs)
+# =============================================================================
 
 def create_run_directories(base_logging_dir: Path | None = None) -> dict[str, Any]:
     """
@@ -81,22 +150,6 @@ def create_run_directories(base_logging_dir: Path | None = None) -> dict[str, An
       populations/
         gen_<g>.pkl
         latest.pkl
-
-    Variables
-    ----------
-    base_logging_dir : Path | None
-        Base directory under which run_N folders are created.
-        If None, defaults to Path(os.getcwd()) / "logging".
-
-    Returns
-    -------
-    dict[str, Any]
-        Dict containing:
-        - base_dir : str
-        - run_id : int
-        - run_dir : str
-        - pop_dir : str
-        - timestamp : str (ISO-8601)
     """
     base_dir = base_logging_dir or (Path(os.getcwd()) / "logging")
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -123,21 +176,18 @@ def create_run_directories(base_logging_dir: Path | None = None) -> dict[str, An
 def print_run_config_summary(cfg: dict[str, Any]) -> None:
     """
     Print a compact, human-readable summary of the resolved run configuration.
-
-    Variables
-    ----------
-    cfg : dict[str, Any]
-        Finalized run configuration (must include derived values such as "lambda_"
-        and logging metadata such as "run_dir" if available).
     """
     preset_id = cfg.get("preset_id", None)
     run_dir = cfg.get("run_dir", None)
+    resume_from = cfg.get("resume_from", None)
 
     print("=== RUN CONFIG ===")
     if preset_id is not None:
         print(f"Preset id: {preset_id}")
     if run_dir is not None:
         print(f"Logging directory: {run_dir}")
+    if resume_from:
+        print(f"Resume from: {resume_from}")
 
     print(f"arena_origin={cfg['arena_origin']} arena_size={cfg['arena_size']}")
     print(
@@ -158,14 +208,383 @@ def print_run_config_summary(cfg: dict[str, Any]) -> None:
     print(f"blocks={cfg['blocks']}")
 
 
+# =============================================================================
+# Resume helpers (interactive selection of run + checkpoint, then reuse/edit settings)
+# =============================================================================
+
+_RUN_DIR_RE = re.compile(r"^run_(\d+)$")
+_GEN_FILE_RE = re.compile(r"^gen_(\d+)\.pkl$")
+
+
+def _default_logging_base_dir() -> Path:
+    return Path(os.getcwd()) / "logging"
+
+
+def _read_run_setup(run_dir: Path) -> dict[str, Any]:
+    """
+    Read experiment_setup.txt (JSON) if present; returns {} on absence or parse failure.
+    """
+    setup_path = run_dir / "experiment_setup.txt"
+    if not setup_path.exists():
+        return {}
+    try:
+        return json.loads(setup_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def list_existing_runs(base_logging_dir: Path | None = None) -> list[dict[str, Any]]:
+    """
+    List run_N directories under the logging base directory.
+    """
+    base = base_logging_dir or _default_logging_base_dir()
+    if not base.exists():
+        return []
+
+    runs: list[dict[str, Any]] = []
+    for p in base.iterdir():
+        if not p.is_dir():
+            continue
+        m = _RUN_DIR_RE.match(p.name)
+        if not m:
+            continue
+
+        run_id = int(m.group(1))
+        setup = _read_run_setup(p)
+
+        ts = setup.get("timestamp")
+        if not isinstance(ts, str) or not ts:
+            ts = datetime.fromtimestamp(p.stat().st_mtime).isoformat(timespec="seconds")
+
+        runs.append(
+            {
+                "run_id": run_id,
+                "run_dir": p,
+                "timestamp": ts,
+                "exp_name": setup.get("exp_name"),
+                "generations": setup.get("generations"),
+                "population_count": setup.get("population_count"),
+                "lambda_": setup.get("lambda_"),
+            }
+        )
+
+    runs.sort(key=lambda r: r["run_id"])
+    return runs
+
+
+def list_population_checkpoints(run_dir: Path) -> dict[str, Path]:
+    """
+    List population checkpoints for a given run directory.
+
+    Returns mapping:
+      - "latest" -> populations/latest.pkl (if present)
+      - "<g>" -> populations/gen_<g>.pkl
+    """
+    pop_dir = run_dir / "populations"
+    if not pop_dir.exists():
+        return {}
+
+    ckpts: dict[str, Path] = {}
+    latest = pop_dir / "latest.pkl"
+    if latest.exists():
+        ckpts["latest"] = latest
+
+    for p in pop_dir.iterdir():
+        if not p.is_file():
+            continue
+        m = _GEN_FILE_RE.match(p.name)
+        if not m:
+            continue
+        g = m.group(1)
+        ckpts[g] = p
+
+    ordered: dict[str, Path] = {}
+    if "latest" in ckpts:
+        ordered["latest"] = ckpts["latest"]
+    for g in sorted((k for k in ckpts.keys() if k.isdigit()), key=lambda x: int(x)):
+        ordered[g] = ckpts[g]
+
+    return ordered
+
+
+def prompt_resume_checkpoint(base_logging_dir: Path | None = None) -> Path | None:
+    """
+    Interactive prompt:
+      1) list available runs under ./logging/run_N/
+      2) prompt run_id
+      3) list available checkpoints (latest + gen files)
+      4) prompt checkpoint selection
+      5) return selected checkpoint path
+    """
+    base = base_logging_dir or _default_logging_base_dir()
+    runs = list_existing_runs(base)
+
+    if not runs:
+        print(f"No runs found under: {base}")
+        return None
+
+    print("\n=== Available runs ===")
+    for r in runs:
+        rid = r["run_id"]
+        ts = r.get("timestamp") or "?"
+        exp = r.get("exp_name") or "?"
+        gens = r.get("generations")
+        mu = r.get("population_count")
+        lam = r.get("lambda_")
+        print(f"  [{rid}] {ts} | exp={exp} gens={gens} mu={mu} lambda={lam}")
+
+    s = input("Select run id to resume (blank to cancel): ").strip()
+    if s == "":
+        return None
+    if not s.isdigit():
+        print("Invalid run id selection (must be an integer).")
+        return None
+    chosen_id = int(s)
+
+    chosen_run = next((r for r in runs if r["run_id"] == chosen_id), None)
+    if chosen_run is None:
+        print("Selected run id does not exist.")
+        return None
+
+    ckpts = list_population_checkpoints(chosen_run["run_dir"])
+    if not ckpts:
+        print(f"No checkpoints found in: {chosen_run['run_dir'] / 'populations'}")
+        return None
+
+    print("\n=== Available checkpoints ===")
+    if "latest" in ckpts:
+        print("  latest  (populations/latest.pkl)")
+    gens = [k for k in ckpts.keys() if k.isdigit()]
+    if gens:
+        print("  generations:", ", ".join(sorted(gens, key=lambda x: int(x))))
+
+    g = input(
+        "Select checkpoint: enter 'latest' or a generation number g (resumes at g+1), blank to cancel: "
+    ).strip()
+
+    if g == "":
+        return None
+    if g in ckpts:
+        return ckpts[g]
+
+    print("Invalid checkpoint selection.")
+    return None
+
+
+def derive_run_dir_from_checkpoint(checkpoint_path: Path) -> Path | None:
+    """
+    If checkpoint_path matches .../logging/run_N/populations/(latest.pkl|gen_X.pkl),
+    return the run_N directory; otherwise return None.
+    """
+    try:
+        pop_dir = checkpoint_path.parent
+        run_dir = pop_dir.parent
+    except Exception:
+        return None
+
+    if pop_dir.name != "populations":
+        return None
+    if not _RUN_DIR_RE.match(run_dir.name):
+        return None
+    return run_dir
+
+
+def load_previous_run_config_for_checkpoint(checkpoint_path: Path) -> dict[str, Any]:
+    """
+    Load the previous run configuration from experiment_setup.txt for the run that produced
+    checkpoint_path, if that structure can be inferred; otherwise return {}.
+    """
+    run_dir = derive_run_dir_from_checkpoint(checkpoint_path)
+    if run_dir is None:
+        return {}
+    return _read_run_setup(run_dir)
+
+
+def strip_logging_keys(cfg: dict[str, Any]) -> dict[str, Any]:
+    """
+    Remove keys that must not be imported from the previous run because they refer to
+    logging metadata or derived arrays that will be recomputed.
+    """
+    drop = {
+        "run_id",
+        "run_dir",
+        "pop_dir",
+        "timestamp",
+        "preset_id",
+        "missions_by_gen",
+    }
+    return {k: v for k, v in cfg.items() if k not in drop}
+
+
+def print_previous_settings(prev_cfg: dict[str, Any]) -> None:
+    """
+    Display the key settings that affect EA meta and evaluation behaviour.
+    """
+    def g(key: str, default: Any = None) -> Any:
+        return prev_cfg.get(key, default)
+
+    print("\n=== Previous settings (from selected run) ===")
+    print(f"exp_name={g('exp_name')}")
+    print(f"arena_origin={g('arena_origin')} arena_size={g('arena_size')}")
+    print(
+        f"swarm_size={g('swarm_size')} "
+        f"arena_count={g('arena_count')} "
+        f"run_duration={g('run_duration')} "
+        f"reps={g('number_repetitions')}"
+    )
+
+    mu = g("population_count")
+    lam = g("lambda_")
+    off = g("offspring_multiplier")
+    print(
+        f"EA: mu={mu} lambda={lam} offspring_multiplier={off} "
+        f"cx={g('crossover_rate')} mut={g('mutation_prob')} "
+        f"depth={g('min_depth')}-{g('max_depth')} "
+        f"tourn={g('tournsize')} elites={g('n_elites')}"
+    )
+    print(f"mission={g('mission')}")
+    print(f"blocks={g('blocks')}")
+
+
+def prompt_yes_no(prompt: str, *, default_yes: bool) -> bool:
+    """
+    Returns True for yes, False for no; blank returns the default.
+    """
+    s = input(prompt).strip().lower()
+    if s == "":
+        return default_yes
+    if s in ("y", "yes"):
+        return True
+    if s in ("n", "no"):
+        return False
+    return default_yes
+
+
+def prompt_overrides_for_settings(cfg: dict[str, Any]) -> dict[str, Any]:
+    """
+    Prompt for per-setting overrides; blank input keeps the current value.
+
+    The baseline at this point is expected to be the previous run config, and the
+    caller is expected to have already populated cfg with the previous values.
+    """
+    print("\nEnter a new value to override, or press Enter to keep the previous value.")
+
+    # Strings
+    cfg["exp_name"] = prompt_optional_str("exp_name", cfg.get("exp_name"))
+
+    # Vec3
+    cfg["arena_origin"] = prompt_optional_vec3("arena_origin", cfg.get("arena_origin"))
+    cfg["arena_size"] = prompt_optional_vec3("arena_size", cfg.get("arena_size"))
+
+    # Core integers
+    cfg["swarm_size"] = prompt_optional_int("swarm_size", cfg.get("swarm_size"))
+    cfg["arena_count"] = prompt_optional_int("arena_count", cfg.get("arena_count"))
+    cfg["run_duration"] = prompt_optional_int("run_duration", cfg.get("run_duration"))
+    cfg["number_repetitions"] = prompt_optional_int("number_repetitions", cfg.get("number_repetitions"))
+
+    # EA parameters (these drive the EA meta saved by ea_mu_plus_lambda)
+    cfg["population_count"] = prompt_optional_int("population_count (mu)", cfg.get("population_count"))
+
+    # Allow user to set either offspring_multiplier or lambda explicitly; if lambda is set, it overwrites offspring_multiplier.
+    cfg["offspring_multiplier"] = prompt_optional_float("offspring_multiplier", cfg.get("offspring_multiplier"))
+
+    lam_in = input(f"lambda_ (offspring count) [{cfg.get('lambda_', None)}] (blank keeps derived from offspring_multiplier): ").strip()
+    if lam_in != "":
+        try:
+            lam_val = int(lam_in)
+            mu_val = int(cfg["population_count"])
+            if mu_val <= 0:
+                raise ValueError("population_count must be > 0 to derive offspring_multiplier from lambda_.")
+            cfg["offspring_multiplier"] = float(lam_val) / float(mu_val)
+        except Exception as e:
+            print(f"Invalid lambda_ input; keeping offspring_multiplier unchanged. Reason: {e}")
+
+    cfg["crossover_rate"] = prompt_optional_float("crossover_rate (cxpb)", cfg.get("crossover_rate"))
+    cfg["mutation_prob"] = prompt_optional_float("mutation_prob (mutpb)", cfg.get("mutation_prob"))
+    cfg["min_depth"] = prompt_optional_int("min_depth", cfg.get("min_depth"))
+    cfg["max_depth"] = prompt_optional_int("max_depth", cfg.get("max_depth"))
+    cfg["tournsize"] = prompt_optional_int("tournsize", cfg.get("tournsize"))
+    cfg["n_elites"] = prompt_optional_int("n_elites", cfg.get("n_elites"))
+
+    # JSON-editable settings
+    cfg["blocks"] = prompt_optional_json("blocks (JSON object)", cfg.get("blocks"))
+    cfg["mission_schedule"] = prompt_optional_json("mission_schedule (JSON list)", cfg.get("mission_schedule"))
+
+    return cfg
+
+
+def prompt_optional_str(name: str, current: Any) -> Any:
+    s = input(f"{name} [{current}]: ").strip()
+    return current if s == "" else s
+
+
+def prompt_optional_int(name: str, current: Any) -> Any:
+    s = input(f"{name} [{current}]: ").strip()
+    if s == "":
+        return current
+    try:
+        return int(s)
+    except Exception:
+        print(f"Invalid integer for {name}; keeping previous value.")
+        return current
+
+
+def prompt_optional_float(name: str, current: Any) -> Any:
+    s = input(f"{name} [{current}]: ").strip()
+    if s == "":
+        return current
+    try:
+        return float(s)
+    except Exception:
+        print(f"Invalid float for {name}; keeping previous value.")
+        return current
+
+
+def prompt_optional_vec3(name: str, current: Any) -> Any:
+    """
+    Accepts either comma-separated 'x,y,z' or JSON list '[x,y,z]'; blank keeps current.
+    """
+    s = input(f"{name} [{current}]: ").strip()
+    if s == "":
+        return current
+    try:
+        if s.startswith("["):
+            v = json.loads(s)
+            if not isinstance(v, list) or len(v) != 3:
+                raise ValueError("Expected JSON list of length 3.")
+            return (int(v[0]), int(v[1]), int(v[2]))
+        parts = [p.strip() for p in s.split(",")]
+        if len(parts) != 3:
+            raise ValueError("Expected three comma-separated values.")
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    except Exception as e:
+        print(f"Invalid vec3 for {name}; keeping previous value. Reason: {e}")
+        return current
+
+
+def prompt_optional_json(name: str, current: Any) -> Any:
+    """
+    Prompts for JSON input; blank keeps current; invalid JSON keeps current.
+    """
+    current_str = json.dumps(current, indent=2, sort_keys=True) if current is not None else "null"
+    print(f"\n{name} current value:\n{current_str}")
+    s = input(f"New {name} (enter JSON, blank keeps current): ").strip()
+    if s == "":
+        return current
+    try:
+        return json.loads(s)
+    except Exception as e:
+        print(f"Invalid JSON for {name}; keeping previous value. Reason: {e}")
+        return current
+
+
+# =============================================================================
+# Preset management
+# =============================================================================
+
 def _preset_file_path() -> Path:
     """
     Return the filesystem path to the JSON file that contains multiple experiment configs.
-
-    Variables
-    ----------
-    Path(__file__).resolve().parent : Path
-        Directory containing this shell module.
     """
     return Path(__file__).resolve().parent / "experiment_setups.json"
 
@@ -173,17 +592,6 @@ def _preset_file_path() -> Path:
 def load_all_presets(preset_path: Path | None = None) -> dict[str, Any]:
     """
     Load the full presets dictionary from a JSON file.
-
-    Variables
-    ----------
-    preset_path : Path | None
-        Path to the JSON file containing configs keyed by unique IDs ("0", "1", ...).
-        If None, uses the default `_preset_file_path()`.
-
-    Returns
-    -------
-    dict[str, Any]
-        The parsed JSON object (top-level must be a dict mapping IDs to config dicts).
     """
     path = preset_path or _preset_file_path()
     if not path.exists():
@@ -201,18 +609,6 @@ def load_all_presets(preset_path: Path | None = None) -> dict[str, Any]:
 def load_preset_config(preset_id: str | int, preset_path: Path | None = None) -> dict[str, Any]:
     """
     Load a single config entry by preset id.
-
-    Variables
-    ----------
-    preset_id : str | int
-        Identifier of the config (e.g. "1" or 1). Stored keys in JSON should be strings.
-    preset_path : Path | None
-        Optional custom path to the presets JSON file.
-
-    Returns
-    -------
-    dict[str, Any]
-        A config dictionary.
     """
     presets = load_all_presets(preset_path)
     key = str(preset_id)
@@ -223,6 +619,10 @@ def load_preset_config(preset_id: str | int, preset_path: Path | None = None) ->
         raise ValueError(f"Preset id '{key}' must map to an object/dict in JSON.")
     return cfg
 
+
+# =============================================================================
+# Default config + normalization + positional overrides + mission timeline
+# =============================================================================
 
 def default_run_config() -> dict[str, Any]:
     """
@@ -254,7 +654,6 @@ def default_run_config() -> dict[str, Any]:
         "tournsize": 3,
         "n_elites": 1,
 
-        # --- mission defaults ---
         "mission": BlockTypes.BLUE_WOOL.value,
         "mission_schedule": [
             {"mission": BlockTypes.BLUE_WOOL.value, "generations": 100},
@@ -267,7 +666,11 @@ def default_run_config() -> dict[str, Any]:
             BlockTypes.BROWN_WOOL.value: 0,
             BlockTypes.GREEN_WOOL.value: 0,
         },
+
+        # JSON-serializable; do_run passes Path(...) to ea_mu_plus_lambda.
+        "resume_from": None,
     }
+
 
 def _normalize_vec3(value: Any, *, name: str, default: tuple[int, int, int]) -> tuple[int, int, int]:
     """
@@ -312,26 +715,20 @@ def apply_positional_overrides(cfg: dict[str, Any], argv: list[str]) -> dict[str
     """
     Apply backward-compatible positional CLI overrides onto cfg.
 
-    Variables
-    ----------
-    cfg : dict[str, Any]
-        The configuration dictionary to mutate.
-    argv : list[str]
-        Remaining tokens after parsing `--preset` (if present).
-        Mapping (index -> key):
-          0 swarm_size
-          1 generations
-          2 population_count
-          3 offspring_multiplier
-          4 arena_count
-          5 run_duration
-          6 crossover_rate
-          7 mutation_prob
-          8 max_depth
-          9 min_depth
-          10 number_repetitions
-          11 tournsize
-          12 n_elites
+    Mapping (index -> key):
+      0 swarm_size
+      1 generations
+      2 population_count
+      3 offspring_multiplier
+      4 arena_count
+      5 run_duration
+      6 crossover_rate
+      7 mutation_prob
+      8 max_depth
+      9 min_depth
+      10 number_repetitions
+      11 tournsize
+      12 n_elites
     """
     if len(argv) > 0:
         cfg["swarm_size"] = int(argv[0])
@@ -362,26 +759,13 @@ def apply_positional_overrides(cfg: dict[str, Any], argv: list[str]) -> dict[str
 
     return cfg
 
+
 def _normalize_mission_schedule(cfg: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Normalize and validate the mission schedule.
-
-    Variables
-    ----------
-    cfg : dict[str, Any]
-        Run config. Reads:
-        - cfg["mission_schedule"] : list[{"mission": str, "generations": int}]
-        - cfg["mission"] : str fallback
-
-    Returns
-    -------
-    list[dict[str, Any]]
-        Normalized mission schedule phases. Each element is:
-        {"mission": <str>, "generations": <int>}
     """
     sched = cfg.get("mission_schedule")
 
-    # Fallback: if no schedule is provided, use single-phase schedule from cfg["mission"]
     if not sched:
         mission = cfg.get("mission")
         if mission is None:
@@ -409,18 +793,6 @@ def _normalize_mission_schedule(cfg: dict[str, Any]) -> list[dict[str, Any]]:
 def _build_mission_timeline(schedule: list[dict[str, Any]]) -> list[str]:
     """
     Expand a mission schedule into a per-generation timeline.
-
-    Variables
-    ----------
-    schedule : list[dict[str, Any]]
-        List of phases, each with:
-        - mission : str
-        - generations : int
-
-    Returns
-    -------
-    list[str]
-        missions_by_gen, where missions_by_gen[g] is the mission for generation g.
     """
     missions_by_gen: list[str] = []
     for phase in schedule:
@@ -432,32 +804,15 @@ def _build_mission_timeline(schedule: list[dict[str, Any]]) -> list[str]:
 def mission_for_generation(cfg: dict[str, Any], gen: int) -> str:
     """
     Return the active mission for a given generation index.
-
-    Variables
-    ----------
-    cfg : dict[str, Any]
-        Must contain:
-        - cfg["missions_by_gen"] : list[str] computed in finalize_config()
-        OR
-        - cfg["mission_schedule"] : list phases (will be normalized in finalize_config)
-    gen : int
-        Current generation (0-based).
-
-    Returns
-    -------
-    str
-        Mission string, e.g. "blue_wool".
     """
     timeline = cfg.get("missions_by_gen")
     if not timeline:
-        # Defensive fallback (should not happen if finalize_config() was used)
         schedule = _normalize_mission_schedule(cfg)
         timeline = _build_mission_timeline(schedule)
 
     if gen < 0:
         gen = 0
     if gen >= len(timeline):
-        # Clamp: after schedule ends, keep last mission
         return timeline[-1]
     return timeline[gen]
 
@@ -466,14 +821,10 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     """
     Finalize configuration by enforcing invariants and computing derived parameters.
 
-    Variables
-    ----------
-    population_count : int
-        Must be >= 2.
-    lambda_ : int
-        Derived as round(population_count * offspring_multiplier).
-    mission_schedule : list[dict]
-        Determines the mission timeline and total generations.
+    Note
+    ----
+    lambda_ is always derived from population_count and offspring_multiplier; this ensures
+    that the EA meta passed to ea_mu_plus_lambda is consistent with the resolved config.
     """
     _normalize_arena_geometry(cfg)
 
@@ -481,14 +832,15 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     cfg["offspring_multiplier"] = float(cfg.get("offspring_multiplier", 2.0))
     cfg["lambda_"] = int(round(cfg["population_count"] * cfg["offspring_multiplier"]))
 
-    # Normalize schedule and compute missions_by_gen
     schedule = _normalize_mission_schedule(cfg)
     missions_by_gen = _build_mission_timeline(schedule)
     cfg["mission_schedule"] = schedule
     cfg["missions_by_gen"] = missions_by_gen
 
-    # Make total generations match the schedule
     cfg["generations"] = len(missions_by_gen)
     cfg["mission"] = missions_by_gen[0] if missions_by_gen else cfg.get("mission")
+
+    rf = cfg.get("resume_from", None)
+    cfg["resume_from"] = str(rf) if isinstance(rf, Path) else (rf if rf else None)
 
     return cfg
