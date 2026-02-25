@@ -10,8 +10,10 @@ Cloning the repository is already half the battle. In case you haven't done so y
 ## Requirements
 For the rest of the installation process, the following tools are required:
 - `jdk` (>= 21)
-- `python` (>= 3.8)
-- `nodejs` (>= 22) and `npm`
+- `python` (>= 3.12)
+- `nodejs` (>= 22)
+- `npm` (11.3.0)
+- Minecraft launcher (e.g. https://atlauncher.com/downloads) with Minecraft 1.21.1
 
 ## Installing the minecraft server
 Once the clone is complete, move to the server install tools directory:
