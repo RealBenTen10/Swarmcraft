@@ -1,6 +1,6 @@
 import time
 from typing import override
-
+from collections import defaultdict
 import numpy as np
 
 import swarmcraft.util
@@ -147,16 +147,43 @@ class ForageExperiment(Experiment):
 
         time.sleep(1)
 
-        start_time = time.time()
-        while time.time() - start_time < self.max_time_sec:
-            if time.time() - self.last_update_time > self.update_interval:
-                for agent in self.agents:
-                    agent.update()
-                self.last_update_time = time.time()
-            # else:
-            #     for agent in self.agents:
-            #        agent.movement_tracker()
-            #     time.sleep(0.05)
+        start_time = time.monotonic()
+
+        envs = list(self.environments)
+        n_env = len(envs)
+        if n_env == 0:
+            return
+
+        update_interval = self.update_interval
+        slot = update_interval / n_env
+
+        # Initialize per-environment phased schedules:
+        t0 = time.monotonic()
+        next_env_update = {env: t0 + i * slot for i, env in enumerate(envs)}
+
+        while time.monotonic() - start_time < self.max_time_sec:
+            now = time.monotonic()
+
+            # Build env -> agents mapping in O(#agents) per tick.
+            env_to_agents = defaultdict(list)
+            for a in self.agents:
+                env_to_agents[a.environment].append(a)
+
+            # Update environments whose time slot has arrived.
+            for env in envs:
+                due = next_env_update[env]
+                if now >= due:
+                    for agent in env_to_agents.get(env, ()):
+                        agent.update()
+
+                    # Advance schedule without drifting the phase:
+                    # If we are late by multiple intervals, skip forward accordingly.
+                    missed = int((now - due) // update_interval)
+                    next_env_update[env] = due + (missed + 1) * update_interval
+
+            # Small sleep prevents busy-waiting; tune as needed.
+            time.sleep(0.001)
+
 
         # Evaluate per arena and aggregate
         # Evaluate per arena and aggregate
