@@ -1,10 +1,6 @@
 import time
 
 from swarmcraft.agent import Agent
-from swarmcraft.btree.nodes.actuation import PressDir, Look, StartDig, ReleaseDir
-from swarmcraft.btree.nodes.sensing import CanDigBlock
-from swarmcraft.btree.nodes.base import SequenceNode, FallbackNode
-from swarmcraft.btree.nodes.misc import RandomNode
 
 
 class ForageAgent(Agent):
@@ -66,6 +62,7 @@ class ForageAgent(Agent):
     def evaluation(
             self,
             remaining_blocks,
+            size,
             color,
             initial_blocks,
             reward_multiplier=1,
@@ -110,7 +107,15 @@ class ForageAgent(Agent):
 
         # exploration reward (swarm-aware)
         explored = unique_positions_count if unique_positions_count is not None else len(self.positions)
-        evaluation += explored * 0.001
+        # total possible exploration (size*size with offset for wall)
+        # e.g. 18*18 = 324
+        total = (size[0]-2)*(size[2]-2)
+        if total <= 0:
+            # should not happen
+            evaluation += 1
+        else:
+            # add exploration bonus - gives at most +1
+            evaluation += explored/total
 
         # do not clear here for swarm case; caller controls clearing
         # (keep this to avoid surprises if caller still uses per-agent evaluation)

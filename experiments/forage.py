@@ -209,9 +209,10 @@ class ForageExperiment(Experiment):
 
                     fitness = agent.evaluation(
                         remaining_blocks=remaining_blocks,
+                        size=self.arena_size,
                         color=mission,
                         initial_blocks=blocks,
-                        unique_positions_count=unique_positions_count
+                        unique_positions_count=unique_positions_count,
                     )
                     break
                 except Exception as e:
