@@ -55,7 +55,7 @@ class IsHoldingItem(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
-class CanDigBlock(ActionNode):
+class SenseBlock(ActionNode):
 
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
