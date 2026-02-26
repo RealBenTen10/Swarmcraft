@@ -17,8 +17,8 @@ from run_config import default_run_config, finalize_config, load_preset_config, 
 from run_config import mission_for_generation
 
 import swarmcraft.btree.nodes.base as bt
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Look, ReleaseDir, SendMessage
-from swarmcraft.btree.nodes.sensing import CanDigBlock, GotMessage
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage
+from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 from swarmcraft import BlockTypes
@@ -51,10 +51,16 @@ def generate_pset():
         param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
     )
     register_action(
-        CanDigBlock,
+        SenseBlock,
         param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value, BlockTypes.BEDROCK.value])]
     )
-    register_action(Look)
+    register_action(
+        Rotate,
+        param_generators=[lambda: random.choice([90, 45, -1, -45, -90])]
+        # -1 is random
+        # positive is counterclockwise
+        # negative is clockwise
+    )
     register_action(PressDir)
     register_action(ReleaseDir)
     register_action(
