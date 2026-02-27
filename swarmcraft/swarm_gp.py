@@ -43,15 +43,21 @@ class ActionPrimitive:
         The ActionNode class to instantiate.
     param_generators : tuple[Callable[[], Any], ...]
         Callable generators for ephemeral parameters, each returning one value.
-        Example: lambda: "orange_wool"
+    param_attrs : Optional[tuple[str, ...]]
+        Attribute names on the instantiated ActionNode corresponding to each generator
+        in the same order as param_generators. Recommended for multi-parameter actions.
+        If None, attributes are inferred best-effort.
     """
-    def __init__(self, cls: Type[bt.ActionNode], param_generators=()):
+
+    def __init__(self, cls: Type[bt.ActionNode], param_generators=(), param_attrs=None):
         self.cls = cls
-        self.param_generators = param_generators
+        self.param_generators = tuple(param_generators) if param_generators else tuple()
+        self.param_attrs = tuple(param_attrs) if param_attrs else None
 
 
 CONTROL_PRIMITIVES: list[ControlPrimitive] = []
 ACTION_PRIMITIVES: list[ActionPrimitive] = []
+ACTION_PRIMITIVE_BY_CLS: dict[Type[bt.ActionNode], ActionPrimitive] = {}
 
 
 def register_control(cls: Type[bt.ControlNode], min_arity: int, max_arity: int) -> None:
@@ -74,7 +80,7 @@ def register_control(cls: Type[bt.ControlNode], min_arity: int, max_arity: int) 
     CONTROL_PRIMITIVES.append(ControlPrimitive(cls, min_arity, max_arity))
 
 
-def register_action(cls: Type[bt.ActionNode], param_generators=()) -> None:
+def register_action(cls: Type[bt.ActionNode], param_generators=(), param_attrs=None) -> None:
     """
     Register an action-node primitive.
 
@@ -84,12 +90,16 @@ def register_action(cls: Type[bt.ActionNode], param_generators=()) -> None:
         Action node class to register.
     param_generators : tuple[Callable[[], Any], ...]
         Parameter generators used during random initialization.
+    param_attrs : Optional[tuple[str, ...]]
+        Attribute names corresponding to param_generators (recommended if >1 parameter).
 
     Returns
     -------
     None
     """
-    ACTION_PRIMITIVES.append(ActionPrimitive(cls, param_generators))
+    prim = ActionPrimitive(cls, param_generators, param_attrs)
+    ACTION_PRIMITIVES.append(prim)
+    ACTION_PRIMITIVE_BY_CLS[cls] = prim
 
 def reset_primitives() -> None:
     """
@@ -109,6 +119,7 @@ def reset_primitives() -> None:
     """
     CONTROL_PRIMITIVES.clear()
     ACTION_PRIMITIVES.clear()
+    ACTION_PRIMITIVE_BY_CLS.clear()
 
 
 # ============================================================
@@ -194,6 +205,110 @@ def collect_nodes(root: bt.BehaviorTreeNode, include_root: bool = True):
     return nodes
 
 
+# Action-node parameter attribute names that are commonly used
+# this is different from the registered action nodes
+# these values are stored in the action nodes and are not equivilant to the action node parameters
+_KNOWN_TERMINAL_ATTRS = ("color", "yaw", "key", "message", "message_content", "direction")
+
+def _get_action_primitive(node: bt.ActionNode) -> Optional[ActionPrimitive]:
+    """
+    Return the registered ActionPrimitive for a concrete ActionNode instance.
+    """
+    prim = ACTION_PRIMITIVE_BY_CLS.get(node.__class__)
+    if prim is not None:
+        return prim
+
+    # fallback if instances use subclasses/proxies
+    for cls, p in ACTION_PRIMITIVE_BY_CLS.items():
+        if isinstance(node, cls):
+            return p
+    return None
+
+
+def _infer_param_attrs(action: bt.ActionNode, prim: ActionPrimitive) -> list[str]:
+    """
+    Determine the attribute names on `action` corresponding to the generators in `prim`.
+
+    Rules:
+      - If prim.param_attrs is provided, use it verbatim.
+      - Else, prefer known terminal attr names present on the instance.
+      - Else (rare), attempt a conservative fallback:
+          - for a single-parameter action: pick the only "non-empty" public attribute
+            excluding obvious non-parameter fields, if that yields a unique candidate.
+
+    Note:
+      For multi-parameter actions, strongly prefer passing param_attrs during registration.
+    """
+    if prim.param_attrs is not None:
+        return list(prim.param_attrs)
+
+    present = [a for a in _KNOWN_TERMINAL_ATTRS if hasattr(action, a)]
+    if not prim.param_generators:
+        return []
+
+    if len(prim.param_generators) == 1:
+        if present:
+            return present[:1]
+
+        # Conservative fallback: attempt to find a single plausible parameter attribute.
+        ignore = {"agent"}
+        candidates = []
+        for k, v in vars(action).items():
+            if k in ignore or k.startswith("_"):
+                continue
+            if v is None or v == "":
+                continue
+            candidates.append(k)
+        if len(candidates) == 1:
+            return candidates
+        return []
+
+    # Multi-parameter: best-effort mapping only if enough known attrs are present
+    if len(present) >= len(prim.param_generators):
+        return present[:len(prim.param_generators)]
+    return []
+
+
+def collect_mutation_points(root: bt.BehaviorTreeNode):
+    """
+    Collect mutation points consisting of:
+      - ("node", node, parent, index)
+      - ("terminal", action_node, parent, index, param_index, attr_name, generator, prim)
+
+    This allows mutation to choose uniformly among:
+      - control/action nodes (subtrees), and
+      - instantiated parameters of action nodes (terminals).
+    """
+    points = []
+
+    def visit(node, parent=None, index=None):
+        points.append(("node", node, parent, index))
+
+        if isinstance(node, bt.ControlNode):
+            for i, c in enumerate(node.children):
+                visit(c, node, i)
+            return
+
+        if isinstance(node, bt.ActionNode):
+            prim = _get_action_primitive(node)
+            if prim is None or not prim.param_generators:
+                return
+
+            attrs = _infer_param_attrs(node, prim)
+            attrs = attrs[:len(prim.param_generators)]
+
+            for j, attr in enumerate(attrs):
+                if not hasattr(node, attr):
+                    continue
+                val = getattr(node, attr)
+                if val is None or val == "":
+                    continue
+                points.append(("terminal", node, parent, index, j, attr, prim.param_generators[j], prim))
+
+    visit(root)
+    return points
+
+
 def tree_length(node: bt.BehaviorTreeNode) -> int:
     """
     Compute total number of nodes in the tree (including leaves).
@@ -217,10 +332,9 @@ def tree_length(node: bt.BehaviorTreeNode) -> int:
         # count the action itself
         n = 1
 
-        # count ephemeral terminals as leafs (as requested)
-        # this maps your current conventions:
-        # - color, yaw, key, message, message_content
-        for attr in ("color", "yaw", "key", "message", "message_content"):
+        # count ephemeral terminals as leafs
+        # this maps current conventions using _KNOWN_TERMINAL_ATTRS list
+        for attr in _KNOWN_TERMINAL_ATTRS:
             if hasattr(node, attr):
                 val = getattr(node, attr)
                 # treat "" and None as absent
@@ -287,6 +401,20 @@ def mut_grow(ind: bt.BehaviorTreeNode, min_depth: int, max_depth: int):
     """
     Subtree mutation by replacement with a newly generated grow subtree.
 
+    Mutation that samples uniformly from both:
+      - nodes (control + action, including root) and
+      - terminals (instantiated action parameters)
+
+    If a node is selected:
+      - replace the subtree at that node with a new grow tree
+
+    If a terminal is selected:
+      - resample that parameter using its registered generator and rebuild the action node
+        to keep constructor logic consistent.
+
+    This follows DEAP's philosophy (mutation by replacing a randomly chosen slice),
+    extended to include terminals as selectable points.
+
     Variables
     ---------
     ind : bt.BehaviorTreeNode
@@ -301,9 +429,47 @@ def mut_grow(ind: bt.BehaviorTreeNode, min_depth: int, max_depth: int):
     bt.BehaviorTreeNode
         Mutated individual (may be a new root).
     """
-    nodes = collect_nodes(ind, include_root=True)
-    _, parent, index = random.choice(nodes)
+    points = collect_mutation_points(ind)
+    if not points:
+        return ind
 
+    choice = random.choice(points)
+
+    # --- Terminal mutation (parameter resample) ---
+    if choice[0] == "terminal":
+        _, action, parent, index, param_i, attr, gen, prim = choice
+
+        current = getattr(action, attr, None)
+        new_val = gen()
+        # avoid no-op when generator can return same value
+        for _ in range(10):
+            if new_val != current:
+                break
+            new_val = gen()
+
+        attrs = _infer_param_attrs(action, prim)
+        attrs = attrs[:len(prim.param_generators)]
+        if not attrs:
+            # fallback: mutate in-place (best effort)
+            setattr(action, attr, new_val)
+            return ind
+
+        # Rebuild from current parameters, with one replaced
+        params = [getattr(action, a, None) for a in attrs]
+        if 0 <= param_i < len(params):
+            params[param_i] = new_val
+            new_action = prim.cls(None, *params)
+
+            if parent is None:
+                return new_action
+            parent.children[index] = new_action
+            return ind
+
+        setattr(action, attr, new_val)
+        return ind
+
+    # --- Node mutation (subtree replacement) ---
+    _, _node, parent, index = choice
     new_subtree = generate_grow_tree(min_depth, max_depth)
 
     if parent is None:
@@ -563,6 +729,12 @@ def ea_mu_plus_lambda(
     """
     μ+λ genetic programming loop with CSV logging and checkpointing.
 
+    This matches DEAP's eaMuPlusLambda structure:
+      - evaluate parents
+      - produce offspring via varOr
+      - evaluate offspring
+      - select next population from parents + offspring (μ survivors), optionally with elites
+
     Variables
     ---------
     mu : int
@@ -741,8 +913,8 @@ def tree_to_str(node):
         if hasattr(node, "color") and node.color not in ("", None):
             params.append(f'"{node.color}"')
 
-        if hasattr(node, "yaw") and node.yaw not in ("", None):
-            params.append('"random"' if node.yaw == -1 else f'"{node.yaw}"')
+        if hasattr(node, "direction") and node.direction not in ("", None):
+            params.append(f'"{node.direction}')
 
         if hasattr(node, "key") and node.key not in ("", None):
             params.append(f'"{node.key}"')
