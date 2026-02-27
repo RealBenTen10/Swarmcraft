@@ -127,9 +127,22 @@ class Rotate(ActionNode):
         """
         super().__init__(agent)
         self.yaw = float(args[0]) if len(args) > 0 else None
-        self.pitch = float(args[1]) if len(args) > 1 else None
-        if self.pitch is None or self.yaw is None:
-            self.randomize_params()
+        self.pitch = float(args[1]) if len(args) > 1 else 0
+        self.direction = self.get_direction()
+
+    def get_direction(self):
+        if self.yaw == None:
+            return None
+        if self.yaw == -1:
+            return "random"
+        if self.yaw == 90:
+            return "90°"
+        if self.yaw == 45:
+            return "45°"
+        if self.yaw == -45:
+            return "-45°"
+        if self.yaw == -90:
+            return "-90°"
 
     def randomize_params(self):
         self.pitch = (random.random() * 2 - 1) * math.pi
