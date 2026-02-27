@@ -122,6 +122,6 @@ class ForageAgent(Agent):
         if unique_positions_count is None:
             self.positions = []
 
-        return evaluation
+        return round(evaluation, 4)
 
 

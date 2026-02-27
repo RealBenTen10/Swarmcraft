@@ -47,8 +47,8 @@ def generate_pset():
     register_control(bt.FallbackNode, 2, 2) # only 2 children allowed
 
     register_action(
-        StartDig,
-        param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
+       StartDig,
+       param_generators=[lambda: random.choice([BlockTypes.BLUE_WOOL.value, BlockTypes.ORANGE_WOOL.value])]
     )
     register_action(
         SenseBlock,
@@ -261,10 +261,10 @@ class ServerShell(cmd.Cmd):
                 avg_reward = total_reward / float(run_cfg["number_repetitions"])
                 fitness_val = avg_reward - 0.01 * tree_length(tree)
 
-                print(f"Individual {current_ind}/{population_count + lambda_}: {tree_to_str(tree)} has Fitness: {fitness_val}")
+                print(f"Individual {current_ind}/{population_count + lambda_}: {tree_to_str(tree)} has Fitness: {round(fitness_val, 4)}")
                 return fitness_val
 
-            # ----------------------------
+            # ----------------------------Fitness
             # Evolution
             # ----------------------------
             population = ea_mu_plus_lambda(
