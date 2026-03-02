@@ -144,6 +144,10 @@ class ForageExperiment(Experiment):
                 f'command tp {agent.sensing.get_username()} {x} {y} {z}'
             )
             time.sleep(0.01)
+        for agent in self.agents:
+            # ensure all bots look in the same direction
+            agent.actuation.look((0, 0))
+            time.sleep(0.01)
 
         time.sleep(1)
 

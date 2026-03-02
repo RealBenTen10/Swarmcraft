@@ -914,7 +914,7 @@ def tree_to_str(node):
             params.append(f'"{node.color}"')
 
         if hasattr(node, "direction") and node.direction not in ("", None):
-            params.append(f'"{node.direction}')
+            params.append(f'"{node.direction}"')
 
         if hasattr(node, "key") and node.key not in ("", None):
             params.append(f'"{node.key}"')
