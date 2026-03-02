@@ -702,8 +702,10 @@ def load_population(checkpoint_path: Path) -> tuple[int, list[bt.BehaviorTreeNod
     tuple
         (gen, population, meta)
     """
+    print("Loading population from: ", checkpoint_path)
     with open(checkpoint_path, "rb") as f:
         payload = pickle.load(f)
+    print("Population loaded: ", payload["population"])
 
     return payload["gen"], payload["population"], payload.get("meta", {})
 
@@ -724,7 +726,7 @@ def ea_mu_plus_lambda(
     tournsize: int,
     n_elites: int,
     logging_dir: Path,
-    resume_from: Optional[Path] = None,
+    resume_from: Path,
 ):
     """
     μ+λ genetic programming loop with CSV logging and checkpointing.
@@ -782,12 +784,16 @@ def ea_mu_plus_lambda(
         "n_elites": n_elites,
     }
 
+    print("resume from: ", resume_from)
+
     if resume_from is not None:
+        print("Loading old population")
         start_gen, population, loaded_meta = load_population(Path(resume_from))
         # meta is stored to help you verify consistency on resume
         meta.update({"loaded_meta": loaded_meta, "resumed_from": str(resume_from)})
         gen0 = start_gen + 1
     else:
+        print("Initializing new population")
         population = [generate_grow_tree(min_depth, max_depth) for _ in range(mu)]
         gen0 = 0
         # save initial population checkpoint

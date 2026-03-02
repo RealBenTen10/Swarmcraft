@@ -200,8 +200,8 @@ class ForageExperiment(Experiment):
                 # Small sleep prevents busy-waiting; tune as needed.
                 time.sleep(0.001)
 
+        time.sleep(4) # wait before evaluation
 
-        # Evaluate per arena and aggregate
         # Evaluate per arena and aggregate
         total_fitness = 0.0
         fitness = 0

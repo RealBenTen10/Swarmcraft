@@ -179,6 +179,10 @@ class ServerShell(cmd.Cmd):
         # 1) Resolve configuration (defaults -> preset -> positional -> finalize)
         # ============================================================
         run_cfg = resolve_run_config(args)
+        print("Run cfg in shell: ", run_cfg)
+        print("resume from in shell: ", run_cfg["resume_from"])
+        if run_cfg["resume_from"] is None:
+            return
         exp_name = run_cfg["exp_name"]
 
         # ============================================================
@@ -213,7 +217,6 @@ class ServerShell(cmd.Cmd):
 
         population_count = run_cfg["population_count"]
         lambda_ = run_cfg["lambda_"]
-        generations = run_cfg["generations"]
 
         try:
             exp = self.experiments[exp_name](

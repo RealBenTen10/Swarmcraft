@@ -103,9 +103,10 @@ def resolve_run_config(args: str) -> dict[str, Any]:
         checkpoint = resume_from_path
     elif resume_interactive:
         checkpoint = prompt_resume_checkpoint()
+    else:
+        print("No checkpoint")
 
     if checkpoint is not None:
-        cfg["resume_from"] = str(checkpoint)
 
         prev_cfg = load_previous_run_config_for_checkpoint(checkpoint)
         if prev_cfg:
@@ -120,6 +121,8 @@ def resolve_run_config(args: str) -> dict[str, Any]:
 
             if not reuse:
                 cfg = prompt_overrides_for_settings(cfg)
+            cfg["resume_from"] = str(checkpoint)
+            print("Checkpoint is: ", cfg["resume_from"])
 
         else:
             print(
@@ -131,6 +134,7 @@ def resolve_run_config(args: str) -> dict[str, Any]:
     cfg = finalize_config(cfg)
 
     cfg["preset_id"] = preset_id
+    print("cfg in run config: ", cfg)
     return cfg
 
 
@@ -839,8 +843,5 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
 
     cfg["generations"] = len(missions_by_gen)
     cfg["mission"] = missions_by_gen[0] if missions_by_gen else cfg.get("mission")
-
-    rf = cfg.get("resume_from", None)
-    cfg["resume_from"] = str(rf) if isinstance(rf, Path) else (rf if rf else None)
 
     return cfg
