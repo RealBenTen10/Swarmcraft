@@ -181,8 +181,7 @@ class ServerShell(cmd.Cmd):
         run_cfg = resolve_run_config(args)
         print("Run cfg in shell: ", run_cfg)
         print("resume from in shell: ", run_cfg["resume_from"])
-        if run_cfg["resume_from"] is None:
-            return
+
         exp_name = run_cfg["exp_name"]
 
         # ============================================================
@@ -254,7 +253,9 @@ class ServerShell(cmd.Cmd):
                 # Bind one deepcopy per agent
                 bound_trees = instantiate_for_swarm(tree, agents)
                 for agent, t in zip(agents, bound_trees):
-                    agent.set_tree(t)
+                   agent.set_tree(t)
+                # for agent in agents:
+                #     agent.set_tree("tree")
                 mission = mission_for_generation(run_cfg, gen)
                 total_reward = 0.0
                 for _ in range(run_cfg["number_repetitions"]):
