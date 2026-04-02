@@ -116,7 +116,7 @@ class ForageEvolved(Experiment):
                         child.tree = deepcopy(a.tree) # copy the parent's tree
                         genetics.mutate_and_rebind(child.tree, child) # mutate the child's tree, bind the child's nodes to the child
                         child.parent_uid = a.id # do parent tracking
-                        child.reset() # reset child stats
+                        child.reset() # reset child old
                         agents_not_dead.append(child) # remember the child is alive
                         self.minecraft_server.send(f'setphealth {child.sensing.get_username()} {self.start_health}') # set child starting health
                         self.minecraft_server.send(f'command tp {child.sensing.get_username()} {START_LOCATION[0]} {START_LOCATION[1]} {START_LOCATION[2]}') # teleport into arena

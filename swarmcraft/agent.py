@@ -38,7 +38,7 @@ class Agent(object):
 
     def reset(self):
         """Reset this agent to an initial state.
-        By default, resets agents to pooler origin, clears stats and inventory, and clears control states.
+        By default, resets agents to pooler origin, clears old and inventory, and clears control states.
         """
         print("here")
         self.pooler.reset_bot_position(self.bot)
