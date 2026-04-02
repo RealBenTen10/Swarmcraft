@@ -107,10 +107,10 @@ class Actuation(object):
 
                     # 4. Start digging the specific block found
                     self.agent.bot.dig(block)
-                    try:
-                        self.agent.bot.chat(f'I started digging {color}!')
-                    except Exception as e:
-                        print("Chat failed while digging. Error: ", e)
+                    # try:
+                    #     self.agent.bot.chat(f'I started digging {color}!')
+                    # except Exception as e:
+                    #     print("Chat failed while digging. Error: ", e)
 
                     # Return True immediately after finding and starting the dig
                     return True
