@@ -17,7 +17,7 @@ from run_config import default_run_config, finalize_config, load_preset_config, 
 from run_config import mission_for_generation
 
 import swarmcraft.btree.nodes.base as bt
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage, Pathfinder
 from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
@@ -70,6 +70,10 @@ def generate_pset():
     register_action(
        GotMessage,
        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
+    )
+
+    register_action(
+        Pathfinder
     )
 
 

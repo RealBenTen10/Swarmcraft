@@ -2,7 +2,7 @@ import time
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import SequenceNode, FallbackNode
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage, Pathfinder
 from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage
 from swarmcraft import BlockTypes
 
@@ -17,7 +17,7 @@ class ForageAgent(Agent):
         self.positions = []
 
     def set_tree(self, tree):
-        self.tree = tree
+        self.tree = Pathfinder(self)
         # self.tree = SequenceNode([
         #    Rotate(self,  -1),
         #    FallbackNode([
@@ -35,21 +35,6 @@ class ForageAgent(Agent):
         self.movement_tracker()
         self.tree.tick()
 
-    def log(self):
-        if self.bot is not None:
-            x, y, z = self.sensing.get_position()
-            health = self.sensing.get_health()
-        else:
-            x, y, z = (None, None, None)
-            health = None
-        return {
-            'time': time.time(),
-            'parent': str(self.parent_uid),
-            'x': x,
-            'y': y,
-            'z': z,
-            'health': health,
-        }
 
     def reset(self):
         try:

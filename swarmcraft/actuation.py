@@ -4,13 +4,20 @@ like a robot actuator suite - every agent gets one of these
 """
 from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft import MovementKeys
-
+pathfinder = require('mineflayer-pathfinder')
 Vec3 = require('vec3').Vec3
 
 class Actuation(object):
     def __init__(self, agent):
         # agent parts
         self.agent = agent
+        self.init_pathfinder()
+
+    def init_pathfinder(self):
+        self.agent.bot.loadPlugin(pathfinder.pathfinder)
+        movements = pathfinder.Movements(self.agent.bot)
+        self.agent.bot.pathfinder.setMovements(movements)
+
 
     # send a chat message to everyone
     def say(self, message: str):
@@ -88,8 +95,6 @@ class Actuation(object):
         Start mining a block of a specific color in proximity.
         Returns True if a valid block was found and digging started, False otherwise.
         """
-        # TODO add constraint that Dig can only be executed when stopped? Or combine Move with CanDig and Stop
-
         # 1. Get positions of all potentially diggable blocks nearby
         blocks_positions = self.agent.sensing.can_dig_block_in_proximity()
 
@@ -172,3 +177,6 @@ class Actuation(object):
             return True
         except Exception:
             return False
+
+    def navigate_to_coordinate(self, goal: tuple[int, int, int]=None, range_goal: int = 1):
+        self.agent.bot.pathfinder.setGoal(pathfinder.goals.GoalNear(goal[0], goal[1], goal[2], range_goal))

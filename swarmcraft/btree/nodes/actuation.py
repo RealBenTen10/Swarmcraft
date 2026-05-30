@@ -288,6 +288,28 @@ class SendChat(ActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}({self.message})'
 
+class Pathfinder(ActionNode):
+    """
+    Look in a given direction
+    Pass -1 to any parameter to randomize at each tick call
+    """
+    def __init__(self, agent: Agent, *args):
+        """
+        @param args[0] yaw: horizontal rotation in radians. 0 is east, pi/2 is north
+        @param args[1] pitch: vertical rotation in radians. 0 is flat, pi/2 is up, - pi/2 is down
+        """
+        super().__init__(agent)
+        self.goal = float(args[0]) if len(args) > 0 else -1
+
+    def tick(self) -> str:
+        goal = self.agent.bot.entity.position.offset(2, 0, 2)
+        print(goal)
+        self.agent.actuation.navigate_to_coordinate(goal, range_goal=1)
+        return 'success'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.goal})'
+
 class PlaceHeldItem(AsyncActionNode):
     """
     Try to place the item in your hand at the block you're currently looking at.
