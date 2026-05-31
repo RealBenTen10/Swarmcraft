@@ -9,6 +9,93 @@ from typing import Callable, Type, Any, Optional
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.agent import Agent
 
+# ============================================================
+# CURRICULUM LEARNING SKILLS
+# ============================================================
+
+SKILL_LIBRARY: list[bt.BehaviorTreeNode] = []
+SKILL_INJECTION_PROB = 0.1
+
+def save_skill(
+    tree: bt.BehaviorTreeNode,
+    skill_name: str,
+    skills_dir: str = "skills",
+) -> Path:
+    """
+    Save a learned behavior tree into the curriculum-learning skill library.
+
+    Parameters
+    ----------
+    tree : bt.BehaviorTreeNode
+        Tree to store.
+    skill_name : str
+        Output filename without extension.
+    skills_dir : str
+        Directory where skills are stored.
+
+    Returns
+    -------
+    Path
+        Saved file path.
+    """
+    skill_dir = Path(skills_dir)
+    skill_dir.mkdir(parents=True, exist_ok=True)
+
+    skill_path = skill_dir / f"{skill_name}.pkl"
+
+    try:
+        with open(skill_path, "wb") as f:
+            pickle.dump(copy.deepcopy(tree), f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        print(f"Saved skill: {skill_path}")
+
+    except Exception as e:
+        print(f"Failed to save skill '{skill_name}': {e}")
+
+    return skill_path
+
+
+def load_skill(skill_path: str | Path) -> Optional[bt.BehaviorTreeNode]:
+    """
+    Load a single skill tree from disk.
+    """
+    try:
+        with open(skill_path, "rb") as f:
+            tree = pickle.load(f)
+
+        if not isinstance(tree, bt.BehaviorTreeNode):
+            raise TypeError(
+                f"Skill file does not contain a BehaviorTreeNode: {skill_path}"
+            )
+
+        return tree
+
+    except FileNotFoundError:
+        print(f"Skill file not found: {skill_path}")
+
+    except pickle.UnpicklingError:
+        print(f"Corrupted skill file: {skill_path}")
+
+    except Exception as e:
+        print(f"Failed loading skill {skill_path}: {e}")
+
+    return None
+
+
+def load_skill_library(skill_paths: list[str | Path]) -> None:
+    """
+    Load multiple skills into the global curriculum library.
+    """
+    SKILL_LIBRARY.clear()
+    print(f"Loading {len(skill_paths)} skills:")
+    for path in skill_paths:
+        skill = load_skill(path)
+
+        if skill is not None:
+            SKILL_LIBRARY.append(skill)
+            print(f" - {path.split("/")[1].split(".")[0]}: {skill}")
+
+
 
 # ============================================================
 # 1. PRIMITIVE REGISTRY (AGENT-FREE)
@@ -157,6 +244,44 @@ def generate_grow_tree(min_depth: int, max_depth: int, depth: int = 0) -> bt.Beh
 
     return grow(depth)
 
+def sample_skill_subtree() -> Optional[bt.BehaviorTreeNode]:
+    """
+    Return a deepcopy of a random stored skill.
+
+    Returns
+    -------
+    Optional[bt.BehaviorTreeNode]
+        Deep-copied skill tree or None.
+    """
+    if not SKILL_LIBRARY:
+        return None
+
+    return copy.deepcopy(random.choice(SKILL_LIBRARY))
+
+def generate_mutation_subtree(
+    min_depth: int,
+    max_depth: int,
+) -> bt.BehaviorTreeNode:
+    """
+    Generate a mutation subtree.
+
+    Either:
+      - inject a previously learned skill
+      - generate a random grow subtree
+    """
+
+    if (
+        SKILL_LIBRARY
+        and random.random() < SKILL_INJECTION_PROB
+    ):
+        skill = sample_skill_subtree()
+
+        if skill is not None:
+            print("Injected skill: ", skill)
+            return skill
+        print("No skill available. Prob at: ", SKILL_INJECTION_PROB, " and skills: ", SKILL_LIBRARY)
+    print("normal mutation")
+    return generate_grow_tree(min_depth, max_depth)
 
 def _random_action() -> bt.ActionNode:
     """
@@ -434,7 +559,6 @@ def mut_grow(ind: bt.BehaviorTreeNode, min_depth: int, max_depth: int):
         return ind
 
     choice = random.choice(points)
-
     # --- Terminal mutation (parameter resample) ---
     if choice[0] == "terminal":
         _, action, parent, index, param_i, attr, gen, prim = choice
@@ -470,7 +594,11 @@ def mut_grow(ind: bt.BehaviorTreeNode, min_depth: int, max_depth: int):
 
     # --- Node mutation (subtree replacement) ---
     _, _node, parent, index = choice
-    new_subtree = generate_grow_tree(min_depth, max_depth)
+    new_subtree = generate_mutation_subtree(
+        min_depth,
+        max_depth
+    )
+    # new_subtree = generate_grow_tree(min_depth, max_depth) # old logic without skills
 
     if parent is None:
         return new_subtree

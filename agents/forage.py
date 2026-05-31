@@ -17,7 +17,7 @@ class ForageAgent(Agent):
         self.positions = []
 
     def set_tree(self, tree):
-        self.tree = Pathfinder(self)
+        self.tree = tree
         # self.tree = SequenceNode([
         #    Rotate(self,  -1),
         #    FallbackNode([

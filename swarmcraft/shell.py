@@ -31,7 +31,10 @@ from swarm_gp import (
     tree_to_str,
     tree_length,
     reset_primitives,
+    load_skill_library,
+    save_skill
 )
+import swarm_gp
 
 
 #LOG_DIR = os.path.abspath(
@@ -72,9 +75,9 @@ def generate_pset():
        param_generators=[lambda: random.choice([1,2])] # 2 kinds of messages
     )
 
-    register_action(
-        Pathfinder
-    )
+    #register_action(
+    #    Pathfinder
+    #)
 
 
 
@@ -197,6 +200,7 @@ class ServerShell(cmd.Cmd):
         run_cfg["pop_dir"] = run_meta["pop_dir"]
         run_cfg["timestamp"] = run_meta["timestamp"]
 
+
         run_dir = Path(run_cfg["run_dir"])
 
         # ============================================================
@@ -221,6 +225,11 @@ class ServerShell(cmd.Cmd):
         population_count = run_cfg["population_count"]
         lambda_ = run_cfg["lambda_"]
 
+        # Set probability of choosing skill for tree_grow
+        swarm_gp.SKILL_INJECTION_PROB = run_cfg.get(
+            "skill_injection_prob",
+            0.0
+        )
         try:
             exp = self.experiments[exp_name](
                 pooler=self.pooler,
@@ -232,6 +241,10 @@ class ServerShell(cmd.Cmd):
                 SIZE=run_cfg["arena_size"],
             )
 
+            # Load skills
+            load_skill_library(
+                run_cfg.get("skill_library", [])
+            )
             # Primitives must not accumulate across runs in the same process.
             reset_primitives()
             generate_pset()
@@ -289,10 +302,20 @@ class ServerShell(cmd.Cmd):
                 logging_dir=run_dir,  # gp_log.csv + populations/...
                 resume_from=run_cfg["resume_from"],
             )
-
+            best_tree = population[0]
             print("\n=== RESULT ===")
-            print("Best controller:", tree_to_str(population[0]))
+            print("Best controller:", tree_to_str(best_tree))
             print("Logs and populations saved in:", run_dir)
+            if run_cfg.get("save_skill", False):
+                skill_name = run_cfg.get(
+                    "skill_name",
+                    f"skill_gen_{run_cfg['generations']}"
+                )
+
+            save_skill(
+                best_tree,
+                skill_name
+            )
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
