@@ -914,6 +914,20 @@ def ea_mu_plus_lambda(
 
     print("resume from: ", resume_from)
 
+    # Tracks the single best individual seen across the whole run, deep-
+    # copied at the moment it's found. This has to happen BEFORE
+    # elitism/tournament selection run: both select_elites() and
+    # tournament_selection() return copy.deepcopy()'d individuals, so by
+    # the time population = elites + survivors is assembled, none of
+    # those objects' id()s match anything in that generation's `fitness`
+    # dict anymore -- a fitness.get(id(ind)) lookup against `population`
+    # after selection silently misses for every individual. Snapshotting
+    # best_ever here, against `combined` (still the original, fitness-
+    # keyed objects), sidesteps that identity mismatch entirely rather
+    # than trying to sort around it afterward.
+    best_ever: Optional[bt.BehaviorTreeNode] = None
+    best_ever_fitness: float = float("-inf")
+
     if resume_from is not None:
         print("Loading old population")
         start_gen, population, loaded_meta = load_population(Path(resume_from))
@@ -946,15 +960,25 @@ def ea_mu_plus_lambda(
         for ind in offspring:
             fitness[id(ind)] = evaluate(ind, gen)
 
+        combined = population + offspring
+
         # log all evaluated individuals this generation
-        log_generation(csv_path, gen, population + offspring, fitness)
+        log_generation(csv_path, gen, combined, fitness)
+
+        # Snapshot this generation's best individual before selection
+        # deep-copies anything and identities stop matching `fitness`.
+        gen_best = max(combined, key=lambda ind: fitness[id(ind)])
+        gen_best_fitness = fitness[id(gen_best)]
+        if gen_best_fitness > best_ever_fitness:
+            best_ever_fitness = gen_best_fitness
+            best_ever = copy.deepcopy(gen_best)
 
         # elitism
-        elites = select_elites(population + offspring, fitness, n_elites)
+        elites = select_elites(combined, fitness, n_elites)
 
         # tournament selection
         survivors = tournament_selection(
-            population + offspring,
+            combined,
             fitness,
             mu - n_elites,
             tournsize
@@ -966,6 +990,16 @@ def ea_mu_plus_lambda(
         save_population(populations_dir / f"gen_{gen}.pkl", population, gen, meta)
         save_population(populations_dir / "latest.pkl", population, gen, meta)
 
+    # Guarantee population[0] is the true best individual seen during the
+    # whole run. This is strictly stronger than "best of the final
+    # generation" (which is all n_elites>=1 elitism actually promises,
+    # and even that can be beaten by a later generation's individual that
+    # scored well due to environment noise rather than being genuinely
+    # better) -- and unlike a post-hoc sort, it doesn't depend on
+    # `population`'s post-selection objects sharing identity with
+    # `fitness`, which (per the note above) they don't.
+    if best_ever is not None:
+        population[0] = best_ever
     return population
 
 
