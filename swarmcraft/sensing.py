@@ -7,6 +7,7 @@ from javascript import require, On, Once, AsyncTask, once, off
 from swarmcraft.messaging import Chat
 import time
 Vec3 = require('vec3').Vec3
+import math
 
 class Sensing(object):
     def __init__(self, agent):
@@ -155,28 +156,7 @@ class Sensing(object):
         """
         return self.bot.blockAt(self.bot.entity.position.offset(0, -1, 0))
 
-    def get_cursor_block(self):
-        """
-        Get the block at the bot's cursor, to a distance of 256 blocks.
-        """
-        #print(self.bot.blockAtCursor(256).getProperties())
 
-        if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))):
-            print("1: ", self.bot.entity.position.offset(-1,0,0))
-            print("2: ", self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-            print("3: ", self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))))
-            #print("4: ", self.bot.blockAtCursor(256)) # always None
-            #print("5: ", self.bot.canDigBlock(self.bot.blockAtCursor(256))) # always None
-            #self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-            try:
-                @AsyncTask(start=True)
-                def break_block(task):
-                    self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-                self.bot.chat('I started digging!')
-            except Exception as e:
-                self.bot.chat(f"I had an error while digging")
-                #print(f"Error during dig: {e}")
-        return self.bot.blockAtCursor(256)
 
     def can_dig_cursor_block(self):
         """
@@ -292,16 +272,304 @@ class Sensing(object):
                 evaluation -= count*penalty_multiplier
         return evaluation
 
+    # ------------------------------------------------------------------
+    # Basic Block Queries
+    # ------------------------------------------------------------------
 
-    def old_get_blocks_in_arena_old(self, origin=(10, -60, 10), size=(100, 100, 100)):
-        radius = 5
-        block_positions = []
-        for x in range(-radius, radius + 1):
-            for y in range(-radius, radius + 1):
-                if abs(x) + abs(y) <= radius:
-                    if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(x, 0, y))):
-                        print(self.bot.entity.position.offset(x, 0, y))
-                        block_positions.append(self.bot.entity.position.offset(x, 0, y))
-        print("Blocks at: ", block_positions)
-        return
+    def get_block_at(self, position):
+        """
+        Returns block at world position.
+        """
+        return self.bot.blockAt(Vec3(position[0], position[1], position[2]))
+
+    def get_block_relative(self, dx, dy, dz):
+        """
+        Returns block relative to current position.
+        """
+        pos = self.bot.entity.position.offset(dx, dy, dz)
+        return self.bot.blockAt(pos)
+
+    def get_block_in_front(self):
+        """
+        Returns block approximately one block in front of the bot.
+        """
+
+        yaw = self.bot.entity.yaw
+
+        dx = round(-math.sin(yaw))
+        dz = round(-math.cos(yaw))
+
+        pos = self.bot.entity.position.offset(dx, 0, dz)
+
+        return self.bot.blockAt(pos)
+
+    def get_block_below(self):
+        return self.bot.blockAt(self.bot.entity.position.offset(0, -1, 0))
+
+    def get_block_above(self):
+        return self.bot.blockAt(self.bot.entity.position.offset(0, 1, 0))
+
+    # ------------------------------------------------------------------
+    # Searching
+    # ------------------------------------------------------------------
+
+    def find_nearest_block(self,
+                           block_names,
+                           max_distance=32):
+        """
+        Returns nearest block matching one of block_names.
+        """
+
+        if isinstance(block_names, str):
+            block_names = [block_names]
+
+        block = self.bot.findBlock({
+            "matching": lambda b:
+            b is not None and b.name in block_names,
+            "maxDistance": max_distance
+        })
+
+        return block
+
+    def has_block_nearby(self,
+                         block_names,
+                         max_distance=8):
+        """
+        Convenience wrapper.
+        """
+
+        return self.find_nearest_block(
+            block_names,
+            max_distance
+        ) is not None
+
+    # ------------------------------------------------------------------
+    # Distance
+    # ------------------------------------------------------------------
+
+    def distance_to_position(self, position):
+
+        p = self.bot.entity.position
+
+        return math.sqrt(
+            (p.x - position.x) ** 2 +
+            (p.y - position.y) ** 2 +
+            (p.z - position.z) ** 2
+        )
+
+    def distance_to_block(self, block):
+
+        if block is None:
+            return None
+
+        return self.distance_to_position(block.position)
+
+    def is_near_block(self,
+                      block_names,
+                      distance=2):
+
+        block = self.find_nearest_block(
+            block_names,
+            distance
+        )
+
+        return block is not None
+
+    # ------------------------------------------------------------------
+    # Cursor
+    # ------------------------------------------------------------------
+
+    def get_cursor_block(self):
+
+        try:
+            return self.bot.blockAtCursor(5)
+        except Exception:
+            return None
+    #
+    # def get_cursor_block(self):
+    #     """
+    #     Get the block at the bot's cursor, to a distance of 256 blocks.
+    #     """
+    #     #print(self.bot.blockAtCursor(256).getProperties())
+    #
+    #     if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))):
+    #         print("1: ", self.bot.entity.position.offset(-1,0,0))
+    #         print("2: ", self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+    #         print("3: ", self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))))
+    #         #print("4: ", self.bot.blockAtCursor(256)) # always None
+    #         #print("5: ", self.bot.canDigBlock(self.bot.blockAtCursor(256))) # always None
+    #         #self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+    #         try:
+    #             @AsyncTask(start=True)
+    #             def break_block(task):
+    #                 self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
+    #             self.bot.chat('I started digging!')
+    #         except Exception as e:
+    #             self.bot.chat(f"I had an error while digging")
+    #             #print(f"Error during dig: {e}")
+    #     return self.bot.blockAtCursor(256)
+
+    def get_cursor_face(self):
+        """
+        Returns face currently looked at.
+        """
+
+        block = self.bot.blockAtCursor(5)
+
+        if block is None:
+            return None
+
+        try:
+            return block.face
+        except Exception:
+            return None
+
+    # ------------------------------------------------------------------
+    # Orientation
+    # ------------------------------------------------------------------
+
+    def get_yaw(self):
+        return self.bot.entity.yaw
+
+    def get_pitch(self):
+        return self.bot.entity.pitch
+
+    def get_view_direction(self):
+
+        yaw = self.bot.entity.yaw
+
+        return (
+            -math.sin(yaw),
+            0,
+            -math.cos(yaw)
+        )
+
+    # ------------------------------------------------------------------
+    # Inventory
+    # ------------------------------------------------------------------
+
+    def get_selected_slot(self):
+        return self.bot.quickBarSlot
+
+    def inventory_contains(self,
+                           item_name):
+
+        if self.bot.inventory is None:
+            return False
+
+        for item in self.bot.inventory.items():
+
+            if item.name == item_name:
+                return True
+
+        return False
+
+    def get_inventory_item(self,
+                           item_name):
+
+        if self.bot.inventory is None:
+            return None
+
+        for item in self.bot.inventory.items():
+
+            if item.name == item_name:
+                return item
+
+        return None
+
+    # ------------------------------------------------------------------
+    # Structure Helpers
+    # ------------------------------------------------------------------
+
+    def is_structure_block(self,
+                           block_names):
+
+        block = self.get_block_in_front()
+
+        if block is None:
+            return False
+
+        return block.name in block_names
+
+    def get_front_block_name(self):
+
+        block = self.get_block_in_front()
+
+        if block is None:
+            return None
+
+        return block.name
+
+    # ------------------------------------------------------------------
+    # Visibility
+    # ------------------------------------------------------------------
+
+    def can_see_block_type(self,
+                           block_names,
+                           max_distance=32):
+
+        block = self.find_nearest_block(
+            block_names,
+            max_distance
+        )
+
+        if block is None:
+            return False
+
+        return self.bot.canSeeBlock(block)
+
+    # ------------------------------------------------------------------
+    # Navigation Helpers
+    # ------------------------------------------------------------------
+
+    def get_nearest_block_position(self,
+                                   block_names,
+                                   max_distance=32):
+
+        block = self.find_nearest_block(
+            block_names,
+            max_distance
+        )
+
+        if block is None:
+            return None
+
+        return block.position
+
+    def is_path_possible(self,
+                         block_names,
+                         max_distance=32):
+
+        block = self.find_nearest_block(
+            block_names,
+            max_distance
+        )
+
+        return block is not None
+
+    # ------------------------------------------------------------------
+    # Equipment
+    # ------------------------------------------------------------------
+
+    def is_holding_block(self):
+
+        item = self.get_held_item()
+
+        if item is None:
+            return False
+
+        try:
+            return "block" in item.name
+        except Exception:
+            return False
+
+    def is_holding_item_name(self,
+                             item_name):
+
+        item = self.get_held_item()
+
+        if item is None:
+            return False
+
+        return item.name == item_name
 

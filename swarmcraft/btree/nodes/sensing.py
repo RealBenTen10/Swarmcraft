@@ -56,7 +56,9 @@ class IsHoldingItem(ActionNode):
         return f'{__class__.__name__}()'
 
 class SenseBlock(ActionNode):
-
+    """
+    Sense blocks nearby
+    """
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)
         self.color = args[0] if len(args) > 0 else ""
@@ -139,13 +141,13 @@ class ClearMessageQueue(ActionNode):
         return f'{__class__.__name__}()'
 
 class GotMessage(ActionNode):
+    """
+    Check if an agent has received a swarmcraft message
+    Passing None to any parameter is a wildcard.
+    First message from top of queue (oldest received) is matched
+    No random initialization
+    """
     def __init__(self, agent: Agent, *args):
-        """
-        Check if an agent has received a swarmcraft message
-        Passing None to any parameter is a wildcard.
-        First message from top of queue (oldest received) is matched
-        No random initialization
-        """
         super().__init__(agent)
         self.message_content = str(args[0]) if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
@@ -182,13 +184,13 @@ class GotMessage(ActionNode):
         return f'{__class__.__name__}({self.message_content}, {self.sender_id}, {self.privacy})'
 
 class GotChat(ActionNode):
+    """
+    Check if an agent has received a minecraft chat
+    Passing None to any parameter is a wildcard.
+    First chat from top of queue (oldest received) is matched
+    No random initialization
+    """
     def __init__(self, agent: Agent, *args):
-        """
-        Check if an agent has received a minecraft chat
-        Passing None to any parameter is a wildcard.
-        First chat from top of queue (oldest received) is matched
-        No random initialization
-        """
         super().__init__(agent)
         self.message_content = args[0] if len(args) > 0 else None
         self.sender_id = args[1] if len(args) > 1 else None
@@ -262,3 +264,350 @@ class HealthCheck(ActionNode):
         if h == self.val:
             return 'success'
         return 'failure'
+
+class SenseNearestBlock(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else "blue_wool"
+
+    def tick(self):
+
+        if self.agent.sensing.get_nearest_block(self.block):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+class SenseBlockInFront(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+
+    def tick(self):
+
+        block = self.agent.sensing.get_block_in_front()
+
+        if block is None:
+            return "failure"
+
+        if self.block is None:
+            return "success"
+
+        return (
+            "success"
+            if block["name"] == self.block
+            else "failure"
+        )
+
+class InventoryCount(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.item = args[0]
+        self.threshold = int(args[1])
+
+    def tick(self):
+
+        count = self.agent.sensing.get_inventory_count(
+            self.item
+        )
+
+        if count >= self.threshold:
+            return "success"
+
+        return "failure"
+
+
+class IsFacingBlock(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0]
+
+    def tick(self):
+
+        block = self.agent.sensing.get_block_in_front()
+
+        if block is None:
+            return "failure"
+
+        if block["name"] == self.block:
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+
+import random
+
+from swarmcraft.agent import Agent
+from swarmcraft.btree.nodes.base import ActionNode
+from swarmcraft import BlockTypes
+
+
+class HasBlockNearby(ActionNode):
+    """
+    Check whether a block of a given type exists nearby.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+        self.max_distance = int(args[1]) if len(args) > 1 else 8
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([el.value for el in BlockTypes])
+
+    def tick(self):
+        if self.agent.sensing.has_block_nearby(self.block, self.max_distance):
+            return "success"
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block}, {self.max_distance})"
+
+
+class IsNearBlock(ActionNode):
+    """
+    Check whether the agent is close to a block.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+        self.distance = int(args[1]) if len(args) > 1 else 2
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([el.value for el in BlockTypes])
+
+    def tick(self):
+        if self.agent.sensing.is_near_block(self.block, self.distance):
+            return "success"
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block}, {self.distance})"
+
+
+class CanSeeBlockType(ActionNode):
+    """
+    Check if a given block type is visible.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([el.value for el in BlockTypes])
+
+    def tick(self):
+        if self.agent.sensing.can_see_block_type(self.block):
+            return "success"
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+
+class IsCursorOnBlock(ActionNode):
+    """
+    Check if the cursor currently points at any block.
+    """
+
+    def tick(self):
+
+        if self.agent.sensing.get_cursor_block() is not None:
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}()"
+
+
+class BlockAheadIs(ActionNode):
+    """
+    Check whether the block directly ahead matches a type.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([el.value for el in BlockTypes])
+
+    def tick(self):
+
+        name = self.agent.sensing.get_front_block_name()
+
+        if name == self.block:
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+
+class IsStructureBlockAhead(ActionNode):
+    """
+    Check whether the block in front belongs to the current structure.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([
+            BlockTypes.BLUE_WOOL.value,
+            BlockTypes.ORANGE_WOOL.value
+        ])
+
+    def tick(self):
+
+        if self.agent.sensing.is_structure_block(self.block):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+
+class InventoryContains(ActionNode):
+    """
+    Check if the inventory contains a specific item.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.item = args[0] if len(args) > 0 else None
+
+    def tick(self):
+
+        if self.agent.sensing.inventory_contains(self.item):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.item})"
+
+
+class IsHoldingSpecificItem(ActionNode):
+    """
+    Check whether the held item matches the given item.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.item = args[0] if len(args) > 0 else None
+
+    def tick(self):
+
+        if self.agent.sensing.is_holding_item_name(self.item):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.item})"
+
+
+class IsHoldingBlock(ActionNode):
+    """
+    Check whether the currently held item is a block.
+    """
+
+    def tick(self):
+
+        if self.agent.sensing.is_holding_block():
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}()"
+
+
+class HasPathToBlock(ActionNode):
+    """
+    Checks whether a target block exists that could be navigated to.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0] if len(args) > 0 else None
+
+        if self.block is None:
+            self.randomize_params()
+
+    def randomize_params(self):
+        self.block = random.choice([el.value for el in BlockTypes])
+
+    def tick(self):
+
+        if self.agent.sensing.is_path_possible(self.block):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+
+class SelectedSlotIs(ActionNode):
+    """
+    Check whether the currently selected hotbar slot matches.
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+
+        self.slot = int(args[0]) if len(args) > 0 else random.randint(0, 8)
+
+    def tick(self):
+
+        if self.agent.sensing.get_selected_slot() == self.slot:
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.slot})"
