@@ -32,7 +32,8 @@ from swarm_gp import (
     tree_length,
     reset_primitives,
     load_skill_library,
-    save_skill
+    save_skill,
+    SkillAction
 )
 import swarm_gp
 
@@ -169,6 +170,22 @@ def generate_pset():
     )
 
     register_action(PlaceForward)
+
+    # ============================================================
+    # Learned skills (curriculum macro-actions)
+    # ============================================================
+    # Only registered once at least one skill has been loaded via
+    # load_skill_library() (see do_run, which loads skills before calling
+    # this function) -- otherwise there's nothing for the ephemeral
+    # parameter generator below to choose between.
+    if swarm_gp.SKILL_LIBRARY:
+        register_action(
+            SkillAction,
+            param_generators=[
+                lambda: random.choice(list(swarm_gp.SKILL_LIBRARY.keys()))
+            ],
+            param_attrs=("skill_name",)
+        )
 
     # ============================================================
     # Future Tier 3 : Construction
@@ -421,11 +438,10 @@ class ServerShell(cmd.Cmd):
                     "skill_name",
                     f"skill_gen_{run_cfg['generations']}"
                 )
-
-            save_skill(
-                best_tree,
-                skill_name
-            )
+                save_skill(
+                    best_tree,
+                    skill_name
+                )
 
         except KeyError as e:
             print(f"Experiment '{exp_name}' not found:", e)
