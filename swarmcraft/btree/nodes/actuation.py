@@ -224,15 +224,15 @@ class SelectSlot(ActionNode):
         return f'{__class__.__name__}({self.slot})'
 
 class SendMessage(ActionNode):
+    """
+    Sends a message in the internal messenger
+    Configurable with target, without target, with range, without range
+    Random initialization (all parameters None) sends a random 8 bytes to everyone
+    @param args[0]: message to send
+    @param args[1]: target agent id
+    @param args[2]: distance to target (in blocks)
+    """
     def __init__(self, agent: Agent, *args):
-        """
-        Sends a message in the internal messenger
-        Configurable with target, without target, with range, without range
-        Random initialization (all parameters None) sends a random 8 bytes to everyone
-        @param args[0]: message to send
-        @param args[1]: target agent id
-        @param args[2]: distance to target (in blocks)
-        """
         super().__init__(agent)
         self.message = args[0] if len(args) > 0 else None
         self.target_id = args[1] if len(args) > 1 else None # Broadcast if set to None?
@@ -268,11 +268,11 @@ class SendMessage(ActionNode):
         return f'{__class__.__name__}({self.message}, {self.target_id}, {float(self.dist)})'
 
 class SendChat(ActionNode):
+    """
+    Sends a message in the game chat
+    Random initialization sends a random 8 bytes
+    """
     def __init__(self, agent: Agent, *args):
-        """
-        Sends a message in the game chat
-        Random initialization sends a random 8 bytes
-        """
         super().__init__(agent)
         self.message = args[0] if len(args) > 0 else None
         if self.message is None:
@@ -290,8 +290,10 @@ class SendChat(ActionNode):
 
 class Pathfinder(ActionNode):
     """
-    Look in a given direction
-    Pass -1 to any parameter to randomize at each tick call
+    Navigate to given coordinate
+    Can be used with communication
+        one agent can send coordinates
+        rest can move to coordinate sent
     """
     def __init__(self, agent: Agent, *args):
         """
@@ -328,29 +330,115 @@ class PlaceHeldItem(AsyncActionNode):
     def __repr__(self) -> str:
         return f'{__class__.__name__}()'
 
-"""class BreakBlockAtCursor(AsyncActionNode):
-    def __init__(self, agent: Agent):
+class NavigateToBlock(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0]
+
+    def tick(self):
+
+        if self.agent.actuation.navigate_to_block(
+                self.block):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
+class FaceNearestBlock(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0]
+
+    def tick(self):
+
+        pos = self.agent.sensing.get_nearest_block(
+            self.block
+        )
+
+        if pos is None:
+            return "failure"
+
+        self.agent.actuation.face_position(
+            pos.x,
+            pos.y,
+            pos.z
+        )
+
+        return "success"
+
+class EquipItem(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.item = args[0]
+
+    def tick(self):
+
+        if self.agent.actuation.equip_item(
+                self.item):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.item})"
+
+class PlaceForward(AsyncActionNode):
+
+    def __init__(self, agent, *args):
         super().__init__(agent)
 
     def do_async(self):
-        # if we can't break the block, fail
-        if not self.agent.sensing.can_dig_cursor_block():
-            self.thread_status = 'failure'
+
+        block = self.agent.sensing.get_block_in_front()
+
+        if block is None:
+            self.thread_status = "failure"
             return
 
-        # otherwise start digging the block at the cursor
-        self.agent.actuation.start_dig()
-        # wait until we're done digging
-        while self.agent.sensing.is_digging():
-            pass
-        # when we're done, look at the dig result
-        if self.agent.sensing.finished_digging():
-            # if we were able to finish the dig, we were successful
-            self.thread_status = 'success'
-            return
-        # otherwise we weren't
-        self.thread_status = 'failure'
-        return
+        success = self.agent.actuation.place_block_face(
+            (0, 1, 0)
+        )
 
-    def __repr__(self) -> str:
-        return f'{__class__.__name__}()'"""
+        self.thread_status = (
+            "success"
+            if success
+            else "failure"
+        )
+
+
+class FaceBlockType(ActionNode):
+
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+        self.block = args[0]
+
+    def tick(self):
+
+        pos = self.agent.sensing.get_nearest_block(
+            self.block
+        )
+
+        if pos is None:
+            return "failure"
+
+        if self.agent.actuation.face_position(
+            pos.x,
+            pos.y,
+            pos.z
+        ):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self):
+        return f"{__class__.__name__}({self.block})"
+
