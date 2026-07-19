@@ -9,12 +9,35 @@ from typing import Callable, Type, Any, Optional
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.agent import Agent
 
+
+# ============================================================
+# TREE SANITIZATION UTILITY
+# ============================================================
+
+def sanitize_tree(node: bt.BehaviorTreeNode) -> bt.BehaviorTreeNode:
+    """
+    Recursively clean execution state (e.g., agent references, status)
+    from a behavior tree so it behaves exactly like a freshly generated
+    subtree from the normal grow method.
+    """
+    if hasattr(node, "agent"):
+        node.agent = None
+    if hasattr(node, "status"):
+        node.status = None
+
+    if isinstance(node, bt.ControlNode) and hasattr(node, "children"):
+        for child in node.children:
+            sanitize_tree(child)
+
+    return node
+
+
 # ============================================================
 # CURRICULUM LEARNING SKILLS
 # ============================================================
 
 SKILL_LIBRARY: list[bt.BehaviorTreeNode] = []
-SKILL_INJECTION_PROB = 0.1
+
 
 def save_skill(
     tree: bt.BehaviorTreeNode,
@@ -44,8 +67,12 @@ def save_skill(
     skill_path = skill_dir / f"{skill_name}.pkl"
 
     try:
+        # Deepcopy and sanitize to remove any active agent states before pickling
+        tree_copy = copy.deepcopy(tree)
+        sanitize_tree(tree_copy)
+
         with open(skill_path, "wb") as f:
-            pickle.dump(copy.deepcopy(tree), f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(tree_copy, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         print(f"Saved skill: {skill_path}")
 
@@ -92,9 +119,13 @@ def load_skill_library(skill_paths: list[str | Path]) -> None:
         skill = load_skill(path)
 
         if skill is not None:
+            # Ensure loaded skill is pristine before adding to library
+            sanitize_tree(skill)
             SKILL_LIBRARY.append(skill)
-            print(f" - {path.split("/")[1].split(".")[0]}: {skill}")
 
+            # String splitting safely handles paths
+            file_name = str(path).split(os.sep)[-1].split(".")[0]
+            print(f" - {file_name}: {skill}")
 
 
 # ============================================================
@@ -244,19 +275,18 @@ def generate_grow_tree(min_depth: int, max_depth: int, depth: int = 0) -> bt.Beh
 
     return grow(depth)
 
+
 def sample_skill_subtree() -> Optional[bt.BehaviorTreeNode]:
     """
-    Return a deepcopy of a random stored skill.
-
-    Returns
-    -------
-    Optional[bt.BehaviorTreeNode]
-        Deep-copied skill tree or None.
+    Return a sanitized deepcopy of a random stored skill.
     """
     if not SKILL_LIBRARY:
         return None
 
-    return copy.deepcopy(random.choice(SKILL_LIBRARY))
+    # Deepcopy and sanitize so it acts identically to a grow-generated subtree
+    skill = copy.deepcopy(random.choice(SKILL_LIBRARY))
+    return sanitize_tree(skill)
+
 
 def generate_mutation_subtree(
     min_depth: int,
@@ -264,22 +294,22 @@ def generate_mutation_subtree(
 ) -> bt.BehaviorTreeNode:
     """
     Generate a mutation subtree.
-
-    Either:
-      - inject a previously learned skill
-      - generate a random grow subtree
+    Either inject a previously learned skill or generate a random grow subtree.
     """
 
     if (
-        SKILL_LIBRARY
-        and random.random() < SKILL_INJECTION_PROB
+            SKILL_LIBRARY
+            and random.random() < len(SKILL_LIBRARY) / len(ACTION_PRIMITIVES)
     ):
         skill = sample_skill_subtree()
 
         if skill is not None:
             print("Injected skill: ", skill)
             return skill
-        print("No skill available. Prob at: ", SKILL_INJECTION_PROB, " and skills: ", SKILL_LIBRARY)
+
+        print("No skill available. Prob at: ", len(SKILL_LIBRARY) / len(ACTION_PRIMITIVES), " and skills: ",
+              SKILL_LIBRARY)
+
     print("normal mutation")
     return generate_grow_tree(min_depth, max_depth)
 
