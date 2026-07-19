@@ -673,6 +673,20 @@ def default_run_config() -> dict[str, Any]:
 
         # JSON-serializable; do_run passes Path(...) to ea_mu_plus_lambda.
         "resume_from": None,
+
+        # --- Curriculum learning / skill library -----------------------
+        # skill_library: paths to previously saved skills (save_skill) to
+        #   load for this run; each becomes selectable by SkillAction once
+        #   loaded. Empty by default -- a Tier 1 run has no prior skills.
+        # skill_injection_prob: probability generate_mutation_subtree()
+        #   splices a whole loaded skill into a mutation point (independent
+        #   of, and compatible with, the SkillAction primitive above).
+        # save_skill / skill_name: whether to pickle the best tree from
+        #   this run to skills/<skill_name>.pkl when it finishes.
+        "skill_library": [],
+        "skill_injection_prob": 0.0,
+        "save_skill": False,
+        "skill_name": None,
     }
 
 
