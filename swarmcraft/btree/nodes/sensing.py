@@ -1,5 +1,6 @@
 import random
 import time
+import math
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import ActionNode
@@ -63,17 +64,142 @@ class SenseBlock(ActionNode):
         super().__init__(agent)
         self.color = args[0] if len(args) > 0 else ""
 
-    def tick(self, color = "blue_wool") -> str:
+    def tick(self, color = "blue_wool", radius = 1) -> str:
         color = self.color
-        # print("Looking for Color: ", color)
-        radius = 2
-        block_positions = []
         for x in range(-radius, radius + 1):
             for y in range(-radius, radius + 1):
                 if abs(x) + abs(y) <= radius:
                     if self.agent.bot.blockAt(self.agent.bot.entity.position.offset(x, 0, y))['name'] == color:
                         return 'success'
         return 'failure'
+
+
+class SenseBlockFront(ActionNode):
+    """
+    Checks if the block directly in front of the agent matches block_type.
+    @param args[0] block_type: Block ID/name to check (default: "blue_wool").
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.block_type = str(args[0]) if len(args) > 0 and args[0] else "blue_wool"
+
+    def tick(self) -> str:
+        yaw, _ = self.agent.actuation.heading()
+
+        # Calculate forward offset
+        dx = -math.sin(yaw)
+        dz = math.cos(yaw)
+
+        off_x = int(round(dx))
+        off_z = int(round(dz))
+
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+        block = self.agent.bot.blockAt(target_pos)
+
+        if block is not None and getattr(block, "name", None) == self.block_type:
+            return 'success'
+
+        return 'failure'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.block_type})'
+
+
+class SenseBlockBack(ActionNode):
+    """
+    Checks if the block directly behind the agent matches block_type.
+    @param args[0] block_type: Block ID/name to check (default: "blue_wool").
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.block_type = str(args[0]) if len(args) > 0 and args[0] else "blue_wool"
+
+    def tick(self) -> str:
+        yaw, _ = self.agent.actuation.heading()
+
+        # Calculate backward offset
+        dx = math.sin(yaw)
+        dz = -math.cos(yaw)
+
+        off_x = int(round(dx))
+        off_z = int(round(dz))
+
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+        block = self.agent.bot.blockAt(target_pos)
+
+        if block is not None and getattr(block, "name", None) == self.block_type:
+            return 'success'
+
+        return 'failure'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.block_type})'
+
+
+class SenseBlockLeft(ActionNode):
+    """
+    Checks if the block directly to the left of the agent matches block_type.
+    @param args[0] block_type: Block ID/name to check (default: "blue_wool").
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.block_type = str(args[0]) if len(args) > 0 and args[0] else "blue_wool"
+
+    def tick(self) -> str:
+        yaw, _ = self.agent.actuation.heading()
+
+        # Calculate left offset (90 degrees counter-clockwise)
+        dx = math.cos(yaw)
+        dz = math.sin(yaw)
+
+        off_x = int(round(dx))
+        off_z = int(round(dz))
+
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+        block = self.agent.bot.blockAt(target_pos)
+
+        if block is not None and getattr(block, "name", None) == self.block_type:
+            return 'success'
+
+        return 'failure'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.block_type})'
+
+
+class SenseBlockRight(ActionNode):
+    """
+    Checks if the block directly to the right of the agent matches block_type.
+    @param args[0] block_type: Block ID/name to check (default: "blue_wool").
+    """
+
+    def __init__(self, agent: Agent, *args):
+        super().__init__(agent)
+        self.block_type = str(args[0]) if len(args) > 0 and args[0] else "blue_wool"
+
+    def tick(self) -> str:
+        yaw, _ = self.agent.actuation.heading()
+
+        # Calculate right offset (90 degrees clockwise)
+        dx = -math.cos(yaw)
+        dz = -math.sin(yaw)
+
+        off_x = int(round(dx))
+        off_z = int(round(dz))
+
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+        block = self.agent.bot.blockAt(target_pos)
+
+        if block is not None and getattr(block, "name", None) == self.block_type:
+            return 'success'
+
+        return 'failure'
+
+    def __repr__(self) -> str:
+        return f'{__class__.__name__}({self.block_type})'
 
 
 class IsHoldingTool(ActionNode):

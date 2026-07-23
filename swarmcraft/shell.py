@@ -17,8 +17,8 @@ from run_config import default_run_config, finalize_config, load_preset_config, 
 from run_config import mission_for_generation
 
 import swarmcraft.btree.nodes.base as bt
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage, Stop, NavigateToBlock, FaceNearestBlock, FaceBlockType, EquipItem, PlaceForward
-from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage, IsNearBlock, IsFacingBlock
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, BroadcastLocation, Stop, NavigateOneBlock, NavigateToColor, MoveToReceivedCoordinate, PlaceForward
+from swarmcraft.btree.nodes.sensing import SenseBlock, SenseBlockFront, SenseBlockRight, SenseBlockBack, SenseBlockLeft, IsHoldingItem
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 from swarmcraft import BlockTypes
@@ -33,14 +33,9 @@ from swarm_gp import (
     reset_primitives,
     load_skill_library,
     save_skill,
-    SkillAction
 )
 import swarm_gp
 
-
-#LOG_DIR = os.path.abspath(
-#    os.path.join(os.path.dirname(__file__), os.pardir, "logs")
-#)
 
 # ============================================================
 # BEHAVIOR TREE PRIMITIVE REGISTRATION (ONCE)
@@ -52,157 +47,94 @@ def generate_pset():
     register_control(bt.SequenceNode, 2, 2)
     register_control(bt.FallbackNode, 2, 2)
 
-    # ============================================================
-    # Tier 1 : Basic Foraging
-    # ============================================================
-
     register_action(
         StartDig,
         param_generators=[
             lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value
+                BlockTypes.BLUE_WOOL.value
             ])
         ]
     )
-
+    # register_action(
+    #     SenseBlock,
+    #     param_generators=[
+    #         lambda: random.choice([
+    #             BlockTypes.BLUE_WOOL.value,
+    #             BlockTypes.AIR.value,
+    #             BlockTypes.BEDROCK.value
+    #         ])
+    #     ]
+    # )
+    # register_action(
+    #     SenseBlockLeft,
+    #     param_generators=[
+    #         lambda: random.choice([
+    #             BlockTypes.BLUE_WOOL.value,
+    #             BlockTypes.AIR.value,
+    #             BlockTypes.BEDROCK.value
+    #         ])
+    #     ]
+    # )
+    # register_action(
+    #     SenseBlockRight,
+    #     param_generators=[
+    #         lambda: random.choice([
+    #             BlockTypes.BLUE_WOOL.value,
+    #             BlockTypes.AIR.value,
+    #             BlockTypes.BEDROCK.value
+    #         ])
+    #     ]
+    # )
     register_action(
-        SenseBlock,
+        SenseBlockFront,
         param_generators=[
             lambda: random.choice([
                 BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value,
+                BlockTypes.AIR.value,
                 BlockTypes.BEDROCK.value
             ])
         ]
     )
-
-    register_action(
-        Rotate,
-        param_generators=[
-            lambda: random.choice([90, 45, -1, -45, -90])
-        ]
-    )
-
-    register_action(PressDir)
-    register_action(ReleaseDir)
-    register_action(Stop)
-
-    # ============================================================
-    # Tier 2 : Directed Search / Coordination
-    # ============================================================
-
-    register_action(
-        SendMessage,
-        param_generators=[
-            lambda: random.choice([1, 2])
-        ]
-    )
-
-    register_action(
-        GotMessage,
-        param_generators=[
-            lambda: random.choice([1, 2])
-        ]
-    )
-
-    register_action(
-        NavigateToBlock,
-        param_generators=[
-            lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value
-            ])
-        ]
-    )
-
-    register_action(
-        FaceNearestBlock,
-        param_generators=[
-            lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value
-            ]),
-            lambda: random.randint(4, 12)
-        ]
-    )
-
-    register_action(
-        FaceBlockType,
-        param_generators=[
-            lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value,
-                BlockTypes.BEDROCK.value
-            ])
-        ]
-    )
-
-    register_action(
-        IsNearBlock,
-        param_generators=[
-            lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value
-            ]),
-            lambda: random.choice([1, 2, 3])
-        ]
-    )
-
-    register_action(
-        IsFacingBlock,
-        param_generators=[
-            lambda: random.choice([
-                BlockTypes.BLUE_WOOL.value,
-                BlockTypes.ORANGE_WOOL.value
-            ])
-        ]
-    )
-
-    register_action(
-        EquipItem,
-        param_generators=[
-            lambda: random.choice([
-                "blue_wool",
-                "orange_wool"
-            ])
-        ]
-    )
-
+    # register_action(
+    #     SenseBlockBack,
+    #     param_generators=[
+    #         lambda: random.choice([
+    #             BlockTypes.BLUE_WOOL.value,
+    #             BlockTypes.AIR.value,
+    #             BlockTypes.BEDROCK.value
+    #         ])
+    #     ]
+    # )
+    register_action(IsHoldingItem)
+    # register_action(
+    #     Rotate,
+    #     param_generators=[
+    #         lambda: random.choice([90, -1, -90])
+    #     ]
+    # )
+    # register_action(PressDir)
+    # register_action(ReleaseDir)
+    # register_action(Stop)
+    # register_action(
+    #     NavigateOneBlock,
+    #     param_generators=[
+    #         lambda: random.choice(["front", "left", "right", "random"])
+    #     ]
+    # )
+    register_action(NavigateToColor)
+    # register_action(
+    #     BroadcastLocation,
+    #     param_generators=[
+    #         lambda: random.choice([0, 1])
+    #     ]
+    # )
+    # register_action(
+    #     MoveToReceivedCoordinate,
+    #     param_generators=[
+    #         lambda: random.choice([0, 1])
+    #     ]
+    # )
     register_action(PlaceForward)
-
-    # ============================================================
-    # Learned skills (curriculum macro-actions)
-    # ============================================================
-    # Only registered once at least one skill has been loaded via
-    # load_skill_library() (see do_run, which loads skills before calling
-    # this function) -- otherwise there's nothing for the ephemeral
-    # parameter generator below to choose between.
-    if swarm_gp.SKILL_LIBRARY:
-        register_action(
-            SkillAction,
-            param_generators=[
-                lambda: random.choice(list(swarm_gp.SKILL_LIBRARY.keys()))
-            ],
-            param_attrs=("skill_name",)
-        )
-
-    # ============================================================
-    # Future Tier 3 : Construction
-    # ============================================================
-
-    # register_action(PlaceBlockRelative)
-    # register_action(FaceStructureEnd)
-    # register_action(MoveToStructureEnd)
-    # register_action(IsStructureAhead)
-
-    # ============================================================
-    # Future Tier 4 : Collective Construction
-    # ============================================================
-
-    # register_action(BroadcastStructureEnd)
-    # register_action(MoveToReceivedCoordinate)
-    # register_action(IsAtStructureEnd)
 
     return
 

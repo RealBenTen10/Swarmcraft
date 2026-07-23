@@ -11,6 +11,7 @@ import math
 import time
 
 pathfinder = require("mineflayer-pathfinder")
+goals = require("mineflayer-pathfinder/lib/goals")
 Vec3 = require("vec3").Vec3
 
 
@@ -44,10 +45,6 @@ class Actuation(object):
         """
         if position is None:
             return None
-
-        if isinstance(position, Vec3):
-            return position
-
         return Vec3(position[0], position[1], position[2])
 
     def _find_nearest_block(self,
@@ -55,7 +52,7 @@ class Actuation(object):
                             max_distance=32,
                             count=1):
         """
-        Returns the nearest block of the requested type.
+        Returns the position of the nearest block of the requested type.
 
         Parameters
         ----------
@@ -70,15 +67,33 @@ class Actuation(object):
 
         Returns
         -------
-        Block | None
+        Vec3 | None
         """
 
         try:
-            return self.agent.bot.findBlock({
-                "matching": lambda b: b is not None and b["name"] == block_name,
+            # 1. Retrieve the block data from Mineflayer's registry
+            block_data = self.agent.bot.registry.blocksByName[block_name]
+
+            if not block_data:
+                print(f"Block '{block_name}' not found in registry.")
+                return None
+
+            # 2. Extract the numerical ID
+            block_id = block_data.id
+
+            # 3. Find the block using the numerical ID for the matching parameter
+            block = self.agent.bot.findBlock({
+                "matching": block_id,
                 "maxDistance": max_distance,
                 "count": count
             })
+
+            # 4. If a block was found, return its position coordinates (Vec3)
+            if block is not None:
+                return block
+
+            # Return None if no matching block is within range
+            return None
 
         except Exception as e:
             print("findBlock failed:", e)
@@ -132,7 +147,7 @@ class Actuation(object):
         if block is None:
             return None
 
-        return pathfinder.goals.GoalNear(
+        return goals.GoalNear(
             block.position.x,
             block.position.y,
             block.position.z,
@@ -151,7 +166,7 @@ class Actuation(object):
         if position is None:
             return None
 
-        return pathfinder.goals.GoalNear(
+        return goals.GoalNear(
             position.x,
             position.y,
             position.z,
@@ -469,7 +484,7 @@ class Actuation(object):
     # Digging
     ###########################################################################
 
-    def start_dig(self, block_name=None):
+    def start_dig(self, block_name="blue_wool"):
         """
         Starts digging the nearest block of the requested type.
 
@@ -499,7 +514,7 @@ class Actuation(object):
 
                 block = self._find_nearest_block(
                     block_name,
-                    max_distance=3
+                    max_distance=2
                 )
 
             if block is None:
@@ -1170,6 +1185,58 @@ class Actuation(object):
         except Exception:
             return False
 
+    def equip_placeable_block(self) -> bool:
+        """
+        Ensures the bot is holding a placeable block. Equips the first
+        valid block from the inventory if not currently holding one.
+        """
+        registry_blocks = self.agent.bot.registry.blocksByName
+        held = self.agent.bot.heldItem
+
+        if held is not None and held.name in registry_blocks:
+            return True
+
+        for item in self.agent.bot.inventory.items():
+            if item is not None and item.name in registry_blocks:
+                try:
+                    self.agent.bot.equip(item, "hand")
+                    return True
+                except Exception as e:
+                    print("Equip failed:", e)
+                    return False
+
+        return False
+
+    def place_block_in_front(self) -> bool:
+        """
+        Places a block in front of the agent by attaching it to the top
+        face of the solid floor block beneath the target coordinate.
+        """
+        if not self.equip_placeable_block():
+            return False
+
+        yaw, _ = self.heading()
+        off_x = int(round(-math.sin(yaw)))
+        off_z = int(round(math.cos(yaw)))
+
+        # Target position in front
+        front_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+
+        # Support block directly beneath the front target position
+        support_pos = front_pos.offset(0, -1, 0)
+        support_block = self.agent.bot.blockAt(support_pos)
+
+        # Verify support block is solid (not air or liquid)
+        if support_block is None or support_block.name == "air":
+            return False
+
+        try:
+            # Place block on the top face (0, 1, 0) of the support block
+            self.agent.bot.placeBlock(support_block, Vec3(0, 1, 0))
+            return True
+        except Exception as e:
+            print("place_block_in_front failed:", e)
+            return False
 
     # ------------------------------------------------------------------
     # Inventory

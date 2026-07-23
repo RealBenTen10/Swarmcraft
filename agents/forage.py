@@ -2,8 +2,8 @@ import time
 
 from swarmcraft.agent import Agent
 from swarmcraft.btree.nodes.base import SequenceNode, FallbackNode
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage, Pathfinder
-from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, SendMessage, Pathfinder, PlaceForward, NavigateToColor, NavigateOneBlock, MoveToReceivedCoordinate, BroadcastLocation
+from swarmcraft.btree.nodes.sensing import SenseBlock, GotMessage, SenseBlockFront
 from swarmcraft import BlockTypes
 
 class ForageAgent(Agent):
@@ -18,17 +18,10 @@ class ForageAgent(Agent):
 
     def set_tree(self, tree):
         self.tree = tree
-        # self.tree = SequenceNode([
-        #    Rotate(self,  -1),
-        #    FallbackNode([
-        #        SequenceNode([
-        #            SenseBlock(self, "blue_wool"),
-        #            ReleaseDir(self),
-        #            StartDig(self, "blue_wool")
-        #        ]),
-        #        PressDir(self)
-        #    ])
-        # ])
+        self.tree = FallbackNode([
+            PlaceForward(self),
+            NavigateOneBlock(self, -1)
+        ])
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())

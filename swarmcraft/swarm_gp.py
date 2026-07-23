@@ -310,7 +310,6 @@ def generate_mutation_subtree(
         print("No skill available. Prob at: ", len(SKILL_LIBRARY) / len(ACTION_PRIMITIVES), " and skills: ",
               SKILL_LIBRARY)
 
-    print("normal mutation")
     return generate_grow_tree(min_depth, max_depth)
 
 def _random_action() -> bt.ActionNode:

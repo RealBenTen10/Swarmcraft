@@ -20,10 +20,10 @@ inheriting the others' name.
 import random
 from typing import Optional
 
-from environments.forage import ForageEnvironment
+from swarmcraft.environment import Environment
 
 
-class ClusteredForageEnvironment(ForageEnvironment):
+class ClusteredForageEnvironment(Environment):
     """
     Forage environment with a single resource block type whose placement
     can be tuned from fully random to tightly clustered.

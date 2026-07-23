@@ -291,17 +291,35 @@ class Sensing(object):
 
     def get_block_in_front(self):
         """
-        Returns block approximately one block in front of the bot.
+        Calculates the block position directly in front of the agent
+        based on current yaw and returns the Block object at that coordinate.
         """
+        yaw, _ = self.agent.actuation.heading()
 
-        yaw = self.bot.entity.yaw
+        # Mineflayer yaw directional offsets
+        off_x = int(round(-math.sin(yaw)))
+        off_z = int(round(math.cos(yaw)))
 
-        dx = round(-math.sin(yaw))
-        dz = round(-math.cos(yaw))
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+        return self.agent.bot.blockAt(target_pos)
 
-        pos = self.bot.entity.position.offset(dx, 0, dz)
+    def has_placeable_block(self) -> bool:
+        """
+        Checks if the agent has any block item in its inventory or currently held.
+        """
+        registry_blocks = self.agent.bot.registry.blocksByName
 
-        return self.bot.blockAt(pos)
+        # Check currently held item first
+        held = self.agent.bot.heldItem
+        if held is not None and held.name in registry_blocks:
+            return True
+
+        # Search inventory for any placeable block
+        for item in self.agent.bot.inventory.items():
+            if item is not None and item.name in registry_blocks:
+                return True
+
+        return False
 
     def get_block_below(self):
         return self.bot.blockAt(self.bot.entity.position.offset(0, -1, 0))

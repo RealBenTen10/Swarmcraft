@@ -633,22 +633,22 @@ def default_run_config() -> dict[str, Any]:
     Construct the default run configuration used when neither preset nor CLI overrides are provided.
     """
     return {
-        "exp_name": "ForageExperiment",
+        "exp_name": "ConstructionExperiment",
 
         "arena_origin": (10, -60, 10),
         "arena_size": (20, 10, 20),
 
-        "swarm_size": 15,
-        "generations": 200,
+        "swarm_size": 2,
+        "generations": 10,
 
-        "population_count": 15,
+        "population_count": 10,
         "offspring_multiplier": 2.0,
 
-        "arena_count": 4,
+        "arena_count": 1,
         "run_duration": 30,
 
-        "crossover_rate": 0.4,
-        "mutation_prob": 0.2,
+        "crossover_rate": 0.2,
+        "mutation_prob": 0.4,
 
         "min_depth": 1,
         "max_depth": 2,
@@ -660,13 +660,12 @@ def default_run_config() -> dict[str, Any]:
 
         "mission": BlockTypes.BLUE_WOOL.value,
         "mission_schedule": [
-            {"mission": BlockTypes.BLUE_WOOL.value, "generations": 100},
-            {"mission": BlockTypes.ORANGE_WOOL.value, "generations": 100},
+            {"mission": BlockTypes.BLUE_WOOL.value, "generations": 10},
         ],
 
         "blocks": {
-            BlockTypes.BLUE_WOOL.value: 4,
-            BlockTypes.ORANGE_WOOL.value: 4,
+            BlockTypes.BLUE_WOOL.value: 8,
+            BlockTypes.ORANGE_WOOL.value: 0,
             BlockTypes.BROWN_WOOL.value: 0,
             BlockTypes.GREEN_WOOL.value: 0,
         },

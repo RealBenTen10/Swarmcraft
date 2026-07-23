@@ -1,4 +1,5 @@
 import time
+import threading
 from typing import override
 from collections import defaultdict
 import numpy as np
@@ -154,14 +155,31 @@ class ForageExperiment(Experiment):
         use_normal_loop = True
         if use_normal_loop:
             start_time = time.time()
-            last_update = time.time()
-            while time.time() - start_time < self.max_time_sec:
-                if last_update < time.time():
-                    # set last_update directly to ensure every 0.5 seconds the agents are ticked
-                    last_update = time.time() + self.update_interval
-                    # update each gent (ticks trees)
-                    for agent in self.agents:
-                        agent.update()
+
+            def agent_worker(agent):
+                """Worker loop executed by each agent's dedicated thread."""
+                while time.time() - start_time < self.max_time_sec:
+                    tick_start = time.time()
+
+                    # Update agent behavior tree
+                    agent.update()
+
+                    # Calculate sleep duration to maintain self.update_interval without drifting
+                    elapsed = time.time() - tick_start
+                    sleep_time = self.update_interval - elapsed
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+
+            # 1. Spawn one persistent thread for each agent
+            threads = []
+            for agent in self.agents:
+                thread = threading.Thread(target=agent_worker, args=(agent,))
+                threads.append(thread)
+                thread.start()
+
+            # 2. Wait for all agent threads to finish the run
+            for thread in threads:
+                thread.join()
         else:
             # special loop where we iterate over agents in blocks divided via environment
             start_time = time.monotonic()

@@ -57,6 +57,7 @@
       "brown_wool": 0,
       "green_wool": 0
     },
+    "exp_name": "ConstructionExperiment",
     "save_skill": true,
     "skill_name": "navigation",
 
