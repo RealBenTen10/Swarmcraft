@@ -1,8 +1,8 @@
 {
   "C0": {
-    "swarm_size": 5,
-    "population_count": 5,
-    "offspring_multiplier": 2.0,
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
     "crossover_rate": 0.4,
@@ -14,7 +14,7 @@
     "n_elites": 1,
     "mission_schedule": [
     {
-      "generations": 5,
+      "generations": 50,
       "mission": "blue_wool"
     }
   ],
@@ -24,6 +24,8 @@
       "brown_wool": 0,
       "green_wool": 0
     },
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
     "save_skill": true,
     "skill_name": "foraging",
 
@@ -57,6 +59,8 @@
       "brown_wool": 0,
       "green_wool": 0
     },
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
     "exp_name": "ConstructionExperiment",
     "save_skill": true,
     "skill_name": "navigation",
@@ -92,6 +96,8 @@
       "brown_wool": 0,
       "green_wool": 0
     },
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
     "save_skill": true,
     "skill_name": "test",
 
