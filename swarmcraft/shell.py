@@ -55,36 +55,36 @@ def generate_pset():
             ])
         ]
     )
-    # register_action(
-    #     SenseBlock,
-    #     param_generators=[
-    #         lambda: random.choice([
-    #             BlockTypes.BLUE_WOOL.value,
-    #             BlockTypes.AIR.value,
-    #             BlockTypes.BEDROCK.value
-    #         ])
-    #     ]
-    # )
-    # register_action(
-    #     SenseBlockLeft,
-    #     param_generators=[
-    #         lambda: random.choice([
-    #             BlockTypes.BLUE_WOOL.value,
-    #             BlockTypes.AIR.value,
-    #             BlockTypes.BEDROCK.value
-    #         ])
-    #     ]
-    # )
-    # register_action(
-    #     SenseBlockRight,
-    #     param_generators=[
-    #         lambda: random.choice([
-    #             BlockTypes.BLUE_WOOL.value,
-    #             BlockTypes.AIR.value,
-    #             BlockTypes.BEDROCK.value
-    #         ])
-    #     ]
-    # )
+    register_action(
+        SenseBlock,
+        param_generators=[
+            lambda: random.choice([
+                BlockTypes.BLUE_WOOL.value,
+                BlockTypes.AIR.value,
+                BlockTypes.BEDROCK.value
+            ])
+        ]
+    )
+    register_action(
+        SenseBlockLeft,
+        param_generators=[
+            lambda: random.choice([
+                BlockTypes.BLUE_WOOL.value,
+                BlockTypes.AIR.value,
+                BlockTypes.BEDROCK.value
+            ])
+        ]
+    )
+    register_action(
+        SenseBlockRight,
+        param_generators=[
+            lambda: random.choice([
+                BlockTypes.BLUE_WOOL.value,
+                BlockTypes.AIR.value,
+                BlockTypes.BEDROCK.value
+            ])
+        ]
+    )
     register_action(
         SenseBlockFront,
         param_generators=[
@@ -95,45 +95,45 @@ def generate_pset():
             ])
         ]
     )
-    # register_action(
-    #     SenseBlockBack,
-    #     param_generators=[
-    #         lambda: random.choice([
-    #             BlockTypes.BLUE_WOOL.value,
-    #             BlockTypes.AIR.value,
-    #             BlockTypes.BEDROCK.value
-    #         ])
-    #     ]
-    # )
+    register_action(
+        SenseBlockBack,
+        param_generators=[
+            lambda: random.choice([
+                BlockTypes.BLUE_WOOL.value,
+                BlockTypes.AIR.value,
+                BlockTypes.BEDROCK.value
+            ])
+        ]
+    )
     register_action(IsHoldingItem)
-    # register_action(
-    #     Rotate,
-    #     param_generators=[
-    #         lambda: random.choice([90, -1, -90])
-    #     ]
-    # )
-    # register_action(PressDir)
-    # register_action(ReleaseDir)
-    # register_action(Stop)
-    # register_action(
-    #     NavigateOneBlock,
-    #     param_generators=[
-    #         lambda: random.choice(["front", "left", "right", "random"])
-    #     ]
-    # )
+    register_action(
+        Rotate,
+        param_generators=[
+            lambda: random.choice([90, -1, -90])
+        ]
+    )
+    register_action(PressDir)
+    register_action(ReleaseDir)
+    register_action(Stop)
+    register_action(
+        NavigateOneBlock,
+        param_generators=[
+            lambda: random.choice(["front", "left", "right", "random"])
+        ]
+    )
     register_action(NavigateToColor)
-    # register_action(
-    #     BroadcastLocation,
-    #     param_generators=[
-    #         lambda: random.choice([0, 1])
-    #     ]
-    # )
-    # register_action(
-    #     MoveToReceivedCoordinate,
-    #     param_generators=[
-    #         lambda: random.choice([0, 1])
-    #     ]
-    # )
+    register_action(
+        BroadcastLocation,
+        param_generators=[
+            lambda: random.choice([0, 1])
+        ]
+    )
+    register_action(
+        MoveToReceivedCoordinate,
+        param_generators=[
+            lambda: random.choice([0, 1])
+        ]
+    )
     register_action(PlaceForward)
 
     return
