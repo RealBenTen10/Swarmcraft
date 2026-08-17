@@ -300,13 +300,14 @@ class ServerShell(cmd.Cmd):
                 SIZE=run_cfg["arena_size"],
             )
 
+            # Primitives must not accumulate across runs in the same process.
+            reset_primitives()
+            generate_pset()
+
             # Load skills
             load_skill_library(
                 run_cfg.get("skill_library", [])
             )
-            # Primitives must not accumulate across runs in the same process.
-            reset_primitives()
-            generate_pset()
 
             # Create agents once; exp.set_round() resets env/agents state per evaluation
             agents = exp.initialize(run_cfg["swarm_size"])

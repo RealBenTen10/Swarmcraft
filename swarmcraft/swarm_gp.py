@@ -2,6 +2,7 @@ import random
 import copy
 import csv
 import os
+import json
 import pickle
 from pathlib import Path
 from typing import Callable, Type, Any, Optional
@@ -37,6 +38,237 @@ def sanitize_tree(node: bt.BehaviorTreeNode) -> bt.BehaviorTreeNode:
 # ============================================================
 
 SKILL_LIBRARY: list[bt.BehaviorTreeNode] = []
+SKILL_INJECTION_PROB = 0.0
+
+def _serialize_skill_node(node: bt.BehaviorTreeNode) -> dict[str, Any]:
+    """
+    Convert a behavior tree node into a JSON-serializable dictionary.
+
+    Only semantic information required to reconstruct the tree is stored.
+    Runtime state such as `agent` and `status` is intentionally excluded.
+
+    Parameters
+    ----------
+    node : bt.BehaviorTreeNode
+        Node to serialize.
+
+    Returns
+    -------
+    dict[str, Any]
+        JSON-serializable representation of the node.
+    """
+
+    # --------------------------------------------------------
+    # Control node
+    # --------------------------------------------------------
+    if isinstance(node, bt.ControlNode):
+        return {
+            "type": "control",
+            "class": node.__class__.__name__,
+            "children": [
+                _serialize_skill_node(child)
+                for child in node.children
+            ],
+        }
+
+    # --------------------------------------------------------
+    # Action node
+    # --------------------------------------------------------
+    if isinstance(node, bt.ActionNode):
+        primitive = _get_action_primitive(node)
+
+        if primitive is None:
+            raise ValueError(
+                f"Action node class '{node.__class__.__name__}' "
+                f"is not registered as an action primitive."
+            )
+
+        # Determine which attributes represent the action's
+        # constructor parameters.
+        param_attrs = _infer_param_attrs(node, primitive)
+
+        parameters = {}
+
+        for attr in param_attrs:
+            if hasattr(node, attr):
+                value = getattr(node, attr)
+
+                # JSON supports strings, numbers, booleans, None,
+                # lists and dictionaries directly.
+                try:
+                    json.dumps(value)
+                except TypeError as e:
+                    raise TypeError(
+                        f"Parameter '{attr}' of action "
+                        f"'{node.__class__.__name__}' is not JSON serializable: "
+                        f"{value!r}"
+                    ) from e
+
+                parameters[attr] = value
+
+        return {
+            "type": "action",
+            "class": node.__class__.__name__,
+            "parameters": parameters,
+        }
+
+    raise TypeError(
+        f"Unsupported behavior tree node type: {type(node).__name__}"
+    )
+
+
+def _build_action_class_registry() -> dict[str, Type[bt.ActionNode]]:
+    """
+    Build a mapping from action class names to registered action classes.
+    """
+
+    registry = {}
+
+    for primitive in ACTION_PRIMITIVES:
+        registry[primitive.cls.__name__] = primitive.cls
+
+    return registry
+
+
+def _build_control_class_registry() -> dict[str, Type[bt.ControlNode]]:
+    """
+    Build a mapping from control class names to registered control classes.
+    """
+
+    registry = {}
+
+    for primitive in CONTROL_PRIMITIVES:
+        registry[primitive.cls.__name__] = primitive.cls
+
+    return registry
+
+
+def _deserialize_skill_node(
+    data: dict[str, Any],
+    action_registry: dict[str, Type[bt.ActionNode]],
+    control_registry: dict[str, Type[bt.ControlNode]],
+) -> bt.BehaviorTreeNode:
+    """
+    Reconstruct a behavior tree node from its JSON representation.
+
+    Parameters
+    ----------
+    data : dict[str, Any]
+        Serialized node.
+    action_registry : dict[str, Type[bt.ActionNode]]
+        Registered action classes indexed by class name.
+    control_registry : dict[str, Type[bt.ControlNode]]
+        Registered control classes indexed by class name.
+
+    Returns
+    -------
+    bt.BehaviorTreeNode
+        Reconstructed behavior tree node.
+    """
+
+    if not isinstance(data, dict):
+        raise TypeError(
+            f"Invalid skill node. Expected dictionary, got {type(data).__name__}."
+        )
+
+    node_type = data.get("type")
+    class_name = data.get("class")
+
+    if not node_type:
+        raise ValueError("Skill node is missing the 'type' field.")
+
+    if not class_name:
+        raise ValueError("Skill node is missing the 'class' field.")
+
+    # --------------------------------------------------------
+    # Control node
+    # --------------------------------------------------------
+    if node_type == "control":
+
+        control_cls = control_registry.get(class_name)
+
+        if control_cls is None:
+            raise ValueError(
+                f"Unknown control node class '{class_name}'. "
+                f"Make sure it is registered before loading the skill."
+            )
+
+        children_data = data.get("children", [])
+
+        if not isinstance(children_data, list):
+            raise TypeError(
+                f"'children' of control node '{class_name}' must be a list."
+            )
+
+        children = [
+            _deserialize_skill_node(
+                child,
+                action_registry,
+                control_registry,
+            )
+            for child in children_data
+        ]
+
+        return control_cls(children)
+
+    # --------------------------------------------------------
+    # Action node
+    # --------------------------------------------------------
+    if node_type == "action":
+
+        action_cls = action_registry.get(class_name)
+
+        if action_cls is None:
+            raise ValueError(
+                f"Unknown action node class '{class_name}'. "
+                f"Make sure it is registered before loading the skill."
+            )
+
+        parameters = data.get("parameters", {})
+
+        if not isinstance(parameters, dict):
+            raise TypeError(
+                f"'parameters' of action node '{class_name}' "
+                f"must be a dictionary."
+            )
+
+        primitive = ACTION_PRIMITIVE_BY_CLS.get(action_cls)
+
+        if primitive is None:
+            raise ValueError(
+                f"Action class '{class_name}' is not registered."
+            )
+
+        if primitive.param_attrs is not None:
+            param_attrs = list(primitive.param_attrs)
+        else:
+            # For actions without explicit param_attrs, use the
+            # same known attributes used by _infer_param_attrs().
+            param_attrs = [
+                attr
+                for attr in _KNOWN_TERMINAL_ATTRS
+                if attr in parameters
+            ]
+
+        params = []
+
+        for attr in param_attrs:
+            if attr not in parameters:
+                raise ValueError(
+                    f"Missing parameter '{attr}' for action node "
+                    f"'{class_name}'."
+                )
+
+            params.append(parameters[attr])
+
+        # Agent is intentionally None. It is bound later by
+        # instantiate_for_swarm().
+        return action_cls(None, *params)
+
+    raise ValueError(
+        f"Unknown skill node type '{node_type}' "
+        f"for class '{class_name}'."
+    )
 
 
 def save_skill(
@@ -45,7 +277,10 @@ def save_skill(
     skills_dir: str = "skills",
 ) -> Path:
     """
-    Save a learned behavior tree into the curriculum-learning skill library.
+    Save a learned behavior tree as human-readable JSON.
+
+    Runtime state such as agent references and execution status is
+    removed before serialization.
 
     Parameters
     ----------
@@ -59,20 +294,34 @@ def save_skill(
     Returns
     -------
     Path
-        Saved file path.
+        Saved JSON file path.
     """
+
     skill_dir = Path(skills_dir)
     skill_dir.mkdir(parents=True, exist_ok=True)
 
-    skill_path = skill_dir / f"{skill_name}.pkl"
+    skill_path = skill_dir / f"{skill_name}.json"
 
     try:
-        # Deepcopy and sanitize to remove any active agent states before pickling
+        # Work on a copy so the original evolutionary individual
+        # remains untouched.
         tree_copy = copy.deepcopy(tree)
         sanitize_tree(tree_copy)
 
-        with open(skill_path, "wb") as f:
-            pickle.dump(tree_copy, f, protocol=pickle.HIGHEST_PROTOCOL)
+        skill_data = {
+            "format": "swarm_gp_skill",
+            "version": 1,
+            "skill_name": skill_name,
+            "tree": _serialize_skill_node(tree_copy),
+        }
+
+        with open(skill_path, "w", encoding="utf-8") as f:
+            json.dump(
+                skill_data,
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
 
         print(f"Saved skill: {skill_path}")
 
@@ -82,50 +331,110 @@ def save_skill(
     return skill_path
 
 
-def load_skill(skill_path: str | Path) -> Optional[bt.BehaviorTreeNode]:
+def load_skill(
+    skill_path: str | Path,
+) -> Optional[bt.BehaviorTreeNode]:
     """
-    Load a single skill tree from disk.
+    Load a single behavior tree skill from a human-readable JSON file.
+
+    The resulting tree is agent-free and sanitized.
     """
+
+    skill_path = Path(skill_path)
+
     try:
-        with open(skill_path, "rb") as f:
-            tree = pickle.load(f)
+        with open(skill_path, "r", encoding="utf-8") as f:
+            skill_data = json.load(f)
+
+        if not isinstance(skill_data, dict):
+            raise TypeError(
+                f"Skill file must contain a JSON object: {skill_path}"
+            )
+
+        # Validate file format.
+        if skill_data.get("format") != "swarm_gp_skill":
+            raise ValueError(
+                f"Unsupported skill format in '{skill_path}'."
+            )
+
+        version = skill_data.get("version")
+
+        if version != 1:
+            raise ValueError(
+                f"Unsupported skill version '{version}' in '{skill_path}'."
+            )
+
+        tree_data = skill_data.get("tree")
+
+        if not isinstance(tree_data, dict):
+            raise ValueError(
+                f"Skill file does not contain a valid 'tree': {skill_path}"
+            )
+
+        # Build registries from the primitives that have already
+        # been registered by the experiment.
+        action_registry = _build_action_class_registry()
+        control_registry = _build_control_class_registry()
+
+        tree = _deserialize_skill_node(
+            tree_data,
+            action_registry,
+            control_registry,
+        )
 
         if not isinstance(tree, bt.BehaviorTreeNode):
             raise TypeError(
-                f"Skill file does not contain a BehaviorTreeNode: {skill_path}"
+                f"Skill file does not contain a BehaviorTreeNode: "
+                f"{skill_path}"
             )
+
+        # Ensure that no execution state is carried into the
+        # curriculum library.
+        sanitize_tree(tree)
 
         return tree
 
     except FileNotFoundError:
         print(f"Skill file not found: {skill_path}")
 
-    except pickle.UnpicklingError:
-        print(f"Corrupted skill file: {skill_path}")
+    except json.JSONDecodeError as e:
+        print(
+            f"Invalid JSON in skill file '{skill_path}': {e}"
+        )
 
     except Exception as e:
-        print(f"Failed loading skill {skill_path}: {e}")
+        print(
+            f"Failed loading skill '{skill_path}': {e}"
+        )
 
     return None
 
 
-def load_skill_library(skill_paths: list[str | Path]) -> None:
+def load_skill_library(
+    skill_paths: list[str | Path],
+) -> None:
     """
-    Load multiple skills into the global curriculum library.
+    Load multiple JSON skills into the global curriculum library.
     """
+
     SKILL_LIBRARY.clear()
+
     print(f"Loading {len(skill_paths)} skills:")
+
     for path in skill_paths:
+
         skill = load_skill(path)
 
         if skill is not None:
-            # Ensure loaded skill is pristine before adding to library
+
             sanitize_tree(skill)
             SKILL_LIBRARY.append(skill)
 
-            # String splitting safely handles paths
-            file_name = str(path).split(os.sep)[-1].split(".")[0]
-            print(f" - {file_name}: {skill}")
+            file_name = Path(path).stem
+
+            print(
+                f" - {file_name}: {skill}"
+            )
 
 
 # ============================================================
@@ -294,23 +603,40 @@ def generate_mutation_subtree(
 ) -> bt.BehaviorTreeNode:
     """
     Generate a mutation subtree.
-    Either inject a previously learned skill or generate a random grow subtree.
+    If probability is set:
+    A mutation subtree is sampled uniformly from:
+      - registered action primitives, represented by a newly generated
+        grow tree, or
+      - previously learned skills.
+
+    Each available skill represents one additional selectable option.
     """
+    if SKILL_LIBRARY:
+        if SKILL_INJECTION_PROB > 0.0:
+            if random.random() <= SKILL_INJECTION_PROB:
+                skill = sample_skill_subtree()
 
-    if (
-            SKILL_LIBRARY
-            and random.random() < len(SKILL_LIBRARY) / len(ACTION_PRIMITIVES)
-    ):
-        skill = sample_skill_subtree()
+                if skill is not None:
+                    print("Injected skill:", tree_to_str(skill))
+                    return skill
+        else:
 
-        if skill is not None:
-            print("Injected skill: ", skill)
-            return skill
+            total_choices = len(ACTION_PRIMITIVES) + len(SKILL_LIBRARY)
 
-        print("No skill available. Prob at: ", len(SKILL_LIBRARY) / len(ACTION_PRIMITIVES), " and skills: ",
-              SKILL_LIBRARY)
+            # One choice per action primitive and one choice per skill.
+            choice = random.randrange(total_choices)
 
-    return generate_grow_tree(min_depth, max_depth)
+            if choice >= len(ACTION_PRIMITIVES):
+                skill = sample_skill_subtree()
+
+                if skill is not None:
+                    print("Injected skill:", skill)
+                    return skill
+
+    return generate_grow_tree(
+        min_depth,
+        max_depth,
+    )
 
 def _random_action() -> bt.ActionNode:
     """
@@ -972,7 +1298,8 @@ def ea_mu_plus_lambda(
         save_population(populations_dir / "latest.pkl", population, 0, meta)
 
     for gen in range(gen0, generations):
-        # evaluate parents
+        # evaluate parents - do we still need this?
+        # Maybe keep it because of stochastic behavior and environment
         fitness = {id(ind): evaluate(ind, gen) for ind in population}
 
         # create offspring

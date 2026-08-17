@@ -28,7 +28,7 @@
     "arena_size": [30, 10, 30],
     "exp_name": "ForageExperiment",
     "save_skill": true,
-    "skill_name": "foraging",
+    "skill_name": "forage",
 
     "skill_library": [
     ],
@@ -41,8 +41,8 @@
     "offspring_multiplier": 2.0,
     "arena_count": 1,
     "run_duration": 60,
-    "crossover_rate": 0.2,
-    "mutation_prob": 0.5,
+    "crossover_rate": 0.4,
+    "mutation_prob": 0.3,
     "min_depth": 1,
     "max_depth": 2,
     "number_repetitions": 1,
@@ -67,10 +67,10 @@
     "skill_name": "navigation",
 
     "skill_library": [
-      "skills/foraging.pkl"
+      "skills/forage.json"
     ],
 
-    "skill_injection_prob": 0.5
+    "skill_injection_prob": 0.9
   },
   "C2": {
     "swarm_size": 5,
