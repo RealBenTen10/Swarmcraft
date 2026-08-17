@@ -26,6 +26,7 @@
     },
     "arena_origin": [10, -60, 10],
     "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
     "save_skill": true,
     "skill_name": "foraging",
 

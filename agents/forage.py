@@ -18,10 +18,7 @@ class ForageAgent(Agent):
 
     def set_tree(self, tree):
         self.tree = tree
-        self.tree = FallbackNode([
-            PlaceForward(self),
-            NavigateOneBlock(self, -1)
-        ])
+
 
     def update(self):
         #print("Ticking tree of ", self.get_uid(), " in ", self.sensing.get_username())

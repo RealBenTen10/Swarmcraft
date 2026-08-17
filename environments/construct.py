@@ -1,25 +1,4 @@
-"""
-Environment for a construction-oriented mission: instead of scattered
-resource blocks, the arena contains exactly two landmark blocks marking
-the segment agents should build across (this lines up with the
-commented-out "Future Tier 3: Construction" primitives already sketched
-in shell.py's generate_pset() -- PlaceBlockRelative, FaceStructureEnd,
-MoveToStructureEnd, IsStructureAhead -- which will presumably want
-something to sense/navigate toward).
-
-Reuses ForageEnvironment's arena scaffold (bedrock walls/floor, observer
-stairs, glass roof, inter-arena bridges, cleanup) unchanged; only block
-placement (shuffle_block_positions) is overridden.
-
-Note on inheriting from ForageEnvironment: same tradeoff as
-clustered_forage.py -- done to reuse the arena scaffold, not because a
-construction task conceptually "is a" forage task. Worth revisiting with
-a shared ArenaEnvironment(Environment) base if a third non-forage
-mission shows up.
-"""
 import random
-from typing import Optional
-
 import time
 from typing import override
 
@@ -27,117 +6,28 @@ from swarmcraft.environment import Environment
 from swarmcraft.util import add_tuples
 from swarmcraft import BlockTypes
 
+
 class ConstructionEnvironment(Environment):
-    """
-    Places exactly two landmark blocks a configurable distance apart,
-    symmetric about the arena's interior center, on a randomly chosen
-    axis each round (so agents can't hardcode a compass direction).
-    Everything else -- arena scaffold, cleanup, reset -- is inherited
-    unchanged from ForageEnvironment.
-
-    Variables
-    ---------
-    minecraft_server, origin, size : as in ForageEnvironment.
-    separation : int
-        Distance in blocks between the two landmarks. Clamped to fit the
-        interior (and to stay at least 2, so neither landmark lands
-        exactly on the reserved agent-spawn point at arena center) --
-        only relaxed if the arena is too small to support that. Larger
-        values make locating both landmarks -- and building between them
-        -- harder, which is a natural curriculum knob for later missions.
-    landmark_block : str
-        Block type used for both landmarks.
-    """
-
-    def __init__(
-        self,
-        minecraft_server,
-        origin,
-        size,
-        separation: int = 6,
-        landmark_block: str = "blue_wool",
-    ):
+    def __init__(self, minecraft_server, origin, size):
         super().__init__(minecraft_server)
         self.origin = origin
         self.size = size
-        self.separation = separation
-        self.landmark_block = landmark_block
-
-        self.origin = origin
-        self.size = size
-        self.resource_positions = []
-
-        # Block spec (type -> count) and fixed per-experiment positions
-        self.blocks = None
-        self.blocks_position = None  # {"blue_wool": [(x,y,z), ...], ...}
 
         # Ensures bedrock walls/floor, stairs, and roof are only built once
         self._static_built = False
 
-    def shuffle_block_positions(self, blocks: Optional[dict] = None) -> None:
+    def get_center_position(self) -> tuple[int, int, int]:
         """
-        Place the two landmark blocks.
-
-        `blocks` is accepted only so this environment is a drop-in for
-        callers that always pass a blocks dict (e.g.
-        ForageExperiment.shuffle_block_positions); its contents are
-        ignored, since block type/count aren't meaningful here -- this
-        environment always places exactly 2 blocks of landmark_block.
-
-        Returns
-        -------
-        None
+        Returns the center spawn coordinate of the arena floor.
         """
-        if self.size[0] < 3 or self.size[2] < 3:
-            self.blocks = {self.landmark_block: 0}
-            self.blocks_position = {self.landmark_block: []}
-            return
-
-        x_min, x_max = self.origin[0] + 1, self.origin[0] + self.size[0] - 2
-        z_min, z_max = self.origin[2] + 1, self.origin[2] + self.size[2] - 2
-        y_pos = self.origin[1] + 1
-
-        interior_w = x_max - x_min + 1
-        interior_d = z_max - z_min + 1
-        max_separation = max(1, min(interior_w, interior_d) - 1)
-
-        separation = max(1, min(int(self.separation), max_separation))
-        if max_separation >= 2:
-            separation = max(2, separation)
-        half = separation // 2
-
         center_x = self.origin[0] + self.size[0] // 2
+        center_y = self.origin[1] + 1
         center_z = self.origin[2] + self.size[2] // 2
+        return (center_x, center_y, center_z)
 
-        axis = random.choice(("x", "z"))
-        if axis == "x":
-            p1 = (center_x - half, y_pos, center_z)
-            p2 = (center_x - half + separation, y_pos, center_z)
-        else:
-            p1 = (center_x, y_pos, center_z - half)
-            p2 = (center_x, y_pos, center_z - half + separation)
-
-        def _clip(pos):
-            x, y, z = pos
-            return (max(x_min, min(x_max, x)), y, max(z_min, min(z_max, z)))
-
-        p1, p2 = _clip(p1), _clip(p2)
-
-        self.blocks = {self.landmark_block: 2}
-        self.blocks_position = {self.landmark_block: [p1, p2]}
-
-
-
-    def clean_environment(self, radius: int = 15, clear_height: int = 4):
+    def clean_environment(self, radius: int = 15, clear_height: int = 6):
         """
         Clear a large area around the arena by setting everything to air.
-
-        Variables
-        ----------
-        radius : int
-            How far to clear beyond the arena bounds in X/Z directions.
-        clear_height : int
-            How many blocks high (starting at origin.y) to clear.
         """
         x0 = self.origin[0] - radius
         y0 = self.origin[1]
@@ -153,18 +43,12 @@ class ConstructionEnvironment(Environment):
 
     def reset_arena_interior(self):
         """
-        Clear ONLY the interior play area (where wool blocks spawn), leaving:
+        Clear ONLY the interior play area (all height levels under the glass roof),
+        leaving intact:
         - bedrock floor
         - bedrock perimeter walls
         - observer stairs
         - glass roof
-
-        Interior region definition:
-        - x in [origin.x+1 .. origin.x+size.x-2]
-        - z in [origin.z+1 .. origin.z+size.z-2]
-        - y is only the block layer where resources are placed: origin.y+1 (height 1 above floor)
-
-        This matches your current spawning y_pos = origin.y + 1.
         """
         if self.size[0] < 3 or self.size[2] < 3:
             return  # no interior exists
@@ -174,7 +58,7 @@ class ConstructionEnvironment(Environment):
         z0 = self.origin[2] + 1
 
         sx = self.size[0] - 2
-        sy = 1
+        sy = 4  # Clears all 4 vertical block levels up to the glass roof
         sz = self.size[2] - 2
 
         self.minecraft_server.send(
@@ -184,24 +68,13 @@ class ConstructionEnvironment(Environment):
     @override
     def reset(self):
         """
-        Backwards-compatible reset method.
-
-        For your new workflow you should NOT wipe the whole arena volume each round,
-        because that would remove walls/floor. Therefore, reset() now clears only
-        the interior resource layer.
+        Resets the interior area to air for the next construction round.
         """
         self.reset_arena_interior()
 
     def _build_bedrock_arena(self):
         """
         Build the bedrock floor and 2-high perimeter walls.
-
-        Variables
-        ----------
-        origin : tuple[int,int,int]
-            Arena corner (x,y,z).
-        size : tuple[int,int,int]
-            Arena dimensions (sx,sy,sz).
         """
         ox, oy, oz = self.origin
         sx = self.size[0]
@@ -213,26 +86,26 @@ class ConstructionEnvironment(Environment):
             f"setcube {ox} {oy} {oz} {sx} 1 {sz} {bedrock}"
         )
 
-        # Walls: y = oy+1, height 2 (matches the old per-column two-block stack)
+        # Walls: y = oy+1, height 2
         wall_y = oy + 1
         wall_h = 2
 
-        # North wall (z = oz), thickness 1
+        # North wall (z = oz)
         self.minecraft_server.send(
             f"setcube {ox} {wall_y} {oz} {sx} {wall_h} 1 {bedrock}"
         )
 
-        # South wall (z = oz + sz - 1), thickness 1
+        # South wall (z = oz + sz - 1)
         self.minecraft_server.send(
             f"setcube {ox} {wall_y} {oz + sz - 1} {sx} {wall_h} 1 {bedrock}"
         )
 
-        # West wall (x = ox), thickness 1
+        # West wall (x = ox)
         self.minecraft_server.send(
             f"setcube {ox} {wall_y} {oz} 1 {wall_h} {sz} {bedrock}"
         )
 
-        # East wall (x = ox + sx - 1), thickness 1
+        # East wall (x = ox + sx - 1)
         self.minecraft_server.send(
             f"setcube {ox + sx - 1} {wall_y} {oz} 1 {wall_h} {sz} {bedrock}"
         )
@@ -240,17 +113,11 @@ class ConstructionEnvironment(Environment):
     def _build_observer_stairs(self):
         """
         Build grass stairs along one entire side of the arena.
-
-        Adjustments:
-        - 1-block gap to arena: stairs start at z = origin.z - 2
-        - start one block lower: base_y = origin.y
-        - wedge heights: 5,4,3,2,1 (five rows)
         """
         base_y = self.origin[1]
         z_edge = self.origin[2] - 2
         stone = f"minecraft:{BlockTypes.STONE_BRICK.value}"
 
-        # Solid wedge (5 layers). The duplicate loop in the original code is removed.
         for step_idx in range(5):
             height = 5 - step_idx
             z = z_edge - step_idx
@@ -259,7 +126,6 @@ class ConstructionEnvironment(Environment):
                 f"{self.size[0]} {height} 1 {stone}"
             )
 
-        # Stairs on top (block state requires vanilla command path in your current design)
         stairs_block = f"minecraft:{BlockTypes.STONE_BRICK_STAIRS.value}[facing=south,half=bottom]"
         x1 = self.origin[0]
         x2 = self.origin[0] + self.size[0] - 1
@@ -280,11 +146,6 @@ class ConstructionEnvironment(Environment):
     def _build_glass_roof(self):
         """
         Place a glass roof above the whole arena at height 5 relative to floor.
-
-        Variables
-        ----------
-        y : int
-            Roof y-level = origin.y + 5
         """
         y = self.origin[1] + 5
         glass = f"minecraft:{BlockTypes.GLASS.value}"
@@ -295,16 +156,7 @@ class ConstructionEnvironment(Environment):
 
     def build_static_structures_once(self):
         """
-        Build static structures once per environment:
-        - optional full clean in radius
-        - bedrock arena
-        - grass stairs
-        - glass roof
-
-        Variables
-        ----------
-        do_clean : bool
-            If True, calls clean_environment() before building structures.
+        Build static structures once per environment.
         """
         if self._static_built:
             return
@@ -316,11 +168,6 @@ class ConstructionEnvironment(Environment):
     def build_bridge_to(self, other_origin: tuple[int, int, int]) -> None:
         """
         Build a 1-block-thick glass bridge between this arena's roof rectangle and another's.
-
-        Requirements (enforced):
-        - Roof heights must match (same y = origin.y + 5).
-        - Arenas must be separated along exactly one axis (x OR z), not diagonally.
-        - Roof rectangles should overlap on the perpendicular axis; otherwise we raise.
         """
         y1 = self.origin[1] + 5
         y2 = other_origin[1] + 5
@@ -341,22 +188,18 @@ class ConstructionEnvironment(Environment):
         z_separated = (self_zmax < oth_zmin) or (oth_zmax < self_zmin)
 
         if x_separated and z_separated:
-            raise ValueError("Roofs are diagonally separated (gap in both x and z); provide a custom bridge plan.")
+            raise ValueError("Roofs are diagonally separated; provide a custom bridge plan.")
         if not x_separated and not z_separated:
             return
 
         glass = f"minecraft:{BlockTypes.GLASS.value}"
 
         if x_separated:
-            # bridge along x; require overlap in z
             z1 = max(self_zmin, oth_zmin)
             z2 = min(self_zmax, oth_zmax)
             if z1 > z2:
                 raise ValueError("Roofs do not overlap in z; cannot infer bridge span.")
 
-            x1 = min(self_xmax, oth_xmax)
-            x2 = max(self_xmin, oth_xmin)
-            # The above is not correct for the bridge span; compute edge-to-edge instead:
             if self_xmax < oth_xmin:
                 x1, x2 = self_xmax, oth_xmin
             else:
@@ -383,57 +226,25 @@ class ConstructionEnvironment(Environment):
     @override
     def initialize(self):
         """
-        Initialize the environment.
-
-        New behavior:
-        - Ensure static structures exist (only once)
-        - Do NOT clear them afterward
+        Initialize static structures for construction arena.
         """
         self.build_static_structures_once()
 
+    def shuffle_block_positions(self, blocks=None):
+        """
+        No-op for construction scenarios since no resource blocks are placed.
+        """
+        pass
 
     def set_blocks(self):
         """
-        Spawn wool blocks at the fixed locations stored in self.blocks_position.
-
-        Contract:
-        - shuffle_block_positions() MUST be called before the first call to set_blocks().
-        - No randomness occurs here; only stored positions are used.
-        - Assumes reset_arena_interior() has been called before this.
+        Ensures arena field remains completely clear at the start of each round.
         """
-        if self.blocks_position is None:
-            raise RuntimeError(
-                "blocks_position is not initialized. Call shuffle_block_positions() once before set_blocks()."
-            )
-
-        for block_type, coords in self.blocks_position.items():
-            for (x_pos, y_pos, z_pos) in coords:
-                time.sleep(0.00001)
-                self.minecraft_server.send(
-                    f"setblock {x_pos} {y_pos} {z_pos} minecraft:{block_type}"
-                )
+        self.reset_arena_interior()
 
     def cleanup(self, radius: int = 15, clear_height: int = 6):
         """
-        Destroy all structures previously built by this environment so the world is flat again.
-
-        This clears to AIR a box that covers:
-        - the bedrock arena floor and perimeter walls,
-        - the observer stairs region in front of the arena,
-        - the glass roof above the arena,
-        - any leftover resource blocks placed inside the arena,
-        - plus a configurable radius margin.
-
-        Parameters
-        ----------
-        radius : int
-            Horizontal padding (in blocks) around the arena in X/Z to clear.
-            Must be large enough to include stairs area and any other artifacts.
-        clear_height : int
-            Vertical height to clear starting at origin.y (inclusive).
-            Must be >= 6 to remove:
-              - stairs (up to height 5),
-              - roof at y = origin.y + 5.
+        Destroy all structures previously built by this environment.
         """
         x0 = self.origin[0] - radius
         y0 = self.origin[1]
@@ -446,13 +257,11 @@ class ConstructionEnvironment(Environment):
         self.minecraft_server.send(
             f"setcube {x0} {y0} {z0} {sx} {sy} {sz} minecraft:{BlockTypes.AIR.value}"
         )
-
-        # Reset static-built flag so a future initialize() rebuilds everything cleanly.
         self._static_built = False
 
     def get_point_in_environment(self):
         return (
-            random.randint(self.origin[0] + 1, self.origin[0] + self.size[0]),
+            random.randint(self.origin[0] + 1, self.origin[0] + self.size[0] - 2),
             self.origin[1] + 1,
-            random.randint(self.origin[2] + 1, self.origin[2] + self.size[2]),
+            random.randint(self.origin[2] + 1, self.origin[2] + self.size[2] - 2),
         )
