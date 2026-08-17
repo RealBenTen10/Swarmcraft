@@ -5,7 +5,7 @@ from collections import defaultdict
 import numpy as np
 
 import swarmcraft.util
-from agents.forage import ForageAgent
+from agents.construct import ConstructionAgent
 from environments.construct import ConstructionEnvironment
 from swarmcraft.experiment import Experiment
 
@@ -95,7 +95,7 @@ class ConstructionExperiment(Experiment):
             time.sleep(0.0001)
 
             for _ in range(agents_per_arena):
-                agent = ForageAgent(
+                agent = ConstructionAgent(
                     self.pooler,
                     self.message_server,
                     f'builder_{self.total_agents_existed}',

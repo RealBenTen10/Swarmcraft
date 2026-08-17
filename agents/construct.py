@@ -116,12 +116,13 @@ class ConstructionAgent(Agent):
         max_line = self._compute_max_line_length(valid_floor_blocks)
         evaluation += float(max_line)
 
+        # No exploration reward here(?)
         # 4. Add exploration bonus as tie-breaker (+0.0 to +1.0)
-        explored = unique_positions_count if unique_positions_count is not None else len(self.positions)
-        total_tiles = (size[0] - 2) * (size[2] - 2)
-
-        if total_tiles > 0:
-            evaluation += (explored / total_tiles)
+        # explored = unique_positions_count if unique_positions_count is not None else len(self.positions)
+        # total_tiles = (size[0] - 2) * (size[2] - 2)
+        #
+        # if total_tiles > 0:
+        #     evaluation += (explored / total_tiles)
 
         if unique_positions_count is None:
             self.positions = []
