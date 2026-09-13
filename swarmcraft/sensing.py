@@ -620,24 +620,26 @@ class Sensing(object):
 
         return None
 
-    def get_inventory_item_count(self,
-                           item_name):
+    def get_inventory_item_count(self, item_name):
+        """
+        Return the total number of items with the given name in the inventory.
 
-        inventory = self.get_inventory_item(item_name)
+        Args:
+            item_name (str): Minecraft item name, e.g. "blue_wool".
 
-        if inventory is None:
+        Returns:
+            int: Total number of matching items in the inventory.
+        """
+        if self.bot.inventory is None:
             return 0
 
-        if not isinstance(inventory, dict):
-            raise TypeError(
-                "sensing.get_inventory() must return a dictionary."
-            )
-        try:
-            return int(inventory.get(item_name, 0))
-        except:
-            print(inventory)
-            print("get_inventory_item_count")
-            return
+
+        for item in self.bot.inventory.items():
+            if item.name == item_name:
+                return int(item.count)
+
+        return 0
+
     # ------------------------------------------------------------------
     # Structure Helpers
     # ------------------------------------------------------------------
