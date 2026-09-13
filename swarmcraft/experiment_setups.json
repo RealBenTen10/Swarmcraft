@@ -5,7 +5,6 @@
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
-    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,

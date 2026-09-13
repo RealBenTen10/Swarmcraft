@@ -17,8 +17,7 @@ from pathlib import Path
 from run_config import (
     resolve_run_config,
     create_run_directories,
-    print_run_config_summary,
-    mission_for_generation
+    print_run_config_summary
 )
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, BroadcastLocation, Stop, \

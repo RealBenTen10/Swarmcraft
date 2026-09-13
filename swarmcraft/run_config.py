@@ -208,7 +208,6 @@ def print_run_config_summary(cfg: dict[str, Any]) -> None:
         f"tourn={cfg['tournsize']} "
         f"elites={cfg['n_elites']}"
     )
-    print(f"mission={cfg['mission']}")
     print(f"blocks={cfg['blocks']}")
 
 
@@ -415,7 +414,6 @@ def strip_logging_keys(cfg: dict[str, Any]) -> dict[str, Any]:
         "pop_dir",
         "timestamp",
         "preset_id",
-        "missions_by_gen",
     }
     return {k: v for k, v in cfg.items() if k not in drop}
 
@@ -432,6 +430,7 @@ def print_previous_settings(prev_cfg: dict[str, Any]) -> None:
     print(f"arena_origin={g('arena_origin')} arena_size={g('arena_size')}")
     print(
         f"swarm_size={g('swarm_size')} "
+        f"generations={g('generations')} "
         f"arena_count={g('arena_count')} "
         f"run_duration={g('run_duration')} "
         f"reps={g('number_repetitions')}"
@@ -446,7 +445,6 @@ def print_previous_settings(prev_cfg: dict[str, Any]) -> None:
         f"depth={g('min_depth')}-{g('max_depth')} "
         f"tourn={g('tournsize')} elites={g('n_elites')}"
     )
-    print(f"mission={g('mission')}")
     print(f"blocks={g('blocks')}")
 
 
@@ -482,6 +480,7 @@ def prompt_overrides_for_settings(cfg: dict[str, Any]) -> dict[str, Any]:
 
     # Core integers
     cfg["swarm_size"] = prompt_optional_int("swarm_size", cfg.get("swarm_size"))
+    cfg["generations"] = prompt_optional_int("generations", cfg.get("generations"))
     cfg["arena_count"] = prompt_optional_int("arena_count", cfg.get("arena_count"))
     cfg["run_duration"] = prompt_optional_int("run_duration", cfg.get("run_duration"))
     cfg["number_repetitions"] = prompt_optional_int("number_repetitions", cfg.get("number_repetitions"))
@@ -512,7 +511,6 @@ def prompt_overrides_for_settings(cfg: dict[str, Any]) -> dict[str, Any]:
 
     # JSON-editable settings
     cfg["blocks"] = prompt_optional_json("blocks (JSON object)", cfg.get("blocks"))
-    cfg["mission_schedule"] = prompt_optional_json("mission_schedule (JSON list)", cfg.get("mission_schedule"))
 
     return cfg
 
@@ -625,7 +623,7 @@ def load_preset_config(preset_id: str | int, preset_path: Path | None = None) ->
 
 
 # =============================================================================
-# Default config + normalization + positional overrides + mission timeline
+# Default config + normalization + positional overrides
 # =============================================================================
 
 def default_run_config() -> dict[str, Any]:
@@ -657,11 +655,6 @@ def default_run_config() -> dict[str, Any]:
 
         "tournsize": 3,
         "n_elites": 1,
-
-        "mission": BlockTypes.BLUE_WOOL.value,
-        "mission_schedule": [
-            {"mission": BlockTypes.BLUE_WOOL.value, "generations": 100},
-        ],
 
         "fitness_function": "S1",
         "construction": False,
@@ -770,63 +763,6 @@ def apply_positional_overrides(cfg: dict[str, Any], argv: list[str]) -> dict[str
     return cfg
 
 
-def _normalize_mission_schedule(cfg: dict[str, Any]) -> list[dict[str, Any]]:
-    """
-    Normalize and validate the mission schedule.
-    """
-    sched = cfg.get("mission_schedule")
-
-    if not sched:
-        mission = cfg.get("mission")
-        if mission is None:
-            raise ValueError("Config must define either 'mission' or 'mission_schedule'.")
-        return [{"mission": mission, "generations": int(cfg.get("generations", 1))}]
-
-    if not isinstance(sched, list):
-        raise ValueError("'mission_schedule' must be a list of phases.")
-
-    normalized: list[dict[str, Any]] = []
-    for i, phase in enumerate(sched):
-        if not isinstance(phase, dict):
-            raise ValueError(f"mission_schedule[{i}] must be an object/dict.")
-        if "mission" not in phase or "generations" not in phase:
-            raise ValueError(f"mission_schedule[{i}] must contain keys: 'mission' and 'generations'.")
-        mission = phase["mission"]
-        gens = int(phase["generations"])
-        if gens <= 0:
-            raise ValueError(f"mission_schedule[{i}].generations must be > 0.")
-        normalized.append({"mission": mission, "generations": gens})
-
-    return normalized
-
-
-def _build_mission_timeline(schedule: list[dict[str, Any]]) -> list[str]:
-    """
-    Expand a mission schedule into a per-generation timeline.
-    """
-    missions_by_gen: list[str] = []
-    for phase in schedule:
-        missions_by_gen.extend([phase["mission"]] * int(phase["generations"]))
-    print("Mission array: ", missions_by_gen)
-    return missions_by_gen
-
-
-def mission_for_generation(cfg: dict[str, Any], gen: int) -> str:
-    """
-    Return the active mission for a given generation index.
-    """
-    timeline = cfg.get("missions_by_gen")
-    if not timeline:
-        schedule = _normalize_mission_schedule(cfg)
-        timeline = _build_mission_timeline(schedule)
-
-    if gen < 0:
-        gen = 0
-    if gen >= len(timeline):
-        return timeline[-1]
-    return timeline[gen]
-
-
 def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     """
     Finalize configuration by enforcing invariants and computing derived parameters.
@@ -835,6 +771,9 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     ----
     lambda_ is always derived from population_count and offspring_multiplier; this ensures
     that the EA meta passed to ea_mu_plus_lambda is consistent with the resolved config.
+    generations is taken directly from cfg (as set by the default config, a preset, a
+    resumed run's settings, or a positional override) rather than derived from a mission
+    schedule.
     """
     _normalize_arena_geometry(cfg)
 
@@ -842,12 +781,6 @@ def finalize_config(cfg: dict[str, Any]) -> dict[str, Any]:
     cfg["offspring_multiplier"] = float(cfg.get("offspring_multiplier", 2.0))
     cfg["lambda_"] = int(round(cfg["population_count"] * cfg["offspring_multiplier"]))
 
-    schedule = _normalize_mission_schedule(cfg)
-    missions_by_gen = _build_mission_timeline(schedule)
-    cfg["mission_schedule"] = schedule
-    cfg["missions_by_gen"] = missions_by_gen
-
-    cfg["generations"] = len(missions_by_gen)
-    cfg["mission"] = missions_by_gen[0] if missions_by_gen else cfg.get("mission")
+    cfg["generations"] = int(cfg.get("generations", 1))
 
     return cfg
