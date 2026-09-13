@@ -639,7 +639,7 @@ def default_run_config() -> dict[str, Any]:
         "arena_size": (20, 10, 20),
 
         "swarm_size": 2,
-        "generations": 10,
+        "generations": 100,
 
         "population_count": 10,
         "offspring_multiplier": 2.0,
@@ -660,31 +660,21 @@ def default_run_config() -> dict[str, Any]:
 
         "mission": BlockTypes.BLUE_WOOL.value,
         "mission_schedule": [
-            {"mission": BlockTypes.BLUE_WOOL.value, "generations": 10},
+            {"mission": BlockTypes.BLUE_WOOL.value, "generations": 100},
         ],
 
         "fitness_function": "S1",
         "construction": False,
 
         "blocks": {
-            BlockTypes.BLUE_WOOL.value: 8,
+            BlockTypes.BLUE_WOOL.value: 9,
             BlockTypes.ORANGE_WOOL.value: 0,
             BlockTypes.BROWN_WOOL.value: 0,
             BlockTypes.GREEN_WOOL.value: 0,
         },
 
-        # JSON-serializable; do_run passes Path(...) to ea_mu_plus_lambda.
         "resume_from": None,
 
-        # --- Curriculum learning / skill library -----------------------
-        # skill_library: paths to previously saved skills (save_skill) to
-        #   load for this run; each becomes selectable by SkillAction once
-        #   loaded. Empty by default -- a Tier 1 run has no prior skills.
-        # skill_injection_prob: probability generate_mutation_subtree()
-        #   splices a whole loaded skill into a mutation point (independent
-        #   of, and compatible with, the SkillAction primitive above).
-        # save_skill / skill_name: whether to pickle the best tree from
-        #   this run to skills/<skill_name>.pkl when it finishes.
         "skill_library": [],
         "skill_injection_prob": 0.0,
         "save_skill": False,

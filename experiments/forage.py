@@ -6,7 +6,7 @@ import numpy as np
 
 import swarmcraft.util
 from agents.forage import ForageAgent
-from environments.custom import BlocksEnvironment
+from environments.forage import ForageEnvironment
 from swarmcraft.experiment import Experiment
 
 
@@ -25,7 +25,7 @@ class ForageExperiment(Experiment):
         ORIGIN=(10, -60, 10),
         SIZE=(20, 10, 20),
         arena_count=1,
-        arena_distance=10,
+        arena_distance=20,
         fitness_function="S1",
         construction=False,
         *args
@@ -84,7 +84,7 @@ class ForageExperiment(Experiment):
         for arena_idx in range(self.arena_count):
             origin = self.compute_arena_origin(arena_idx)
 
-            env = BlocksEnvironment(
+            env = ForageEnvironment(
                 self.minecraft_server,
                 origin,
                 self.arena_size

@@ -53,7 +53,7 @@ class ForageAgent(Agent):
     """
 
     BLUE_WOOL = "blue_wool"
-
+    VALID_FITNESS_FUNCTIONS = {"S1", "S2", "S3", "S4"}
 
     def __init__(
         self,
@@ -265,7 +265,7 @@ class ForageAgent(Agent):
         which is explicitly allowed for this fitness function.
         """
 
-        distance = self.sensing.get_distance_to_next_block(BlockTypes.BLUE_WOOL)
+        distance = self.sensing.get_distance_to_next_block(BlockTypes.BLUE_WOOL.value)
 
         if distance is None:
             reward = 0.0
@@ -364,7 +364,7 @@ class ForageAgent(Agent):
         distance = self.sensing.get_distance_to_longest_blue_wool_line(
             self.environment.origin,
             self.environment.size,
-            block_name=BlockTypes.BLUE_WOOL
+            block_name=BlockTypes.BLUE_WOOL.value
         )
 
         if distance is None:
@@ -480,7 +480,7 @@ class ForageAgent(Agent):
                 ...
             }
         """
-        return self.sensing.get_inventory_item_count(BlockTypes.BLUE_WOOL)
+        return self.sensing.get_inventory_item_count(BlockTypes.BLUE_WOOL.value)
 
 
     def _get_longest_line_length(self):
@@ -493,7 +493,7 @@ class ForageAgent(Agent):
         return self.sensing.get_length_of_longest_line(
             self.environment.origin,
             self.environment.size,
-            block_name=BlockTypes.BLUE_WOOL
+            block_name=BlockTypes.BLUE_WOOL.value
         )
 
     # ----------------------------------------------------------------------

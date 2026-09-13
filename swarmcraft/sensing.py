@@ -469,32 +469,43 @@ class Sensing(object):
     # ------------------------------------------------------------------
 
     def find_nearest_block(self,
-                           block_names,
+                           block_name,
                            max_distance=32):
         """
         Returns nearest block matching one of block_names.
         """
+        try:
+            # 1. Retrieve the block data from Mineflayer's registry
+            block_data = self.agent.bot.registry.blocksByName[block_name]
 
-        if isinstance(block_names, str):
-            block_names = [block_names]
+            if not block_data:
+                print(f"Block '{block_name}' not found in registry.")
+                return None
 
-        block = self.bot.findBlock({
-            "matching": lambda b:
-            b is not None and b.name in block_names,
-            "maxDistance": max_distance
-        })
+            # 2. Extract the numerical ID
+            block_id = block_data.id
 
-        return block
+            # 3. Find the block using the numerical ID for the matching parameter
+            block = self.agent.bot.findBlock({
+                "matching": block_id,
+                "maxDistance": max_distance,
+                "count": 1
+            })
+
+            return block
+        except Exception as e:
+            print("Error while finding nearest block. Error: ", e)
+
 
     def has_block_nearby(self,
-                         block_names,
+                         block_name,
                          max_distance=8):
         """
         Convenience wrapper.
         """
 
         return self.find_nearest_block(
-            block_names,
+            block_name,
             max_distance
         ) is not None
 
@@ -503,9 +514,7 @@ class Sensing(object):
     # ------------------------------------------------------------------
 
     def distance_to_position(self, position):
-
         p = self.bot.entity.position
-
         return math.sqrt(
             (p.x - position.x) ** 2 +
             (p.y - position.y) ** 2 +
@@ -513,18 +522,20 @@ class Sensing(object):
         )
 
     def distance_to_block(self, block):
+        try:
+            if block is None:
+                return None
 
-        if block is None:
+            return self.distance_to_position(block.position)
+        except:
             return None
 
-        return self.distance_to_position(block.position)
-
     def is_near_block(self,
-                      block_names,
+                      block_name,
                       distance=2):
 
         block = self.find_nearest_block(
-            block_names,
+            block_name,
             distance
         )
 
@@ -612,7 +623,7 @@ class Sensing(object):
     def get_inventory_item_count(self,
                            item_name):
 
-        inventory = self.get_inventory_item_count(item_name)
+        inventory = self.get_inventory_item(item_name)
 
         if inventory is None:
             return 0
@@ -621,9 +632,12 @@ class Sensing(object):
             raise TypeError(
                 "sensing.get_inventory() must return a dictionary."
             )
-
-        return int(inventory.get(item_name, 0))
-
+        try:
+            return int(inventory.get(item_name, 0))
+        except:
+            print(inventory)
+            print("get_inventory_item_count")
+            return
     # ------------------------------------------------------------------
     # Structure Helpers
     # ------------------------------------------------------------------
@@ -652,11 +666,11 @@ class Sensing(object):
     # ------------------------------------------------------------------
 
     def can_see_block_type(self,
-                           block_names,
+                           block_name,
                            max_distance=32):
 
         block = self.find_nearest_block(
-            block_names,
+            block_name,
             max_distance
         )
 
@@ -670,11 +684,11 @@ class Sensing(object):
     # ------------------------------------------------------------------
 
     def get_nearest_block_position(self,
-                                   block_names,
+                                   block_name,
                                    max_distance=32):
 
         block = self.find_nearest_block(
-            block_names,
+            block_name,
             max_distance
         )
 
@@ -691,11 +705,11 @@ class Sensing(object):
         ))
 
     def is_path_possible(self,
-                         block_names,
+                         block_name,
                          max_distance=32):
 
         block = self.find_nearest_block(
-            block_names,
+            block_name,
             max_distance
         )
 

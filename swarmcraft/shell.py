@@ -126,7 +126,7 @@ def generate_pset():
             lambda: random.choice(["front", "left", "right", "random"])
         ]
     )
-    register_action(NavigateToColor)
+    # register_action(NavigateToColor)
     register_action(
         BroadcastLocation,
         param_generators=[

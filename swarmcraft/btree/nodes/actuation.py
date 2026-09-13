@@ -367,11 +367,11 @@ class FaceNearestBlock(ActionNode):
     def __init__(self, agent, *args):
         super().__init__(agent)
 
-        self.block = args[0]
+        self.block = BlockTypes.BLUE_WOOL.value
 
     def tick(self):
 
-        pos = self.agent.sensing.get_nearest_block(
+        pos = self.agent.sensing.find_nearest_block(
             self.block
         )
 
@@ -379,9 +379,7 @@ class FaceNearestBlock(ActionNode):
             return "failure"
 
         self.agent.actuation.face_position(
-            pos.x,
-            pos.y,
-            pos.z
+            pos
         )
 
         return "success"
