@@ -1,10 +1,12 @@
 {
   "S1": {
+    "name": "Skill 1 (Find blocks)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -24,11 +26,13 @@
     "skill_injection_prob": 0.0
   },
   "S2-2": {
+    "name": "Skill 2 (Forage)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -47,11 +51,13 @@
     ],
     "skill_injection_prob": 0.0
   },"S2": {
+    "name": "Skill 2 (Forage with Skill 1)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -72,11 +78,13 @@
     "skill_injection_prob": 0.0
   },
   "S3": {
+    "name": "Skill 3 (Find line with Skills 1&2)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -98,11 +106,13 @@
     "skill_injection_prob": 0.0
   },
   "S3-2": {
+    "name": "Skill 3 (Find line)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -122,11 +132,13 @@
     "skill_injection_prob": 0.0
   },
   "S4": {
+    "name": "Skill 4 (Extend line with Skills 1&2&3)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -149,11 +161,13 @@
     "skill_injection_prob": 0.0
   },
   "S4-2": {
+    "name": "Skill 4 (Extend line)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -173,11 +187,13 @@
     "skill_injection_prob": 0.0
   },
   "C": {
+    "name": "Complete Task (With Skills 1&2&3&4)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -200,13 +216,14 @@
     ],
     "skill_injection_prob": 0.0
   },
-
-  "C-2": {
+  "C-1": {
+    "name": "Complete Task (With Skills 1&2&3&4 -2)",
     "swarm_size": 3,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
+    "generations": 100,
     "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
@@ -222,6 +239,96 @@
     "save_skill": false,
     "skill_name": "",
     "skill_library": [
+      "findblock",
+      "forage-2",
+      "findline-2",
+      "extend-2"
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "C-2": {
+    "name": "Complete Task (no skills)",
+    "swarm_size": 3,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "generations": 100,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": false,
+    "skill_name": "",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "C-3": {
+    "name": "Complete Task (AI designed skills)",
+    "swarm_size": 3,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "generations": 100,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": false,
+    "skill_name": "",
+    "skill_library": [
+      "findblock-ai",
+      "forage-ai",
+      "findline-ai",
+      "extend-ai"
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "C-4": {
+    "name": "Complete Task (human designed skills)",
+    "swarm_size": 3,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "generations": 100,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": false,
+    "skill_name": "",
+    "skill_library": [
+      "findblock-human",
+      "forage-human",
+      "findline-human",
+      "extend-human"
     ],
     "skill_injection_prob": 0.0
   }

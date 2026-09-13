@@ -9,6 +9,108 @@ from swarmcraft import BlockTypes
 
 
 # =============================================================================
+# Interactive run configuration UI
+# =============================================================================
+
+def _preset_label(preset_id: str, cfg: dict[str, Any]) -> str:
+    """
+    Human-readable label for a preset.
+
+    Optional metadata supported in JSON:
+        "name": "Find blocks"
+        "description": "Learn to locate blue wool blocks"
+
+    Neither field is required.
+    """
+    name = cfg.get("name") or cfg.get("description")
+
+    if name:
+        return f"{preset_id} - {name}"
+
+    fitness = cfg.get("fitness_function")
+    if fitness:
+        return f"{preset_id} - fitness={fitness}"
+
+    return preset_id
+
+
+def _print_preset_entry(index: int, preset_id: str, cfg: dict[str, Any]) -> None:
+    """
+    Print one compact preset entry for the interactive selector.
+    """
+    exp_name = cfg.get("exp_name", "?")
+    fitness = cfg.get("fitness_function", "?")
+    swarm = cfg.get("swarm_size", "?")
+    generations = cfg.get("generations", "?")
+
+    label = _preset_label(preset_id, cfg)
+
+    print(
+        f"  [{index}] {label}\n"
+        f"      experiment={exp_name} | fitness={fitness} | "
+        f"swarm={swarm} | generations={generations}"
+    )
+
+    description = cfg.get("description")
+    if description and description != label:
+        print(f"      {description}")
+
+
+def prompt_preset_selection(
+    preset_path: Path | None = None,
+) -> str | None:
+    """
+    Interactively select an experiment preset.
+
+    Returns:
+        preset id, or None when cancelled.
+    """
+    presets = load_all_presets(preset_path)
+
+    if not presets:
+        print("No experiment presets are defined.")
+        return None
+
+    # Keep JSON ordering, which allows the file itself to define the menu order.
+    items = list(presets.items())
+
+    print("\n" + "=" * 72)
+    print("SELECT EXPERIMENT")
+    print("=" * 72)
+
+    for index, (preset_id, cfg) in enumerate(items, start=1):
+        if not isinstance(cfg, dict):
+            continue
+
+        _print_preset_entry(index, str(preset_id), cfg)
+
+    print()
+    print("Enter a number or preset id. Press Enter to cancel.")
+
+    while True:
+        choice = input("Experiment: ").strip()
+
+        if choice == "":
+            return None
+
+        # Numeric menu selection.
+        if choice.isdigit():
+            index = int(choice)
+            if 1 <= index <= len(items):
+                preset_id, cfg = items[index - 1]
+                if isinstance(cfg, dict):
+                    return str(preset_id)
+
+            print("Invalid experiment number.")
+            continue
+
+        # Direct preset-id selection.
+        if choice in presets:
+            return choice
+
+        print(f"Unknown preset '{choice}'.")
+
+# =============================================================================
 # CLI argument parsing (preset + resume flags + positional overrides)
 # =============================================================================
 
@@ -103,8 +205,7 @@ def resolve_run_config(args: str) -> dict[str, Any]:
         checkpoint = resume_from_path
     elif resume_interactive:
         checkpoint = prompt_resume_checkpoint()
-    else:
-        print("No checkpoint")
+
 
     if checkpoint is not None:
 
@@ -209,6 +310,340 @@ def print_run_config_summary(cfg: dict[str, Any]) -> None:
         f"elites={cfg['n_elites']}"
     )
     print(f"blocks={cfg['blocks']}")
+
+def print_interactive_config_summary(cfg: dict[str, Any]) -> None:
+    """
+    Display the configuration in a compact, experiment-oriented format.
+    """
+    preset_id = cfg.get("preset_id", "custom")
+    exp_name = cfg.get("exp_name", "?")
+    fitness = cfg.get("fitness_function", "?")
+
+    print("\n" + "=" * 72)
+    print("EXPERIMENT CONFIGURATION")
+    print("=" * 72)
+
+    print(f"Preset:       {preset_id}")
+    print(f"Experiment:   {exp_name}")
+    print(f"Fitness:      {fitness}")
+    print(f"Construction: {cfg.get('construction', False)}")
+
+    print("\nEvaluation")
+    print(f"  Swarm size:  {cfg.get('swarm_size')}")
+    print(f"  Arenas:      {cfg.get('arena_count')}")
+    print(f"  Duration:    {cfg.get('run_duration')} s")
+    print(f"  Repetitions: {cfg.get('number_repetitions')}")
+
+    print("\nEvolution")
+    print(f"  Generations: {cfg.get('generations')}")
+    print(f"  Population:  {cfg.get('population_count')}")
+    print(f"  Offspring:   {cfg.get('lambda_')}")
+    print(f"  Crossover:   {cfg.get('crossover_rate')}")
+    print(f"  Mutation:    {cfg.get('mutation_prob')}")
+    print(f"  Depth:       {cfg.get('min_depth')} - {cfg.get('max_depth')}")
+    print(f"  Tournament:  {cfg.get('tournsize')}")
+    print(f"  Elites:      {cfg.get('n_elites')}")
+
+    print("\nArena")
+    print(f"  Origin:      {cfg.get('arena_origin')}")
+    print(f"  Size:        {cfg.get('arena_size')}")
+    print(f"  Blocks:      {json.dumps(cfg.get('blocks', {}), sort_keys=True)}")
+
+    print("\nSkills")
+    print(f"  Library:     {cfg.get('skill_library', [])}")
+    print(f"  Injection:   {cfg.get('skill_injection_prob', 0.0)}")
+    print(f"  Save skill:  {cfg.get('save_skill', False)}")
+
+    if cfg.get("save_skill"):
+        print(f"  Skill name:  {cfg.get('skill_name')}")
+
+    print("=" * 72)
+
+def prompt_interactive_config_editor(cfg: dict[str, Any]) -> dict[str, Any]:
+    """
+    Interactive editor for commonly adjusted experiment parameters.
+
+    The user edits a category at a time rather than being prompted for every
+    configuration parameter.
+    """
+    while True:
+        print("\n" + "=" * 72)
+        print("EDIT SETTINGS")
+        print("=" * 72)
+        print("  [1] Swarm / evaluation")
+        print("  [2] Evolution")
+        print("  [3] Arena")
+        print("  [4] Fitness / construction")
+        print("  [5] Skills")
+        print("  [6] Experiment name")
+        print("  [b] Back")
+
+        choice = input("Category: ").strip().lower()
+
+        if choice in ("", "b", "back"):
+            return cfg
+
+        if choice == "1":
+            cfg["swarm_size"] = prompt_optional_int(
+                "swarm_size",
+                cfg.get("swarm_size"),
+            )
+
+            cfg["arena_count"] = prompt_optional_int(
+                "arena_count",
+                cfg.get("arena_count"),
+            )
+
+            cfg["run_duration"] = prompt_optional_int(
+                "run_duration",
+                cfg.get("run_duration"),
+            )
+
+            cfg["number_repetitions"] = prompt_optional_int(
+                "number_repetitions",
+                cfg.get("number_repetitions"),
+            )
+
+            continue
+
+        if choice == "2":
+            cfg["generations"] = prompt_optional_int(
+                "generations",
+                cfg.get("generations"),
+            )
+
+            cfg["population_count"] = prompt_optional_int(
+                "population_count",
+                cfg.get("population_count"),
+            )
+
+            cfg["offspring_multiplier"] = prompt_optional_float(
+                "offspring_multiplier",
+                cfg.get("offspring_multiplier"),
+            )
+
+            cfg["crossover_rate"] = prompt_optional_float(
+                "crossover_rate",
+                cfg.get("crossover_rate"),
+            )
+
+            cfg["mutation_prob"] = prompt_optional_float(
+                "mutation_prob",
+                cfg.get("mutation_prob"),
+            )
+
+            cfg["min_depth"] = prompt_optional_int(
+                "min_depth",
+                cfg.get("min_depth"),
+            )
+
+            cfg["max_depth"] = prompt_optional_int(
+                "max_depth",
+                cfg.get("max_depth"),
+            )
+
+            cfg["tournsize"] = prompt_optional_int(
+                "tournsize",
+                cfg.get("tournsize"),
+            )
+
+            cfg["n_elites"] = prompt_optional_int(
+                "n_elites",
+                cfg.get("n_elites"),
+            )
+
+            # lambda is derived from mu * offspring_multiplier
+            cfg = finalize_config(cfg)
+            continue
+
+        if choice == "3":
+            cfg["arena_origin"] = prompt_optional_vec3(
+                "arena_origin",
+                cfg.get("arena_origin"),
+            )
+
+            cfg["arena_size"] = prompt_optional_vec3(
+                "arena_size",
+                cfg.get("arena_size"),
+            )
+
+            cfg["blocks"] = prompt_optional_json(
+                "blocks",
+                cfg.get("blocks"),
+            )
+
+            cfg = finalize_config(cfg)
+            continue
+
+        if choice == "4":
+            current = cfg.get("fitness_function")
+            fitness = input(f"fitness_function [{current}]: ").strip()
+            if fitness:
+                cfg["fitness_function"] = fitness
+
+            current = cfg.get("construction", False)
+            cfg["construction"] = prompt_yes_no(
+                f"construction [{current}] (y/n): ",
+                default_yes=bool(current),
+            )
+
+            continue
+
+        if choice == "5":
+            current = cfg.get("skill_injection_prob", 0.0)
+            cfg["skill_injection_prob"] = prompt_optional_float(
+                "skill_injection_prob",
+                current,
+            )
+
+            current = cfg.get("save_skill", False)
+            cfg["save_skill"] = prompt_yes_no(
+                f"save_skill [{current}] (y/n): ",
+                default_yes=bool(current),
+            )
+
+            if cfg["save_skill"]:
+                cfg["skill_name"] = prompt_optional_str(
+                    "skill_name",
+                    cfg.get("skill_name"),
+                )
+
+            current_library = cfg.get("skill_library", [])
+
+            print("\nCurrent skill library:")
+            print(json.dumps(current_library, indent=2))
+
+            library_input = input(
+                "New skill_library as JSON (blank keeps current): "
+            ).strip()
+
+            if library_input:
+                try:
+                    parsed = json.loads(library_input)
+                    if not isinstance(parsed, list):
+                        raise ValueError("skill_library must be a JSON list.")
+                    cfg["skill_library"] = parsed
+                except Exception as e:
+                    print(f"Invalid skill library; keeping current value: {e}")
+
+            continue
+
+        if choice == "6":
+            cfg["exp_name"] = prompt_optional_str(
+                "exp_name",
+                cfg.get("exp_name"),
+            )
+            continue
+
+        print("Invalid category.")
+
+def prepare_interactive_run(args: str) -> dict[str, Any] | None:
+    """
+    Prepare a run configuration interactively.
+
+    Supported invocation styles:
+
+        run
+        run S1
+        run --preset S1
+
+    Positional numeric arguments remain supported for backwards compatibility.
+    """
+    try:
+        preset_id, resume_from_path, resume_interactive, argv = parse_run_args(args)
+    except Exception as e:
+        print(f"Could not parse run arguments: {e}")
+        return None
+
+    # -------------------------------------------------------------------------
+    # Resume remains supported through the existing implementation, but is not
+    # part of the normal interactive workflow.
+    # -------------------------------------------------------------------------
+    if resume_from_path is not None or resume_interactive:
+        cfg = resolve_run_config(args)
+        return cfg
+
+    presets = load_all_presets()
+
+    # -------------------------------------------------------------------------
+    # Determine preset
+    # -------------------------------------------------------------------------
+    if preset_id is None:
+        # Convenience syntax:
+        #
+        #     run S1
+        #
+        # If there is exactly one non-numeric positional argument and it names
+        # a preset, treat it as a preset id.
+        if len(argv) == 1 and argv[0] in presets:
+            preset_id = argv[0]
+            argv = []
+        elif len(argv) == 0:
+            preset_id = prompt_preset_selection()
+            if preset_id is None:
+                print("Run cancelled.")
+                return None
+
+    # -------------------------------------------------------------------------
+    # Build base configuration
+    # -------------------------------------------------------------------------
+    cfg = default_run_config()
+
+    if preset_id is not None:
+        preset_cfg = load_preset_config(preset_id)
+
+        for key, value in preset_cfg.items():
+            cfg[key] = value
+
+        cfg["preset_id"] = preset_id
+    else:
+        cfg["preset_id"] = "custom"
+
+    # Backward-compatible positional arguments.
+    cfg = apply_positional_overrides(cfg, argv)
+    cfg = finalize_config(cfg)
+
+    # -------------------------------------------------------------------------
+    # Interactive configuration loop
+    # -------------------------------------------------------------------------
+    while True:
+        print_interactive_config_summary(cfg)
+
+        print("\nWhat would you like to do?")
+        print("  [Enter] Start experiment")
+        print("  [e]     Edit settings")
+        print("  [s]     Show full configuration")
+        print("  [q]     Cancel")
+
+        choice = input("Choice [Enter/e/s/q]: ").strip().lower()
+
+        if choice == "":
+            # Explicit final confirmation avoids accidental runs.
+            confirmed = prompt_yes_no(
+                "\nStart this experiment? [Y/n]: ",
+                default_yes=True,
+            )
+
+            if confirmed:
+                return finalize_config(cfg)
+
+            continue
+
+        if choice in ("e", "edit"):
+            cfg = prompt_interactive_config_editor(cfg)
+            cfg = finalize_config(cfg)
+            continue
+
+        if choice in ("s", "show"):
+            print("\n=== FULL CONFIGURATION ===")
+            print(json.dumps(cfg, indent=2, sort_keys=True, default=str))
+            continue
+
+        if choice in ("q", "quit", "cancel"):
+            print("Run cancelled.")
+            return None
+
+        print("Invalid choice.")
 
 
 # =============================================================================

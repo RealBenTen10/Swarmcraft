@@ -17,7 +17,8 @@ from pathlib import Path
 from run_config import (
     resolve_run_config,
     create_run_directories,
-    print_run_config_summary
+    print_run_config_summary,
+    prepare_interactive_run
 )
 import swarmcraft.btree.nodes.base as bt
 from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, BroadcastLocation, Stop, \
@@ -219,63 +220,106 @@ class ServerShell(cmd.Cmd):
 
     def do_run(self, args):
         """
-        Run an experiment with swarm-compatible genetic programming.
+        Start an experiment.
 
-        Configuration sources (precedence)
-        ---------------------------------
-        1) Defaults from default_run_config()
-        2) Optional preset via: run --preset <id>
-        3) Optional positional overrides (backward compatible)
+        Interactive usage:
 
-        Logging / Saving
-        ---------------
-        - Creates ./logging/run_N/ (N is next free run id)
-        - Writes ./logging/run_N/experiment_setup.txt (resolved config)
-        - GP writes into the same run directory:
-            ./logging/run_N/gp_log.csv
-            ./logging/run_N/populations/gen_<g>.pkl
-            ./logging/run_N/populations/latest.pkl
+            run
+            run S1
+            run --preset S1
+
+        The interactive launcher allows the user to:
+            1. Select an experiment preset.
+            2. Review the resolved configuration.
+            3. Edit individual configuration categories.
+            4. Start or cancel the experiment.
+
+        Backward-compatible positional overrides remain supported.
         """
-        # Set seed for random at start of experiment
-        # this will result in same results for same experiment each time
-        # is global
         random.seed(42)
 
         # ============================================================
-        # 1) Resolve configuration (defaults -> preset -> positional -> finalize)
+        # 1) Prepare configuration
         # ============================================================
-        run_cfg = resolve_run_config(args)
-        print("Run cfg in shell: ", run_cfg)
-        print("resume from in shell: ", run_cfg["resume_from"])
+        try:
+            run_cfg = prepare_interactive_run(args)
+        except KeyboardInterrupt:
+            print("\nRun cancelled.")
+            return
+        except EOFError:
+            print("\nRun cancelled.")
+            return
+        except Exception as e:
+            print(f"Could not prepare experiment: {e}")
+            traceback.print_tb(e.__traceback__)
+            return
+
+        if run_cfg is None:
+            return
 
         exp_name = run_cfg["exp_name"]
 
         # ============================================================
-        # 2) Create run directory structure (./logging/run_N + populations/)
+        # 2) Validate experiment before creating a run directory
         # ============================================================
-        run_meta = create_run_directories()  # defaults to ./logging
-        run_cfg["run_id"] = run_meta["run_id"]
-        run_cfg["run_dir"] = run_meta["run_dir"]
-        run_cfg["pop_dir"] = run_meta["pop_dir"]
-        run_cfg["timestamp"] = run_meta["timestamp"]
+        if exp_name not in self.experiments:
+            print(
+                f"\nExperiment '{exp_name}' is not loaded."
+            )
+            print("Available experiments:")
 
+            for name in sorted(self.experiments):
+                print(f"  - {name}")
 
-        run_dir = Path(run_cfg["run_dir"])
-
-        # ============================================================
-        # 3) Persist resolved setup
-        # ============================================================
-        setup_path = run_dir / "experiment_setup.txt"
-        with setup_path.open("w", encoding="utf-8") as f:
-            f.write(json.dumps(run_cfg, indent=2, sort_keys=True))
+            print("\nRun cancelled.")
+            return
 
         # ============================================================
-        # 4) Print resolved config summary
+        # 3) Create run directory
         # ============================================================
+        try:
+            run_meta = create_run_directories()
+
+            run_cfg["run_id"] = run_meta["run_id"]
+            run_cfg["run_dir"] = run_meta["run_dir"]
+            run_cfg["pop_dir"] = run_meta["pop_dir"]
+            run_cfg["timestamp"] = run_meta["timestamp"]
+
+            run_dir = Path(run_cfg["run_dir"])
+
+        except Exception as e:
+            print(f"Could not create run directory: {e}")
+            traceback.print_tb(e.__traceback__)
+            return
+
+        # ============================================================
+        # 4) Persist resolved setup
+        # ============================================================
+        try:
+            setup_path = run_dir / "experiment_setup.txt"
+
+            with setup_path.open("w", encoding="utf-8") as f:
+                json.dump(
+                    run_cfg,
+                    f,
+                    indent=2,
+                    sort_keys=True,
+                    default=str,
+                )
+
+        except Exception as e:
+            print(f"Could not save experiment setup: {e}")
+            traceback.print_tb(e.__traceback__)
+            return
+
+        # ============================================================
+        # 5) Final configuration summary
+        # ============================================================
+        print("\n")
         print_run_config_summary(run_cfg)
 
         # ============================================================
-        # 5) Execute experiment + GP
+        # 6) Execute experiment + GP
         # ============================================================
         exp = None
         current_gen = -1
@@ -284,11 +328,11 @@ class ServerShell(cmd.Cmd):
         population_count = run_cfg["population_count"]
         lambda_ = run_cfg["lambda_"]
 
-        # Set probability of choosing skill for tree_grow
         swarm_gp.SKILL_INJECTION_PROB = run_cfg.get(
             "skill_injection_prob",
-            0.0
+            0.0,
         )
+
         try:
             exp = self.experiments[exp_name](
                 pooler=self.pooler,
@@ -299,56 +343,86 @@ class ServerShell(cmd.Cmd):
                 SIZE=run_cfg["arena_size"],
                 arena_count=run_cfg["arena_count"],
                 fitness_function=run_cfg["fitness_function"],
-                construction=run_cfg["construction"]
+                construction=run_cfg["construction"],
             )
 
             # Primitives must not accumulate across runs in the same process.
             reset_primitives()
             generate_pset()
 
-            # Load skills
+            # Load skills for this experiment.
             load_skill_library(
                 run_cfg.get("skill_library", [])
             )
 
-            # Create agents once; exp.set_round() resets env/agents state per evaluation
-            agents = exp.initialize(run_cfg["swarm_size"])
+            # Create agents once; exp.set_round() resets the environment and agent
+            # state for each evaluation.
+            agents = exp.initialize(
+                run_cfg["swarm_size"]
+            )
 
-            # ----------------------------
-            # Fitness function
-            # ----------------------------
+            # ------------------------------------------------------------
+            # Fitness evaluation
+            # ------------------------------------------------------------
             def evaluate_controller(tree, gen: int) -> float:
                 nonlocal current_gen, current_ind
 
                 if gen != current_gen:
                     current_gen = gen
                     current_ind = 1
-                    print(f"\n=== Generation {gen+1}/{run_cfg['generations']} ===")
-                    # set new random block positions
+
+                    print(
+                        f"\n=== Generation "
+                        f"{gen + 1}/{run_cfg['generations']} ==="
+                    )
+
                     exp.shuffle_block_positions()
+
                 else:
                     current_ind += 1
 
-                # Bind one deepcopy per agent
-                bound_trees = instantiate_for_swarm(tree, agents)
-                for agent, t in zip(agents, bound_trees):
-                   agent.set_tree(t)
-                # for agent in agents:
-                #     agent.set_tree("tree")
+                # One independent tree instance per swarm agent.
+                bound_trees = instantiate_for_swarm(
+                    tree,
+                    agents,
+                )
+
+                for agent, bound_tree in zip(
+                        agents,
+                        bound_trees,
+                ):
+                    agent.set_tree(bound_tree)
+
                 total_reward = 0.0
-                for _ in range(run_cfg["number_repetitions"]):
+
+                for _ in range(
+                        run_cfg["number_repetitions"]
+                ):
                     exp.set_round()
                     total_reward += exp.run()
 
-                avg_reward = total_reward / float(run_cfg["number_repetitions"])
-                fitness_val = avg_reward - 0.01 * tree_length(tree)
+                avg_reward = (
+                        total_reward
+                        / float(run_cfg["number_repetitions"])
+                )
 
-                print(f"Individual {current_ind}/{population_count + lambda_}: {tree_to_str(tree)} has Fitness: {round(fitness_val, 4)}")
+                fitness_val = (
+                        avg_reward
+                        - 0.01 * tree_length(tree)
+                )
+
+                print(
+                    f"Individual "
+                    f"{current_ind}/{population_count + lambda_}: "
+                    f"{tree_to_str(tree)} "
+                    f"has Fitness: {round(fitness_val, 4)}"
+                )
+
                 return fitness_val
 
-            # ----------------------------Fitness
+            # ------------------------------------------------------------
             # Evolution
-            # ----------------------------
+            # ------------------------------------------------------------
             population = ea_mu_plus_lambda(
                 mu=run_cfg["population_count"],
                 lambda_=run_cfg["lambda_"],
@@ -361,24 +435,51 @@ class ServerShell(cmd.Cmd):
                 tournsize=run_cfg["tournsize"],
                 n_elites=run_cfg["n_elites"],
                 logging_dir=run_dir,
-                resume_from=run_cfg["resume_from"],
+
+                # Resume support remains untouched.
+                resume_from=run_cfg.get("resume_from"),
             )
+
             best_tree = population[0]
-            print("\n=== RESULT ===")
-            print("Best controller:", tree_to_str(best_tree))
-            print("Logs and populations saved in:", run_dir)
+
+            print("\n" + "=" * 72)
+            print("RESULT")
+            print("=" * 72)
+            print("Best controller:")
+            print(tree_to_str(best_tree))
+            print()
+            print("Logs and populations saved in:")
+            print(run_dir)
+
+            # ------------------------------------------------------------
+            # Optional skill saving
+            # ------------------------------------------------------------
             if run_cfg.get("save_skill", False):
                 skill_name = run_cfg.get(
-                    "skill_name",
-                    f"skill_gen_{run_cfg['generations']}"
-                )
-                save_skill(
-                    best_tree,
-                    skill_name
+                    "skill_name"
                 )
 
+                if not skill_name:
+                    skill_name = (
+                        f"skill_gen_"
+                        f"{run_cfg['generations']}"
+                    )
+
+                save_skill(
+                    best_tree,
+                    skill_name,
+                )
+
+                print(f"Skill saved: {skill_name}")
+
         except KeyError as e:
-            print(f"Experiment '{exp_name}' not found:", e)
+            print(
+                f"Experiment '{exp_name}' not found:",
+                e,
+            )
+
+        except KeyboardInterrupt:
+            print("\nExperiment interrupted by user.")
 
         except Exception as e:
             print("Experiment error:", e)
@@ -389,7 +490,10 @@ class ServerShell(cmd.Cmd):
                 try:
                     exp.cleanup()
                 except Exception as cleanup_error:
-                    print("Cleanup error:", cleanup_error)
+                    print(
+                        "Cleanup error:",
+                        cleanup_error,
+                    )
 
     def do_reloadenvs(self, args):
         """Reload environments"""
