@@ -663,6 +663,9 @@ def default_run_config() -> dict[str, Any]:
             {"mission": BlockTypes.BLUE_WOOL.value, "generations": 10},
         ],
 
+        "fitness_function": "S1",
+        "construction": False,
+
         "blocks": {
             BlockTypes.BLUE_WOOL.value: 8,
             BlockTypes.ORANGE_WOOL.value: 0,

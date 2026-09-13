@@ -342,7 +342,8 @@ class PlaceHeldItem(AsyncActionNode):
         return f'{__class__.__name__}()'
 
 class NavigateToBlock(ActionNode):
-
+    """
+    """
     def __init__(self, agent, *args):
         super().__init__(agent)
 
@@ -360,7 +361,9 @@ class NavigateToBlock(ActionNode):
         return f"{__class__.__name__}({self.block})"
 
 class FaceNearestBlock(ActionNode):
-
+    """
+    Face nearest block to agent - turn in that direction
+    """
     def __init__(self, agent, *args):
         super().__init__(agent)
 

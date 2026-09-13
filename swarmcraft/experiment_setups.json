@@ -1,189 +1,228 @@
 {
-  "C0": {
+  "S1": {
     "swarm_size": 2,
     "population_count": 20,
     "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
-    "crossover_rate": 0.4,
-    "mutation_prob": 0.2,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
     "min_depth": 1,
     "max_depth": 2,
     "number_repetitions": 1,
     "tournsize": 3,
     "n_elites": 1,
-    "mission_schedule": [
-    {
-      "generations": 50,
-      "mission": "blue_wool"
-    }
-  ],
-    "blocks": {
-      "blue_wool": 5,
-      "orange_wool": 0,
-      "brown_wool": 0,
-      "green_wool": 0
-    },
+    "fitness_function": "S1",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "findblock",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "S2-2": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S2",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "forage-2",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
+  },"S2": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S2",
+    "construction": false,
     "arena_origin": [10, -60, 10],
     "arena_size": [30, 10, 30],
     "exp_name": "ForageExperiment",
     "save_skill": true,
     "skill_name": "forage",
-
     "skill_library": [
+      "findblock"
     ],
-
     "skill_injection_prob": 0.0
   },
-  "C1": {
-    "swarm_size": 5,
-    "population_count": 5,
-    "offspring_multiplier": 2.0,
-    "arena_count": 1,
-    "run_duration": 60,
-    "crossover_rate": 0.4,
-    "mutation_prob": 0.3,
-    "min_depth": 1,
-    "max_depth": 2,
-    "number_repetitions": 1,
-    "tournsize": 3,
-    "n_elites": 1,
-    "mission_schedule": [
-    {
-      "generations": 5,
-      "mission": "blue_wool"
-    }
-  ],
-    "blocks": {
-      "blue_wool": 5,
-      "orange_wool": 0,
-      "brown_wool": 0,
-      "green_wool": 0
-    },
-    "arena_origin": [10, -60, 10],
-    "arena_size": [30, 10, 30],
-    "exp_name": "ConstructionExperiment",
-    "save_skill": true,
-    "skill_name": "navigation",
-
-    "skill_library": [
-      "skills/forage.json"
-    ],
-
-    "skill_injection_prob": 0.9
-  },
-  "C2": {
-    "swarm_size": 5,
-    "population_count": 5,
-    "offspring_multiplier": 2.0,
-    "arena_count": 1,
-    "run_duration": 60,
-    "crossover_rate": 0.2,
-    "mutation_prob": 0.6,
-    "min_depth": 1,
-    "max_depth": 2,
-    "number_repetitions": 1,
-    "tournsize": 3,
-    "n_elites": 1,
-    "mission_schedule": [
-    {
-      "generations": 5,
-      "mission": "blue_wool"
-    }
-  ],
-    "blocks": {
-      "blue_wool": 5,
-      "orange_wool": 0,
-      "brown_wool": 0,
-      "green_wool": 0
-    },
-    "arena_origin": [10, -60, 10],
-    "arena_size": [30, 10, 30],
-    "save_skill": true,
-    "skill_name": "test",
-
-    "skill_library": [
-      "skills/foraging.pkl",
-      "skills/navigation.pkl"
-    ],
-
-    "skill_injection_prob": 0.7
-  },
-  "1": {
-    "swarm_size": 1,
+  "S3": {
+    "swarm_size": 2,
     "population_count": 20,
     "offspring_multiplier": 3.0,
-    "arena_count": 2,
-    "run_duration": 60,
-    "crossover_rate": 0.4,
-    "mutation_prob": 0.2,
-    "min_depth": 1,
-    "max_depth": 2,
-    "number_repetitions": 1,
-    "tournsize": 3,
-    "n_elites": 1,
-    "mission_schedule": [
-      { "mission": "blue_wool", "generations": 30 },
-      { "mission": "orange_wool", "generations": 10 },
-      { "mission": "blue_wool", "generations": 10 },
-      { "mission": "orange_wool", "generations": 10 }
-    ],
-    "blocks": {
-      "blue_wool": 4,
-      "orange_wool": 4,
-      "brown_wool": 0,
-      "green_wool": 0
-    }
-  },
-  "test": {
-    "swarm_size": 1,
-    "population_count": 2,
-    "offspring_multiplier": 2,
     "arena_count": 1,
-    "run_duration": 30,
-    "crossover_rate": 0.4,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
     "mutation_prob": 0.3,
     "min_depth": 1,
     "max_depth": 2,
     "number_repetitions": 1,
-    "tournsize": 2,
+    "tournsize": 3,
     "n_elites": 1,
-    "mission_schedule": [
-      { "mission": "blue_wool", "generations": 5 },
-      { "mission": "orange_wool", "generations": 5 }
-    ],
-    "blocks": {
-      "blue_wool": 6,
-      "orange_wool": 6,
-      "brown_wool": 0,
-      "green_wool": 0
-    },
+    "fitness_function": "S3",
+    "construction": false,
     "arena_origin": [10, -60, 10],
-    "arena_size": [30, 10, 30]
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "findline",
+    "skill_library": [
+      "findblock",
+      "forage"
+    ],
+    "skill_injection_prob": 0.0
   },
-  "manual_run": {
-    "swarm_size": 5,
-    "population_count": 50,
-    "offspring_multiplier": 0,
+  "S3-2": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
     "arena_count": 1,
     "run_duration": 60,
-    "crossover_rate": 0,
-    "mutation_prob": 0,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
     "min_depth": 1,
     "max_depth": 2,
     "number_repetitions": 1,
     "tournsize": 3,
     "n_elites": 1,
-    "mission_schedule": [
-      { "mission": "blue_wool", "generations": 24 }
-    ],
-    "blocks": {
-      "blue_wool": 5,
-      "orange_wool": 5,
-      "brown_wool": 0,
-      "green_wool": 0
-    },
+    "fitness_function": "S3",
+    "construction": false,
     "arena_origin": [10, -60, 10],
-    "arena_size": [20, 10, 20]
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "findline-2",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "S4": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "extend",
+    "skill_library": [
+      "findblock",
+      "forage",
+      "findline"
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "S4-2": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": true,
+    "skill_name": "extend-2",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
+  },
+  "C": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": false,
+    "skill_name": "",
+    "skill_library": [
+      "findblock",
+      "forage",
+      "findline",
+      "extend"
+    ],
+    "skill_injection_prob": 0.0
+  },
+
+  "C-2": {
+    "swarm_size": 2,
+    "population_count": 20,
+    "offspring_multiplier": 3.0,
+    "arena_count": 1,
+    "run_duration": 60,
+    "crossover_rate": 0.3,
+    "mutation_prob": 0.3,
+    "min_depth": 1,
+    "max_depth": 2,
+    "number_repetitions": 1,
+    "tournsize": 3,
+    "n_elites": 1,
+    "fitness_function": "S4",
+    "construction": false,
+    "arena_origin": [10, -60, 10],
+    "arena_size": [30, 10, 30],
+    "exp_name": "ForageExperiment",
+    "save_skill": false,
+    "skill_name": "",
+    "skill_library": [
+    ],
+    "skill_injection_prob": 0.0
   }
 }

@@ -48,17 +48,6 @@ class ConstructionExperiment(Experiment):
             self.arena_origin[2]
         )
 
-    def _set_agent_inventories(self, item_id: str = "141", amount: int = 3):
-        """
-        Clears each agent's inventory and equips them with the required blocks.
-        """
-        for agent in self.agents:
-            username = agent.sensing.get_username()
-            self.minecraft_server.send(f'command clear {username}')
-            time.sleep(0.005)
-            self.minecraft_server.send(f'command give {username} {item_id} {amount}')
-            time.sleep(0.005)
-
     @override
     def initialize(self, agents_per_arena):
         self.minecraft_server.send("command gamerule doWeatherCycle false")
@@ -122,11 +111,22 @@ class ConstructionExperiment(Experiment):
             agent.get_bot(uid=agent.id)
             agent.reset()
 
-        # Give 3 blue_wool blocks to each agent
-        self._set_agent_inventories(item_id="blue_wool", amount=3)
 
         self.minecraft_server.send('say initialized multi-arena construction environment')
         return self.agents
+
+    def _set_agent_inventories(self, item_id: str = "", amount: int = 0):
+        """
+        Clears each agent's inventory and equips them with the required blocks.
+        """
+        for agent in self.agents:
+            username = agent.sensing.get_username()
+            self.minecraft_server.send(f'command clear {username}')
+            time.sleep(0.005)
+            if amount > 0:
+                self.minecraft_server.send(f'command give {username} {item_id} {amount}')
+            time.sleep(0.005)
+
 
     def set_round(self):
         for agent in self.agents:

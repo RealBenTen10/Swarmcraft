@@ -7,17 +7,22 @@ import inspect
 import os
 import time
 import sys
-import traceback
-from pathlib import Path
 from typing import Any
 import javascript.connection
 import random
 import json
-from run_config import default_run_config, finalize_config, load_preset_config, apply_positional_overrides
-from run_config import mission_for_generation
+import traceback
+from pathlib import Path
 
+from run_config import (
+    resolve_run_config,
+    create_run_directories,
+    print_run_config_summary,
+    mission_for_generation
+)
 import swarmcraft.btree.nodes.base as bt
-from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, BroadcastLocation, Stop, NavigateOneBlock, NavigateToColor, MoveToReceivedCoordinate, PlaceForward
+from swarmcraft.btree.nodes.actuation import StartDig, PressDir, Rotate, ReleaseDir, BroadcastLocation, Stop, \
+    NavigateOneBlock, NavigateToColor, MoveToReceivedCoordinate, PlaceForward, FaceNearestBlock
 from swarmcraft.btree.nodes.sensing import SenseBlock, SenseBlockFront, SenseBlockRight, SenseBlockBack, SenseBlockLeft, IsHoldingItem
 from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
@@ -134,6 +139,7 @@ def generate_pset():
             lambda: random.choice([0, 1])
         ]
     )
+    register_action(FaceNearestBlock)
     register_action(PlaceForward)
 
     return
@@ -231,15 +237,10 @@ class ServerShell(cmd.Cmd):
             ./logging/run_N/populations/gen_<g>.pkl
             ./logging/run_N/populations/latest.pkl
         """
-        import json
-        import traceback
-        from pathlib import Path
-
-        from run_config import (
-            resolve_run_config,
-            create_run_directories,
-            print_run_config_summary,
-        )
+        # Set seed for random at start of experiment
+        # this will result in same results for same experiment each time
+        # is global
+        random.seed(42)
 
         # ============================================================
         # 1) Resolve configuration (defaults -> preset -> positional -> finalize)
@@ -295,9 +296,11 @@ class ServerShell(cmd.Cmd):
                 minecraft_server=self.server,
                 message_server=self.messenger,
                 run_duration=run_cfg["run_duration"],
-                arena_count=run_cfg["arena_count"],
                 ORIGIN=run_cfg["arena_origin"],
                 SIZE=run_cfg["arena_size"],
+                arena_count=run_cfg["arena_count"],
+                fitness_function=run_cfg["fitness_function"],
+                construction=run_cfg["construction"]
             )
 
             # Primitives must not accumulate across runs in the same process.
@@ -321,9 +324,9 @@ class ServerShell(cmd.Cmd):
                 if gen != current_gen:
                     current_gen = gen
                     current_ind = 1
-                    print(f"\n=== Generation {gen+1}/{run_cfg['generations']} | mission={mission_for_generation(run_cfg, gen)} ===")
+                    print(f"\n=== Generation {gen+1}/{run_cfg['generations']} ===")
                     # set new random block positions
-                    exp.shuffle_block_positions(run_cfg["blocks"])
+                    exp.shuffle_block_positions()
                 else:
                     current_ind += 1
 
@@ -333,11 +336,10 @@ class ServerShell(cmd.Cmd):
                    agent.set_tree(t)
                 # for agent in agents:
                 #     agent.set_tree("tree")
-                mission = mission_for_generation(run_cfg, gen)
                 total_reward = 0.0
                 for _ in range(run_cfg["number_repetitions"]):
                     exp.set_round()
-                    total_reward += exp.run(mission, run_cfg["blocks"])
+                    total_reward += exp.run()
 
                 avg_reward = total_reward / float(run_cfg["number_repetitions"])
                 fitness_val = avg_reward - 0.01 * tree_length(tree)
@@ -359,7 +361,7 @@ class ServerShell(cmd.Cmd):
                 evaluate=evaluate_controller,
                 tournsize=run_cfg["tournsize"],
                 n_elites=run_cfg["n_elites"],
-                logging_dir=run_dir,  # gp_log.csv + populations/...
+                logging_dir=run_dir,
                 resume_from=run_cfg["resume_from"],
             )
             best_tree = population[0]

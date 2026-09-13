@@ -8,15 +8,17 @@ from swarmcraft import BlockTypes
 
 
 class ForageEnvironment(Environment):
-    def __init__(self, minecraft_server, origin, size):
+    def __init__(self, minecraft_server, origin, size, blocks = {"blue_wool": 9}):
         super().__init__(minecraft_server)
         self.origin = origin
         self.size = size
         self.resource_positions = []
 
-        # Block spec (type -> count) and fixed per-experiment positions
-        self.blocks = None
-        self.blocks_position = None  # {"blue_wool": [(x,y,z), ...], ...}
+        # The arena layout is identical for every experiment/round.
+        # 7 random blocks + 2 fixed blocks forming the construction line.
+        self.blocks = blocks
+        self.blocks_position = None  # {"blue_wool": [(x,y,z), ...]}
+
 
         # Ensures bedrock walls/floor, stairs, and roof are only built once
         self._static_built = False
@@ -57,7 +59,7 @@ class ForageEnvironment(Environment):
         - z in [origin.z+1 .. origin.z+size.z-2]
         - y is only the block layer where resources are placed: origin.y+1 (height 1 above floor)
 
-        This matches your current spawning y_pos = origin.y + 1.
+        This matches current spawning y_pos = origin.y + 1.
         """
         if self.size[0] < 3 or self.size[2] < 3:
             return  # no interior exists
@@ -77,11 +79,7 @@ class ForageEnvironment(Environment):
     @override
     def reset(self):
         """
-        Backwards-compatible reset method.
-
-        For your new workflow you should NOT wipe the whole arena volume each round,
-        because that would remove walls/floor. Therefore, reset() now clears only
-        the interior resource layer.
+        clears only the interior resource layer.
         """
         self.reset_arena_interior()
 
@@ -286,59 +284,145 @@ class ForageEnvironment(Environment):
 
     def shuffle_block_positions(self, blocks=None):
         """
-        Compute and store a fresh random (but then fixed) set of block positions in self.blocks_position.
-
-        Workflow:
-        - Call shuffle_block_positions() once per experiment (or whenever you want a new layout).
-        - Each round call reset_arena_interior() then set_blocks(); set_blocks uses ONLY these stored positions.
-
-        Parameters
-        ----------
-        blocks : dict[str,int] | None
-            Block-type -> count; if None, uses default.
-        seed : int | None
-            If provided, makes the shuffle deterministic for reproducibility.
+        Create a layout with:
+        - 9 blue-wool blocks total.
+        - 2 blue-wool blocks form a horizontal construction line.
+        - The construction line is placed at a random valid position inside
+          the arena.
+        - 7 additional blocks are placed at deterministic pseudo-random positions.
+        - A 3x3 area in the center is always kept free for agent spawning.
+        - Among the 7 random blocks, X coordinates and Z coordinates are
+          pairwise unique, so they cannot form an additional horizontal or
+          vertical line.
         """
-        if blocks is None:
-            blocks = {"blue_wool": 4, "orange_wool": 4, "brown_wool": 0, "green_wool": 0}
+        block_type = "blue_wool"
+        random_count = 7
+        line_count = 2
 
-        self.blocks = dict(blocks)
-
-        if self.size[0] < 3 or self.size[2] < 3:
-            self.blocks_position = {bt: [] for bt in self.blocks}
-            return
-
-        # Reserve center tile (agent spawn / no resource placement)
-        center_x = self.origin[0] + self.size[0] // 2
-        center_z = self.origin[2] + self.size[2] // 2
-        reserved = (center_x, self.origin[1] + 1, center_z)
-
-        interior_w = self.size[0] - 2
-        interior_d = self.size[2] - 2
-        capacity = interior_w * interior_d - 1  # minus reserved
-        total_needed = sum(int(c) for c in self.blocks.values())
-        if total_needed > capacity:
+        if self.size[0] < 8 or self.size[2] < 8:
             raise ValueError(
-                f"Too many blocks requested ({total_needed}) for interior capacity ({capacity}) "
-                f"given arena size={self.size} and one reserved center tile."
+                f"Arena is too small for the required layout: size={self.size}. "
+                "At least 8x8 is required."
             )
 
-        occupied = {reserved}
-        positions: dict[str, list[tuple[int, int, int]]] = {bt: [] for bt in self.blocks}
+        self.blocks = {block_type: random_count + line_count}
 
-        for block_type, count in self.blocks.items():
-            for _ in range(int(count)):
-                while True:
-                    x_pos = random.randint(self.origin[0] + 1, self.origin[0] + self.size[0] - 2)
-                    z_pos = random.randint(self.origin[2] + 1, self.origin[2] + self.size[2] - 2)
-                    y_pos = self.origin[1] + 1
-                    coord = (x_pos, y_pos, z_pos)
-                    if coord not in occupied:
-                        occupied.add(coord)
-                        positions[block_type].append(coord)
-                        break
+        center_x = self.origin[0] + self.size[0] // 2
+        center_z = self.origin[2] + self.size[2] // 2
+        y_pos = self.origin[1] + 1
 
-        self.blocks_position = positions
+        # Keep a 3x3 center area completely free.
+        reserved = {
+            (center_x + dx, y_pos, center_z + dz)
+            for dx in (-1, 0, 1)
+            for dz in (-1, 0, 1)
+        }
+
+        # ------------------------------------------------------------------
+        # Randomly place the two adjacent construction blocks.
+        # ------------------------------------------------------------------
+
+        # Valid coordinates for the first block. The second block is placed
+        # directly to the +X direction.
+        line_x_candidates = list(
+            range(self.origin[0] + 1, self.origin[0] + self.size[0] - 2)
+        )
+        line_z_candidates = list(
+            range(self.origin[2] + 1, self.origin[2] + self.size[2] - 1)
+        )
+        random.shuffle(line_x_candidates)
+        random.shuffle(line_z_candidates)
+
+        construction_line = None
+
+        for line_x in line_x_candidates:
+            for line_z in line_z_candidates:
+                candidate = [
+                    (line_x, y_pos, line_z),
+                    (line_x + 1, y_pos, line_z),
+                ]
+
+                # Do not place the construction line inside the spawn area.
+                if any(pos in reserved for pos in candidate):
+                    continue
+
+                construction_line = candidate
+                break
+
+            if construction_line is not None:
+                break
+
+        if construction_line is None:
+            raise RuntimeError(
+                "Could not find a valid random position for the construction line."
+            )
+
+        occupied = set(reserved)
+        occupied.update(construction_line)
+
+        # ------------------------------------------------------------------
+        # Place the remaining 7 blocks.
+        # ------------------------------------------------------------------
+
+        x_candidates = list(
+            range(self.origin[0] + 1, self.origin[0] + self.size[0] - 1)
+        )
+        z_candidates = list(
+            range(self.origin[2] + 1, self.origin[2] + self.size[2] - 1)
+        )
+
+        # Exclude X/Z coordinates used by the construction line.
+        line_xs = {construction_line[0][0], construction_line[1][0]}
+        line_z = construction_line[0][2]
+
+        x_candidates = [
+            x for x in x_candidates
+            if x not in line_xs
+        ]
+        z_candidates = [
+            z for z in z_candidates
+            if z != line_z
+        ]
+
+        random.shuffle(x_candidates)
+        random.shuffle(z_candidates)
+
+        random_positions = []
+        used_x = set()
+        used_z = set()
+
+        # Unique X + unique Z prevents the 7 random blocks from forming
+        # additional horizontal or vertical lines.
+        for x in x_candidates:
+            for z in z_candidates:
+                coord = (x, y_pos, z)
+
+                if x in used_x or z in used_z:
+                    continue
+
+                if coord in occupied:
+                    continue
+
+                random_positions.append(coord)
+                used_x.add(x)
+                used_z.add(z)
+                occupied.add(coord)
+
+                if len(random_positions) == random_count:
+                    break
+
+            if len(random_positions) == random_count:
+                break
+
+        if len(random_positions) != random_count:
+            raise RuntimeError(
+                "Could not construct the required 7 random block positions "
+                "without violating the center/construction-line constraints."
+            )
+
+        self.blocks_position = {
+            block_type: construction_line + random_positions
+        }
 
     def set_blocks(self):
         """

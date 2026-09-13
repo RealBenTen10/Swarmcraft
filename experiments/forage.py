@@ -6,12 +6,16 @@ import numpy as np
 
 import swarmcraft.util
 from agents.forage import ForageAgent
-from environments.forage import ForageEnvironment
+from environments.custom import BlocksEnvironment
 from swarmcraft.experiment import Experiment
 
 
+VALID_FITNESS_FUNCTIONS = {"S1", "S2", "S3", "S4"}
 
 class ForageExperiment(Experiment):
+    # Identical world layout for every experiment and every arena.
+    ENVIRONMENT_BLOCKS = {"blue_wool": 9}
+
     def __init__(
         self,
         pooler,
@@ -22,6 +26,8 @@ class ForageExperiment(Experiment):
         SIZE=(20, 10, 20),
         arena_count=1,
         arena_distance=10,
+        fitness_function="S1",
+        construction=False,
         *args
     ):
         super().__init__(pooler, minecraft_server, message_server)
@@ -34,6 +40,11 @@ class ForageExperiment(Experiment):
         self.arena_size = SIZE
         self.arena_count = arena_count
         self.arena_distance = arena_distance
+
+        # Selects the fitness implementation in ForageAgent.
+        self.fitness_function = fitness_function
+        # Use this flag for
+        self.construction = construction
 
         self.environments = []
         self.agents = []
@@ -59,6 +70,8 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send("command time set day")
         self.last_update_time = time.time()
 
+
+
         # Clean up previous agents
         if self.agents:
             for agent in self.agents:
@@ -71,12 +84,16 @@ class ForageExperiment(Experiment):
         for arena_idx in range(self.arena_count):
             origin = self.compute_arena_origin(arena_idx)
 
-            env = ForageEnvironment(
+            env = BlocksEnvironment(
                 self.minecraft_server,
                 origin,
                 self.arena_size
             )
             env.clean_environment(20, 8)
+
+            # Generate the deterministic layout once per environment.
+            # Every round reuses exactly these positions.
+            env.shuffle_block_positions(self.ENVIRONMENT_BLOCKS)
             self.environments.append(env)
 
             center = (
@@ -91,7 +108,8 @@ class ForageExperiment(Experiment):
                     self.message_server,
                     f'forager_{self.total_agents_existed}',
                     center,
-                    env
+                    env,
+                    fitness_function=self.fitness_function
                 )
                 self.total_agents_existed += 1
                 self.current_agent_count += 1
@@ -114,6 +132,18 @@ class ForageExperiment(Experiment):
         self.minecraft_server.send('say initialized multi-arena foraging environment')
         return self.agents
 
+    def _set_agent_inventories(self, item_id: str = "", amount: int = 0):
+        """
+        Clears each agent's inventory and equips them with the required blocks.
+        """
+        for agent in self.agents:
+            username = agent.sensing.get_username()
+            self.minecraft_server.send(f'command clear {username}')
+            time.sleep(0.005)
+            if amount > 0:
+                self.minecraft_server.send(f'command give {username} {item_id} {amount}')
+            time.sleep(0.005)
+
     def set_round(self):
         for agent in self.agents:
             if agent.bot is None:
@@ -125,19 +155,29 @@ class ForageExperiment(Experiment):
             agent.reset()
             time.sleep(0.001)
 
+        # Always start with a clean inventory.
+        # Construction is the only experiment that receives blocks.
+        if self.construction:
+            self._set_agent_inventories(
+                item_id="blue_wool",
+                amount=1
+            )
+
         for env in self.environments:
             time.sleep(0.001)
             env.reset_arena_interior()
             time.sleep(0.001)
             env.set_blocks()
 
-    def shuffle_block_positions(self, blocks):
+    def shuffle_block_positions(self):
+        # Kept for compatibility, but the actual layout is experiment-fixed.
+        # Calling this explicitly regenerates the same deterministic layout.
         for env in self.environments:
-            env.shuffle_block_positions(blocks)
+            env.shuffle_block_positions(self.ENVIRONMENT_BLOCKS)
 
 
     @override
-    def run(self, mission, blocks, number_arena=None):
+    def run(self):
         # Teleport each agent to its own arena center
         for agent in self.agents:
             x, y, z = agent.start_location
@@ -152,71 +192,33 @@ class ForageExperiment(Experiment):
 
         time.sleep(1)
 
-        use_normal_loop = True
-        if use_normal_loop:
-            start_time = time.time()
+        start_time = time.time()
 
-            def agent_worker(agent):
-                """Worker loop executed by each agent's dedicated thread."""
-                while time.time() - start_time < self.max_time_sec:
-                    tick_start = time.time()
+        def agent_worker(agent):
+            """Worker loop executed by each agent's dedicated thread."""
+            while time.time() - start_time < self.max_time_sec:
+                tick_start = time.time()
 
-                    # Update agent behavior tree
-                    agent.update()
+                # Update agent behavior tree
+                agent.update()
 
-                    # Calculate sleep duration to maintain self.update_interval without drifting
-                    elapsed = time.time() - tick_start
-                    sleep_time = self.update_interval - elapsed
-                    if sleep_time > 0:
-                        time.sleep(sleep_time)
+                # Calculate sleep duration to maintain self.update_interval without drifting
+                elapsed = time.time() - tick_start
+                sleep_time = self.update_interval - elapsed
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
 
-            # 1. Spawn one persistent thread for each agent
-            threads = []
-            for agent in self.agents:
-                thread = threading.Thread(target=agent_worker, args=(agent,))
-                threads.append(thread)
-                thread.start()
+        # 1. Spawn one persistent thread for each agent
+        threads = []
+        for agent in self.agents:
+            thread = threading.Thread(target=agent_worker, args=(agent,))
+            threads.append(thread)
+            thread.start()
 
-            # 2. Wait for all agent threads to finish the run
-            for thread in threads:
-                thread.join()
-        else:
-            # special loop where we iterate over agents in blocks divided via environment
-            start_time = time.monotonic()
-            envs = list(self.environments)
-            n_env = len(envs)
-            if n_env == 0:
-                return
+        # 2. Wait for all agent threads to finish the run
+        for thread in threads:
+            thread.join()
 
-            update_interval = self.update_interval
-            slot = update_interval / n_env
-
-            # Initialize per-environment phased schedules:
-            t0 = time.monotonic()
-            next_env_update = {env: t0 + i * slot for i, env in enumerate(envs)}
-
-            while time.monotonic() - start_time < self.max_time_sec:
-                now = time.monotonic()
-
-                # Build env -> agents mapping in O(#agents) per tick.
-                env_to_agents = defaultdict(list)
-                for a in self.agents:
-                    env_to_agents[a.environment].append(a)
-
-                # Update environments whose time slot has arrived.
-                for env in envs:
-                    due = next_env_update[env]
-                    if now >= due:
-                        for agent in env_to_agents.get(env, ()):
-                            agent.update()
-
-                        # Advance schedule without drifting the phase:
-                        # If we are late by multiple intervals, skip forward accordingly.
-                        missed = int((now - due) // update_interval)
-                        next_env_update[env] = due + (missed + 1) * update_interval
-
-                # Small sleep prevents busy-waiting; tune as needed.
-                time.sleep(0.001)
 
         time.sleep(4) # wait before evaluation
 
@@ -230,34 +232,12 @@ class ForageExperiment(Experiment):
             for agent in agents_in_env:
                 time.sleep(0.01)
                 try:
-                    remaining_blocks = agent.sensing.get_blocks_in_arena(
-                        env.origin,
-                        env.size,
-                        blocks
-                    )
-                    visited: set[tuple[int, int, int]] = set()
-                    for a in agents_in_env:
-                        time.sleep(0.001)
-                        visited.update(a.positions)
-
-                    unique_positions_count = len(visited)
-
-                    fitness = agent.evaluation(
-                        remaining_blocks=remaining_blocks,
-                        size=self.arena_size,
-                        color=mission,
-                        initial_blocks=blocks,
-                        unique_positions_count=unique_positions_count,
-                    )
+                    fitness = agent.evaluation()
                     break
                 except Exception as e:
                     print("Failed to get remaining blocks: ", e)
 
-            # aggregate unique visited positions across ALL agents in this arena
-
-            # print(f"Arena fitness: {fitness} (unique visited positions: {unique_positions_count})")
             total_fitness += fitness
-
 
         for agent in self.agents:
             agent.reset()

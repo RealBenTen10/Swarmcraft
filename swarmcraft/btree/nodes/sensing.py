@@ -58,7 +58,7 @@ class IsHoldingItem(ActionNode):
 
 class SenseBlock(ActionNode):
     """
-    Sense blocks nearby
+    Sense blocks nearby of certain color
     """
     def __init__(self, agent: Agent, *args):
         super().__init__(agent)

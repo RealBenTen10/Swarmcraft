@@ -156,8 +156,6 @@ class Sensing(object):
         """
         return self.bot.blockAt(self.bot.entity.position.offset(0, -1, 0))
 
-
-
     def can_dig_cursor_block(self):
         """
         Check if the block at the cursor is diggable and in range
@@ -262,15 +260,154 @@ class Sensing(object):
 
         return block_count
 
-    def evaluation(self, remaining_blocks, color, block_number, reward_multiplier=1, penalty_multiplier=1):
-        evaluation = 0
-        for block in remaining_blocks:
-            count = block_number - remaining_blocks[block]
-            if block == color:
-                evaluation += count*reward_multiplier
-            else:
-                evaluation -= count*penalty_multiplier
-        return evaluation
+    def get_longest_blue_wool_line(self, origin, size, block_name = "blue_wool"):
+        """
+        Find the longest continuous horizontal or vertical line of blue_wool
+        blocks inside the arena.
+
+        If multiple lines have the same maximum length, all of them are returned.
+
+        Returns:
+            tuple:
+                (length, lines)
+
+            length:
+                Length of the longest continuous line.
+
+            lines:
+                List of lines, where each line is a list of Vec3 positions.
+
+            Returns (0, []) if no blue_wool line exists.
+        """
+
+        y = origin[1] + 1
+
+        longest_length = 0
+        longest_lines = []
+
+        # ------------------------------------------------------------
+        # Horizontal lines (X direction)
+        # ------------------------------------------------------------
+        for z in range(1, size[2] - 1):
+            current_positions = []
+
+            for x in range(1, size[0] - 1):
+                position = Vec3(
+                    origin[0] + x,
+                    y,
+                    origin[2] + z
+                )
+
+                block = self.bot.blockAt(position)
+
+                if block is not None and block.name == block_name:
+                    current_positions.append(position)
+                else:
+                    if len(current_positions) > longest_length:
+                        longest_length = len(current_positions)
+                        longest_lines = [list(current_positions)]
+                    elif len(current_positions) == longest_length and longest_length > 0:
+                        longest_lines.append(list(current_positions))
+
+                    current_positions = []
+
+            # Check line ending at the arena boundary.
+            if len(current_positions) > longest_length:
+                longest_length = len(current_positions)
+                longest_lines = [list(current_positions)]
+            elif len(current_positions) == longest_length and longest_length > 0:
+                longest_lines.append(list(current_positions))
+
+        # ------------------------------------------------------------
+        # Vertical lines (Z direction)
+        # ------------------------------------------------------------
+        for x in range(1, size[0] - 1):
+            current_positions = []
+
+            for z in range(1, size[2] - 1):
+                position = Vec3(
+                    origin[0] + x,
+                    y,
+                    origin[2] + z
+                )
+
+                block = self.bot.blockAt(position)
+
+                if block is not None and block.name == block_name:
+                    current_positions.append(position)
+                else:
+                    if len(current_positions) > longest_length:
+                        longest_length = len(current_positions)
+                        longest_lines = [list(current_positions)]
+                    elif len(current_positions) == longest_length and longest_length > 0:
+                        longest_lines.append(list(current_positions))
+
+                    current_positions = []
+
+            # Check line ending at the arena boundary.
+            if len(current_positions) > longest_length:
+                longest_length = len(current_positions)
+                longest_lines = [list(current_positions)]
+            elif len(current_positions) == longest_length and longest_length > 0:
+                longest_lines.append(list(current_positions))
+
+        return longest_length, longest_lines
+
+    def get_length_of_longest_line(self, origin, size, block_name="blue_wool"):
+        """
+                Return the current length of the longest construction line.
+
+                The actual line-detection implementation belongs to the environment.
+                """
+
+        length, _ = self.get_longest_blue_wool_line(
+            origin,
+            size,
+            block_name
+        )
+
+        if length is None:
+            return 0
+
+        return int(length)
+
+    def get_distance_to_longest_blue_wool_line(self, origin, size, block_name = "blue_wool"):
+        """
+        Return the minimum distance from the agent to any of the longest
+        continuous blue_wool lines.
+
+        If multiple lines have the same maximum length, the closest one
+        is used.
+
+        Returns:
+            float: Minimum Euclidean distance to a longest line.
+            None: If no blue_wool line exists.
+        """
+
+        _, longest_lines = self.get_longest_blue_wool_line(
+            origin,
+            size,
+            block_name
+        )
+
+        if not longest_lines:
+            return None
+
+        return min(
+            self.distance_to_position(position)
+            for line in longest_lines
+            for position in line
+        )
+
+    # def evaluation(self, remaining_blocks, color, block_number, reward_multiplier=1, penalty_multiplier=1):
+    #     evaluation = 0
+    #     for block in remaining_blocks:
+    #         count = block_number - remaining_blocks[block]
+    #         if block == color:
+    #             evaluation += count*reward_multiplier
+    #         else:
+    #             evaluation -= count*penalty_multiplier
+    #     return evaluation
 
     # ------------------------------------------------------------------
     # Basic Block Queries
@@ -403,29 +540,6 @@ class Sensing(object):
             return self.bot.blockAtCursor(5)
         except Exception:
             return None
-    #
-    # def get_cursor_block(self):
-    #     """
-    #     Get the block at the bot's cursor, to a distance of 256 blocks.
-    #     """
-    #     #print(self.bot.blockAtCursor(256).getProperties())
-    #
-    #     if self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))):
-    #         print("1: ", self.bot.entity.position.offset(-1,0,0))
-    #         print("2: ", self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-    #         print("3: ", self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0))))
-    #         #print("4: ", self.bot.blockAtCursor(256)) # always None
-    #         #print("5: ", self.bot.canDigBlock(self.bot.blockAtCursor(256))) # always None
-    #         #self.bot.canDigBlock(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-    #         try:
-    #             @AsyncTask(start=True)
-    #             def break_block(task):
-    #                 self.bot.dig(self.bot.blockAt(self.bot.entity.position.offset(-1,0,0)))
-    #             self.bot.chat('I started digging!')
-    #         except Exception as e:
-    #             self.bot.chat(f"I had an error while digging")
-    #             #print(f"Error during dig: {e}")
-    #     return self.bot.blockAtCursor(256)
 
     def get_cursor_face(self):
         """
@@ -495,6 +609,21 @@ class Sensing(object):
 
         return None
 
+    def get_inventory_item_count(self,
+                           item_name):
+
+        inventory = self.get_inventory_item_count(item_name)
+
+        if inventory is None:
+            return 0
+
+        if not isinstance(inventory, dict):
+            raise TypeError(
+                "sensing.get_inventory() must return a dictionary."
+            )
+
+        return int(inventory.get(item_name, 0))
+
     # ------------------------------------------------------------------
     # Structure Helpers
     # ------------------------------------------------------------------
@@ -553,6 +682,13 @@ class Sensing(object):
             return None
 
         return block.position
+
+    def get_distance_to_next_block(self, block_name="blue_wool"):
+        return self.distance_to_block(
+            block = self.find_nearest_block(
+            block_name,
+            32
+        ))
 
     def is_path_possible(self,
                          block_names,

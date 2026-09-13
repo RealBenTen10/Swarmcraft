@@ -4,7 +4,7 @@ from typing import override
 
 from agents.test import Tester
 from swarmcraft.experiment import Experiment
-from environments.forage import ForageEnvironment
+from environments.custom import ForageEnvironment
 
 ORIGIN = (10, -60, 10)
 
