@@ -1210,7 +1210,10 @@ class Actuation(object):
     def place_block_in_front(self) -> bool:
         """
         Places a block in front of the agent by attaching it to the top
-        face of the solid floor block beneath the target coordinate.
+        face of the support block directly beneath the target position.
+
+        The support position must contain a non-air block, and the target
+        position itself must be air.
         """
         if not self.equip_placeable_block():
             return False
@@ -1219,19 +1222,26 @@ class Actuation(object):
         off_x = int(round(-math.sin(yaw)))
         off_z = int(round(math.cos(yaw)))
 
-        # Target position in front
+        # Target position in front of the agent
         front_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
 
-        # Support block directly beneath the front target position
+        # Block that should be placed at the target position
+        target_block = self.agent.bot.blockAt(front_pos)
+
+        # Target position must be air
+        if target_block is None or target_block.name != "air":
+            return False
+
+        # Support block directly beneath the target position
         support_pos = front_pos.offset(0, -1, 0)
         support_block = self.agent.bot.blockAt(support_pos)
 
-        # Verify support block is solid (not air or liquid)
+        # Support block must exist and must not be air
         if support_block is None or support_block.name == "air":
             return False
 
         try:
-            # Place block on the top face (0, 1, 0) of the support block
+            # Place the equipped block on the top face of the support block
             self.agent.bot.placeBlock(support_block, Vec3(0, 1, 0))
             return True
         except Exception as e:
