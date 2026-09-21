@@ -96,9 +96,13 @@ class ForageAgent(Agent):
         # been populated with blocks.
         self._fitness_initialized = False
 
-        # S1/S3: accumulated distance reward over ticks
+        # S1/S3: accumulated distance-based fitness
         self._distance_fitness_sum = 0.0
         self._fitness_tick_count = 0
+
+        # S1: distance tracking for normalized progress
+        self._s1_initial_distance = None
+        self._s1_previous_distance = None
 
         # S2/S4: previous world state
         self._previous_arena_block_count = None
@@ -162,6 +166,10 @@ class ForageAgent(Agent):
 
         self._distance_fitness_sum = 0.0
         self._fitness_tick_count = 0
+
+        # S1 distance tracking
+        self._s1_initial_distance = None
+        self._s1_previous_distance = None
 
         self._previous_arena_block_count = None
         self._previous_inventory_count = None
@@ -234,6 +242,22 @@ class ForageAgent(Agent):
         self._previous_arena_block_count = self._get_blue_wool_count()
         self._previous_inventory_count = self._get_blue_wool_inventory_count()
 
+        if self.fitness_function == "S1":
+            distance = self.sensing.get_distance_to_next_block(
+                BlockTypes.BLUE_WOOL.value
+            )
+
+            if distance is not None:
+                if distance < 0:
+                    raise ValueError(
+                        f"Distance to nearest block cannot be negative: {distance}"
+                    )
+
+                distance = int(math.floor(distance))
+
+                self._s1_initial_distance = distance
+                self._s1_previous_distance = distance
+
         if self.fitness_function == "S4":
             self._previous_longest_line_length = (
                 self._get_longest_line_length()
@@ -249,39 +273,85 @@ class ForageAgent(Agent):
         """
         S1: Find blocks.
 
-        Every tick:
-            reward = exp(-distance / distance_scale)
+        The fitness rewards progress toward the nearest blue_wool block.
 
-        Maximum reward:
-            1.0 when distance == 0
+        Let:
+            d0 = initial distance
+            dp = previous distance
+            dc = current distance
+
+        Per tick:
+            progress_reward = (dp - dc) / max(1, d0)
 
         Therefore:
-            distance 0  -> 1.0
-            distance 1  -> exp(-1)
-            distance 2  -> exp(-2)
-            ...
+            moving closer  -> positive reward
+            standing still -> 0
+            moving farther -> negative reward
 
-        Standing still close to a block continues to generate a reward,
-        which is explicitly allowed for this fitness function.
+        The total progress from the initial position to distance 0 is
+        approximately +1.0, independent of the initial distance.
+
+        Example:
+            initial distance = 4
+
+            4 -> 3: +0.25
+            3 -> 2: +0.25
+            2 -> 1: +0.25
+            1 -> 0: +0.25
+
+            total progress = +1.0
         """
 
-        distance = self.sensing.get_distance_to_next_block(BlockTypes.BLUE_WOOL.value)
+        distance = self.sensing.get_distance_to_next_block(
+            BlockTypes.BLUE_WOOL.value
+        )
 
         if distance is None:
-            reward = 0.0
-        else:
-            if distance < 0:
-                raise ValueError(
-                    f"Distance to nearest block cannot be negative: {distance}"
-                )
+            self._fitness_tick_count += 1
+            return
 
-            reward = math.exp(-distance / self.distance_scale)
+        if distance < 0:
+            raise ValueError(
+                f"Distance to nearest block cannot be negative: {distance}"
+            )
 
-        # Numerical protection.
-        reward = min(1.0, max(0.0, reward))
+        # Convert the continuous distance to the corresponding grid
+        # distance, keeping the existing distance definition.
+        distance = int(math.floor(distance))
+
+        # If the initial distance could not be established because the target
+        # was temporarily unavailable, initialize it now.
+        if self._s1_initial_distance is None:
+            self._s1_initial_distance = distance
+            self._s1_previous_distance = distance
+            self._fitness_tick_count += 1
+            return
+
+        # Safety fallback in case the previous distance was reset separately.
+        if self._s1_previous_distance is None:
+            self._s1_previous_distance = distance
+            self._fitness_tick_count += 1
+            return
+
+        # Positive when the agent moved closer to the nearest block.
+        progress = self._s1_previous_distance - distance
+
+        # Normalize by the initial distance.
+        #
+        # max(1, initial_distance) prevents division by zero when the agent
+        # already starts next to a block.
+        normalization = max(1, self._s1_initial_distance)
+        progress_reward = progress / normalization
+
+        achievement_reward = 1.0 if distance == 0 else 0.0
+
+        reward = progress_reward + achievement_reward
 
         self._distance_fitness_sum += reward
         self._fitness_tick_count += 1
+
+        # Store current distance for the next tick.
+        self._s1_previous_distance = distance
 
     # ----------------------------------------------------------------------
     # S2 - Destroy and collect blocks
@@ -390,9 +460,9 @@ class ForageAgent(Agent):
         """
         S4: Extend the current line.
 
-        +1  when the longest line becomes longer
-        -1  for a false placement
-        -1  when a correctly placed line block is destroyed
+        +2  when the longest line becomes longer
+        -2  for a false placement
+        -2  when a correctly placed line block is destroyed
 
         A false placement is defined as:
 
@@ -419,7 +489,7 @@ class ForageAgent(Agent):
         )
 
         if line_extension > 0:
-            self._event_fitness += 1.0
+            self._event_fitness += 2.0
 
         # --------------------------------------------------------------
         # False placement
@@ -430,7 +500,7 @@ class ForageAgent(Agent):
         )
 
         # For each block that did not extend the line reduce the fitness by one
-        self._event_fitness -= placed_blocks - line_extension * 1.0
+        self._event_fitness -= (placed_blocks - line_extension) * 2.0
 
         # --------------------------------------------------------------
         # Correctly placed block destroyed
@@ -441,7 +511,7 @@ class ForageAgent(Agent):
         )
 
         if line_destroyed > 0:
-            self._event_fitness -= line_destroyed * 1.0
+            self._event_fitness -= line_destroyed * 2.0
 
         # Store state for next tick.
         self._previous_arena_block_count = current_arena_count
