@@ -408,7 +408,7 @@ class ServerShell(cmd.Cmd):
 
                 fitness_val = (
                         avg_reward
-                        - 0.01 * tree_length(tree)
+                        # - 0.01 * tree_length(tree)
                 )
 
                 print(

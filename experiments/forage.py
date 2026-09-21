@@ -141,7 +141,6 @@ class ForageExperiment(Experiment):
             self.minecraft_server.send(f'command clear {username}')
             time.sleep(0.005)
             if amount > 0:
-                print("getting wool")
                 self.minecraft_server.send(f'command give {username} {item_id} {amount}')
             time.sleep(0.005)
 
