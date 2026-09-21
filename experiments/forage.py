@@ -141,6 +141,7 @@ class ForageExperiment(Experiment):
             self.minecraft_server.send(f'command clear {username}')
             time.sleep(0.005)
             if amount > 0:
+                print("getting wool")
                 self.minecraft_server.send(f'command give {username} {item_id} {amount}')
             time.sleep(0.005)
 
@@ -157,11 +158,10 @@ class ForageExperiment(Experiment):
 
         # Always start with a clean inventory.
         # Construction is the only experiment that receives blocks.
-        if self.construction:
-            self._set_agent_inventories(
-                item_id="blue_wool",
-                amount=1
-            )
+        self._set_agent_inventories(
+            item_id="blue_wool",
+            amount=1 if self.construction else 0
+        )
 
         for env in self.environments:
             time.sleep(0.001)
