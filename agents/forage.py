@@ -100,9 +100,11 @@ class ForageAgent(Agent):
         self._distance_fitness_sum = 0.0
         self._fitness_tick_count = 0
 
-        # S1: distance tracking for normalized progress
-        self._s1_initial_distance = None
-        self._s1_previous_distance = None
+        # S1: shortest distance observed during the whole run
+        self._s1_min_distance = None
+
+        # S1: final-state bonus
+        self._s1_final_bonus = 0.0
 
         # S2/S4: previous world state
         self._previous_arena_block_count = None
@@ -167,9 +169,9 @@ class ForageAgent(Agent):
         self._distance_fitness_sum = 0.0
         self._fitness_tick_count = 0
 
-        # S1 distance tracking
-        self._s1_initial_distance = None
-        self._s1_previous_distance = None
+        # S1
+        self._s1_min_distance = None
+        self._s1_final_bonus = 0.0
 
         self._previous_arena_block_count = None
         self._previous_inventory_count = None
@@ -210,8 +212,12 @@ class ForageAgent(Agent):
         """
         Update fitness once per behavior-tree tick.
 
-        S1/S3:
-            Reward is based on distance and averaged over ticks.
+        S1:
+            Track only the shortest distance to a target block observed
+            during the entire run.
+
+        S3:
+            Reward is based on distance and accumulated over ticks.
 
         S2/S4:
             Reward/penalties are based on changes in world/inventory state.
@@ -242,22 +248,6 @@ class ForageAgent(Agent):
         self._previous_arena_block_count = self._get_blue_wool_count()
         self._previous_inventory_count = self._get_blue_wool_inventory_count()
 
-        if self.fitness_function == "S1":
-            distance = self.sensing.get_distance_to_next_block(
-                BlockTypes.BLUE_WOOL.value
-            )
-
-            if distance is not None:
-                if distance < 0:
-                    raise ValueError(
-                        f"Distance to nearest block cannot be negative: {distance}"
-                    )
-
-                distance = int(math.floor(distance))
-
-                self._s1_initial_distance = distance
-                self._s1_previous_distance = distance
-
         if self.fitness_function == "S4":
             self._previous_longest_line_length = (
                 self._get_longest_line_length()
@@ -273,33 +263,41 @@ class ForageAgent(Agent):
         """
         S1: Find blocks.
 
-        The fitness rewards progress toward the nearest blue_wool block.
+        During the whole run, only the shortest floored distance to a
+        blue_wool block is retained.
 
         Let:
-            d0 = initial distance
-            dp = previous distance
-            dc = current distance
 
-        Per tick:
-            progress_reward = (dp - dc) / max(1, d0)
+            d_min = shortest distance observed during the run
+
+        The distance component of the final fitness is:
+
+            1 / (1 + d_min)
 
         Therefore:
-            moving closer  -> positive reward
-            standing still -> 0
-            moving farther -> negative reward
 
-        The total progress from the initial position to distance 0 is
-        approximately +1.0, independent of the initial distance.
+            d_min = 0 -> 1.0
+            d_min = 1 -> 0.5
+            d_min = 2 -> 0.333...
+            d_min = 3 -> 0.25
+            ...
 
-        Example:
-            initial distance = 4
+        Importantly, distance is NOT accumulated over ticks.
 
-            4 -> 3: +0.25
-            3 -> 2: +0.25
-            2 -> 1: +0.25
-            1 -> 0: +0.25
+        Therefore:
 
-            total progress = +1.0
+            standing still at distance 5
+                -> fitness component = 1/6
+
+            moving in the wrong direction first, then reaching distance 2
+                -> fitness component = 1/3
+
+        The agent is not penalized for initially moving in the wrong
+        direction. Only the best distance reached during the whole run
+        matters.
+
+        A separate +2 bonus is awarded in `finalize_s1()` when the agent is
+        at distance.floor() == 0 at the end of the run.
         """
 
         distance = self.sensing.get_distance_to_next_block(
@@ -319,39 +317,14 @@ class ForageAgent(Agent):
         # distance, keeping the existing distance definition.
         distance = int(math.floor(distance))
 
-        # If the initial distance could not be established because the target
-        # was temporarily unavailable, initialize it now.
-        if self._s1_initial_distance is None:
-            self._s1_initial_distance = distance
-            self._s1_previous_distance = distance
-            self._fitness_tick_count += 1
-            return
+        # Store the best distance observed during the entire run.
+        if (
+            self._s1_min_distance is None
+            or distance < self._s1_min_distance
+        ):
+            self._s1_min_distance = distance
 
-        # Safety fallback in case the previous distance was reset separately.
-        if self._s1_previous_distance is None:
-            self._s1_previous_distance = distance
-            self._fitness_tick_count += 1
-            return
-
-        # Positive when the agent moved closer to the nearest block.
-        progress = self._s1_previous_distance - distance
-
-        # Normalize by the initial distance.
-        #
-        # max(1, initial_distance) prevents division by zero when the agent
-        # already starts next to a block.
-        normalization = max(1, self._s1_initial_distance)
-        progress_reward = progress / normalization
-
-        achievement_reward = 1.0 if distance == 0 else 0.0
-
-        reward = progress_reward + achievement_reward
-
-        self._distance_fitness_sum += reward
         self._fitness_tick_count += 1
-
-        # Store current distance for the next tick.
-        self._s1_previous_distance = distance
 
     # ----------------------------------------------------------------------
     # S2 - Destroy and collect blocks
@@ -423,8 +396,8 @@ class ForageAgent(Agent):
         """
         S3: Find the currently longest line.
 
-        Same principle as S1, but the target is the current longest line
-        rather than the nearest block.
+        Same principle as the existing implementation, but the target is the
+        current longest line rather than the nearest block.
 
         reward = exp(-distance_to_longest_line / distance_scale)
 
@@ -499,8 +472,10 @@ class ForageAgent(Agent):
             current_arena_count - previous_arena_count
         )
 
-        # For each block that did not extend the line reduce the fitness by one
-        self._event_fitness -= (placed_blocks - line_extension) * 2.0
+        # For each block that did not extend the line, reduce the fitness.
+        self._event_fitness -= (
+            placed_blocks - line_extension
+        ) * 2.0
 
         # --------------------------------------------------------------
         # Correctly placed block destroyed
@@ -550,8 +525,10 @@ class ForageAgent(Agent):
                 ...
             }
         """
-        return self.sensing.get_inventory_item_count(BlockTypes.BLUE_WOOL.value)
 
+        return self.sensing.get_inventory_item_count(
+            BlockTypes.BLUE_WOOL.value
+        )
 
     def _get_longest_line_length(self):
         """
@@ -567,6 +544,56 @@ class ForageAgent(Agent):
         )
 
     # ----------------------------------------------------------------------
+    # S1 finalization
+    # ----------------------------------------------------------------------
+
+    def finalize_s1(self):
+        """
+        Finalize the S1 fitness after the episode has ended.
+
+        Fitness consists of:
+
+            distance_reward = 1 / (1 + minimum_distance)
+
+        plus:
+
+            +2 if the agent is at distance.floor() == 0 at the end.
+
+        The +2 bonus is therefore awarded only for the final state and never
+        repeatedly during the run.
+        """
+
+        # No block was ever observed.
+        if self._s1_min_distance is None:
+            return 0.0
+
+        # Reward the shortest distance reached at any point.
+        distance_reward = 1.0 / (1.0 + self._s1_min_distance)
+
+        # --------------------------------------------------------------
+        # Final-state bonus
+        # --------------------------------------------------------------
+        final_distance = self.sensing.get_distance_to_next_block(
+            BlockTypes.BLUE_WOOL.value
+        )
+
+        self._s1_final_bonus = 0.0
+
+        if final_distance is not None:
+            if final_distance < 0:
+                raise ValueError(
+                    f"Distance to nearest block cannot be negative: "
+                    f"{final_distance}"
+                )
+
+            final_distance = int(math.floor(final_distance))
+
+            if final_distance == 0:
+                self._s1_final_bonus = 2.0
+
+        return distance_reward + self._s1_final_bonus
+
+    # ----------------------------------------------------------------------
     # Final evaluation
     # ----------------------------------------------------------------------
 
@@ -574,15 +601,21 @@ class ForageAgent(Agent):
         """
         Return this agent's fitness for the completed run.
 
-        S1/S3:
-            Average reward over all evaluated ticks.
-            Therefore the maximum possible distance-based fitness is 1.
+        S1:
+            1 / (1 + shortest distance observed during the whole run)
+            + 2 if the agent is next to a block at the end of the run.
+
+        S3:
+            Average distance reward over all evaluated ticks.
 
         S2/S4:
             Sum of event rewards/penalties.
         """
 
-        if self.fitness_function in {"S1", "S3"}:
+        if self.fitness_function == "S1":
+            fitness = self.finalize_s1()
+
+        elif self.fitness_function == "S3":
             if self._fitness_tick_count == 0:
                 return 0.0
 
@@ -606,7 +639,7 @@ class ForageAgent(Agent):
         Aggregate the fitness of all agents belonging to one arena.
 
         S1/S3:
-            Average over all agents in the arena, as required.
+            Average over all agents in the arena.
 
         S2/S4:
             Sum all agent contributions because the event fitness is a
