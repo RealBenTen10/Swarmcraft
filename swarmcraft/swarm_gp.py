@@ -1449,6 +1449,9 @@ def tree_to_str(node):
         if hasattr(node, "message_content") and node.message_content not in ("", None):
             params.append(f'"{node.message_content}"')
 
+        if hasattr(node, "yaw_mode") and node.yaw_mode not in ("", None):
+            params.append(f'"{node.yaw_mode}"')
+
         return f"{name}({', '.join(params)})" if params else name
 
     return str(node)
