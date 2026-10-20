@@ -14,7 +14,7 @@ import json
 import traceback
 from pathlib import Path
 
-from run_config import (
+from swarmcraft.run_config import (
     resolve_run_config,
     create_run_directories,
     print_run_config_summary,
@@ -28,7 +28,7 @@ from swarmcraft.experiment import Experiment
 from swarmcraft.environment import Environment
 from swarmcraft import BlockTypes
 
-from swarm_gp import (
+from swarmcraft.swarm_gp import (
     register_control,
     register_action,
     instantiate_for_swarm,
@@ -39,7 +39,7 @@ from swarm_gp import (
     load_skill_library,
     save_skill,
 )
-import swarm_gp
+import swarmcraft.swarm_gp
 
 
 # ============================================================
