@@ -328,7 +328,7 @@ class ServerShell(cmd.Cmd):
         population_count = run_cfg["population_count"]
         lambda_ = run_cfg["lambda_"]
 
-        swarm_gp.SKILL_INJECTION_PROB = run_cfg.get(
+        swarmcraft.swarm_gp.SKILL_INJECTION_PROB = run_cfg.get(
             "skill_injection_prob",
             0.0,
         )
