@@ -12,7 +12,7 @@ def enqueue_output(out, queue):
     out.close()
 
 HOST = '0.0.0.0'
-PORT = 25577
+PORT = 25576
 TIMEOUT = 120 # this is probably excessive, but on slower machines startup can really take a while!
 
 class MinecraftServer:

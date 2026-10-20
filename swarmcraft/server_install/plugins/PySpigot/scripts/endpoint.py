@@ -5,7 +5,7 @@ import methods
 
 # remember jython is only python 2!
 
-HOST, PORT = '0.0.0.0', 25577
+HOST, PORT = '0.0.0.0', 25576
 
 def encode(msg):
     header = struct.pack('>H', len(msg))
