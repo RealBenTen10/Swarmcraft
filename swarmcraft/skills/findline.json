@@ -8,17 +8,429 @@
     "children": [
       {
         "type": "action",
-        "class": "NavigateOneBlock",
+        "class": "BroadcastLocation",
         "parameters": {
-          "direction": "random"
+          "message_prefix": "0"
         }
       },
       {
-        "type": "action",
-        "class": "NavigateOneBlock",
-        "parameters": {
-          "direction": "left"
-        }
+        "type": "control",
+        "class": "SequenceNode",
+        "children": [
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "NavigateOneBlock",
+                "parameters": {
+                  "direction": "random"
+                }
+              },
+              {
+                "type": "control",
+                "class": "SequenceNode",
+                "children": [
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "action",
+                        "class": "ReleaseDir",
+                        "parameters": {
+                          "key": "forward"
+                        }
+                      },
+                      {
+                        "type": "control",
+                        "class": "SequenceNode",
+                        "children": [
+                          {
+                            "type": "control",
+                            "class": "SequenceNode",
+                            "children": [
+                              {
+                                "type": "control",
+                                "class": "FallbackNode",
+                                "children": [
+                                  {
+                                    "type": "action",
+                                    "class": "IsHoldingItem"
+                                  },
+                                  {
+                                    "type": "action",
+                                    "class": "BroadcastLocation",
+                                    "parameters": {
+                                      "message_prefix": "0"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "control",
+                                "class": "FallbackNode",
+                                "children": [
+                                  {
+                                    "type": "action",
+                                    "class": "MoveToReceivedCoordinate",
+                                    "parameters": {
+                                      "target_prefix": "0"
+                                    }
+                                  },
+                                  {
+                                    "type": "action",
+                                    "class": "Stop"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "action",
+                            "class": "SenseBlockFront"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "control",
+                            "class": "FallbackNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "SenseBlockRight"
+                              },
+                              {
+                                "type": "action",
+                                "class": "ReleaseDir",
+                                "parameters": {
+                                  "key": "forward"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "type": "action",
+                            "class": "SenseBlockLeft"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "FaceNearestBlock"
+                          },
+                          {
+                            "type": "action",
+                            "class": "MoveToReceivedCoordinate",
+                            "parameters": {
+                              "target_prefix": "0"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "control",
+                "class": "SequenceNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "PlaceForward"
+                  },
+                  {
+                    "type": "control",
+                    "class": "SequenceNode",
+                    "children": [
+                      {
+                        "type": "action",
+                        "class": "Stop"
+                      },
+                      {
+                        "type": "action",
+                        "class": "IsHoldingItem"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "control",
+                "class": "SequenceNode",
+                "children": [
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "control",
+                        "class": "SequenceNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "PlaceForward"
+                          },
+                          {
+                            "type": "control",
+                            "class": "FallbackNode",
+                            "children": [
+                              {
+                                "type": "control",
+                                "class": "SequenceNode",
+                                "children": [
+                                  {
+                                    "type": "control",
+                                    "class": "SequenceNode",
+                                    "children": [
+                                      {
+                                        "type": "action",
+                                        "class": "BroadcastLocation",
+                                        "parameters": {
+                                          "message_prefix": "0"
+                                        }
+                                      },
+                                      {
+                                        "type": "control",
+                                        "class": "SequenceNode",
+                                        "children": [
+                                          {
+                                            "type": "action",
+                                            "class": "BroadcastLocation",
+                                            "parameters": {
+                                              "message_prefix": "0"
+                                            }
+                                          },
+                                          {
+                                            "type": "action",
+                                            "class": "SenseBlockBack"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "action",
+                                    "class": "SenseBlockBack"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "action",
+                                "class": "MoveToReceivedCoordinate",
+                                "parameters": {
+                                  "target_prefix": "0"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "SenseBlockFront"
+                          },
+                          {
+                            "type": "control",
+                            "class": "SequenceNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "StartDig",
+                                "parameters": {
+                                  "color": "blue_wool"
+                                }
+                              },
+                              {
+                                "type": "action",
+                                "class": "SenseBlockFront"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "NavigateOneBlock",
+                            "parameters": {
+                              "direction": "random"
+                            }
+                          },
+                          {
+                            "type": "control",
+                            "class": "SequenceNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "SenseBlockFront"
+                              },
+                              {
+                                "type": "control",
+                                "class": "SequenceNode",
+                                "children": [
+                                  {
+                                    "type": "control",
+                                    "class": "SequenceNode",
+                                    "children": [
+                                      {
+                                        "type": "control",
+                                        "class": "SequenceNode",
+                                        "children": [
+                                          {
+                                            "type": "action",
+                                            "class": "BroadcastLocation",
+                                            "parameters": {
+                                              "message_prefix": "0"
+                                            }
+                                          },
+                                          {
+                                            "type": "control",
+                                            "class": "SequenceNode",
+                                            "children": [
+                                              {
+                                                "type": "action",
+                                                "class": "BroadcastLocation",
+                                                "parameters": {
+                                                  "message_prefix": "0"
+                                                }
+                                              },
+                                              {
+                                                "type": "control",
+                                                "class": "FallbackNode",
+                                                "children": [
+                                                  {
+                                                    "type": "action",
+                                                    "class": "PlaceForward"
+                                                  },
+                                                  {
+                                                    "type": "action",
+                                                    "class": "SenseBlockBack"
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "action",
+                                        "class": "SenseBlockLeft"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "control",
+                                    "class": "FallbackNode",
+                                    "children": [
+                                      {
+                                        "type": "control",
+                                        "class": "SequenceNode",
+                                        "children": [
+                                          {
+                                            "type": "control",
+                                            "class": "SequenceNode",
+                                            "children": [
+                                              {
+                                                "type": "action",
+                                                "class": "BroadcastLocation",
+                                                "parameters": {
+                                                  "message_prefix": "0"
+                                                }
+                                              },
+                                              {
+                                                "type": "control",
+                                                "class": "SequenceNode",
+                                                "children": [
+                                                  {
+                                                    "type": "action",
+                                                    "class": "SenseBlockLeft"
+                                                  },
+                                                  {
+                                                    "type": "control",
+                                                    "class": "FallbackNode",
+                                                    "children": [
+                                                      {
+                                                        "type": "action",
+                                                        "class": "PlaceForward"
+                                                      },
+                                                      {
+                                                        "type": "action",
+                                                        "class": "SenseBlockBack"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "type": "action",
+                                            "class": "SenseBlockLeft"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "action",
+                                        "class": "MoveToReceivedCoordinate",
+                                        "parameters": {
+                                          "target_prefix": "0"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "action",
+                        "class": "SenseBlockFront"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
   }
