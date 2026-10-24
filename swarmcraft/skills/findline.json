@@ -209,7 +209,7 @@
                                         "type": "action",
                                         "class": "BroadcastLocation",
                                         "parameters": {
-                                          "message_prefix": "0"
+                                          "message_prefix": "1"
                                         }
                                       },
                                       {
@@ -220,7 +220,7 @@
                                             "type": "action",
                                             "class": "BroadcastLocation",
                                             "parameters": {
-                                              "message_prefix": "0"
+                                              "message_prefix": "1"
                                             }
                                           },
                                           {
@@ -241,7 +241,7 @@
                                 "type": "action",
                                 "class": "MoveToReceivedCoordinate",
                                 "parameters": {
-                                  "target_prefix": "0"
+                                  "target_prefix": "1"
                                 }
                               }
                             ]
@@ -316,7 +316,7 @@
                                             "type": "action",
                                             "class": "BroadcastLocation",
                                             "parameters": {
-                                              "message_prefix": "0"
+                                              "message_prefix": "1"
                                             }
                                           },
                                           {
@@ -327,7 +327,7 @@
                                                 "type": "action",
                                                 "class": "BroadcastLocation",
                                                 "parameters": {
-                                                  "message_prefix": "0"
+                                                  "message_prefix": "1"
                                                 }
                                               },
                                               {
@@ -370,7 +370,7 @@
                                                 "type": "action",
                                                 "class": "BroadcastLocation",
                                                 "parameters": {
-                                                  "message_prefix": "0"
+                                                  "message_prefix": "1"
                                                 }
                                               },
                                               {
@@ -409,7 +409,7 @@
                                         "type": "action",
                                         "class": "MoveToReceivedCoordinate",
                                         "parameters": {
-                                          "target_prefix": "0"
+                                          "target_prefix": "1"
                                         }
                                       }
                                     ]
