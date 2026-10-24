@@ -410,31 +410,251 @@ def load_skill(
     return None
 
 
+def load_skill(
+        skill_path: str | Path,
+) -> Optional[bt.BehaviorTreeNode]:
+    """
+    Load a single behavior tree skill from a human-readable JSON file.
+
+    The resulting tree is agent-free and sanitized.
+    """
+
+    skill_path = Path(skill_path)
+
+    try:
+        with open(skill_path, "r", encoding="utf-8") as f:
+            skill_data = json.load(f)
+
+        if not isinstance(skill_data, dict):
+            raise TypeError(
+                f"Skill file must contain a JSON object: {skill_path}"
+            )
+
+        # Validate file format.
+        if skill_data.get("format") != "swarm_gp_skill":
+            raise ValueError(
+                f"Unsupported skill format in '{skill_path}'."
+            )
+
+        version = skill_data.get("version")
+
+        if version != 1:
+            raise ValueError(
+                f"Unsupported skill version '{version}' in '{skill_path}'."
+            )
+
+        tree_data = skill_data.get("tree")
+
+        if not isinstance(tree_data, dict):
+            raise ValueError(
+                f"Skill file does not contain a valid 'tree': {skill_path}"
+            )
+
+        # Build registries from the primitives that have already
+        # been registered by the experiment.
+        action_registry = _build_action_class_registry()
+        control_registry = _build_control_class_registry()
+
+        tree = _deserialize_skill_node(
+            tree_data,
+            action_registry,
+            control_registry,
+        )
+
+        if not isinstance(tree, bt.BehaviorTreeNode):
+            raise TypeError(
+                f"Skill file does not contain a BehaviorTreeNode: "
+                f"{skill_path}"
+            )
+
+        # Ensure that no execution state is carried into the
+        # curriculum library.
+        sanitize_tree(tree)
+
+        return tree
+
+    except FileNotFoundError:
+        print(f"Skill file not found: {skill_path}")
+
+    except json.JSONDecodeError as e:
+        print(
+            f"Invalid JSON in skill file '{skill_path}': {e}"
+        )
+
+    except Exception as e:
+        print(
+            f"Failed loading skill '{skill_path}': {e}"
+        )
+
+    return None
+
+
+SKILLS_DIR_NAME = "skills"
+
+
+def _skill_search_dirs(skills_dir: str | Path | None = None) -> list[Path]:
+    """
+    Directories that are searched for skill files, in priority order.
+
+    An explicit `skills_dir` is the only directory searched. Otherwise the
+    search covers, in order:
+      1. ./skills                      (relative to the working directory,
+                                        which is where save_skill() writes)
+      2. <package dir>/skills          (next to this module)
+      3. <package dir>/../skills       (project root, one level above the package)
+    """
+    if skills_dir is not None:
+        candidates = [Path(skills_dir)]
+    else:
+        package_dir = Path(__file__).resolve().parent
+        candidates = [
+            Path.cwd() / SKILLS_DIR_NAME,
+            package_dir / SKILLS_DIR_NAME,
+            package_dir.parent / SKILLS_DIR_NAME,
+        ]
+
+    dirs: list[Path] = []
+    for candidate in candidates:
+        candidate = candidate.resolve()
+        if candidate not in dirs:
+            dirs.append(candidate)
+    return dirs
+
+
+def resolve_skill_path(
+        skill_ref: str | Path,
+        skills_dir: str | Path | None = None,
+) -> Path:
+    """
+    Resolve a skill reference to an existing skill JSON file.
+
+    `skill_ref` may be:
+      - a skill name:                 "forage"
+      - a file name:                  "forage.json"
+      - a relative or absolute path:  "skills/forage.json", "/data/forage.json"
+
+    Resolution order:
+      1. the reference as given (with and without a ".json" suffix),
+      2. the reference inside each skills directory,
+      3. any skill file in the skills directories whose "skill_name" field
+         matches the reference (covers file names that differ from the name).
+
+    Raises
+    ------
+    FileNotFoundError
+        If no matching file exists. The message lists the directories that
+        were searched and which skills are available.
+    """
+    ref = Path(skill_ref)
+    has_suffix = ref.name.endswith(".json")
+    search_dirs = _skill_search_dirs(skills_dir)
+
+    # 1 + 2: direct and directory-relative matches.
+    candidates: list[Path] = [ref]
+    if not has_suffix:
+        candidates.append(ref.with_name(ref.name + ".json"))
+
+    for directory in search_dirs:
+        candidates.append(directory / ref)
+        if not has_suffix:
+            candidates.append(directory / (ref.name + ".json"))
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+
+    # 3: match on the "skill_name" stored inside the JSON files.
+    wanted = ref.name[:-len(".json")] if has_suffix else ref.name
+    available: list[str] = []
+
+    for directory in search_dirs:
+        if not directory.is_dir():
+            continue
+
+        for path in sorted(directory.glob("*.json")):
+            available.append(path.stem)
+
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                continue
+
+            if (
+                    isinstance(data, dict)
+                    and data.get("format") == "swarm_gp_skill"
+                    and data.get("skill_name") == wanted
+            ):
+                return path
+
+    searched = ", ".join(str(d) for d in search_dirs)
+    available_str = ", ".join(sorted(set(available))) or "none"
+
+    raise FileNotFoundError(
+        f"Skill '{skill_ref}' not found. "
+        f"Searched: {searched}. "
+        f"Available skills: {available_str}."
+    )
+
+
 def load_skill_library(
-    skill_paths: list[str | Path],
+        skill_refs: list[str | Path] | str | Path,
+        skills_dir: str | Path | None = None,
+        strict: bool = True,
 ) -> None:
     """
     Load multiple JSON skills into the global curriculum library.
+
+    Parameters
+    ----------
+    skill_refs : list[str | Path]
+        Skill names ("forage"), file names ("forage.json") or paths.
+        See resolve_skill_path() for how they are resolved.
+    skills_dir : str | Path | None
+        Directory to search. Defaults to the locations listed in
+        _skill_search_dirs().
+    strict : bool
+        If True (default), raise RuntimeError when any requested skill cannot
+        be resolved or loaded, so an experiment never silently runs without
+        the skills it was configured with. If False, failures are reported
+        and skipped.
     """
+
+    if isinstance(skill_refs, (str, Path)):
+        skill_refs = [skill_refs]
 
     SKILL_LIBRARY.clear()
 
-    print(f"Loading {len(skill_paths)} skills:")
+    print(f"Loading {len(skill_refs)} skills:")
 
-    for path in skill_paths:
+    failed: list[str] = []
+
+    for ref in skill_refs:
+
+        try:
+            path = resolve_skill_path(ref, skills_dir)
+        except FileNotFoundError as e:
+            print(f" ! {e}")
+            failed.append(str(ref))
+            continue
 
         skill = load_skill(path)
 
-        if skill is not None:
+        if skill is None:
+            # load_skill() has already printed the reason.
+            failed.append(str(ref))
+            continue
 
-            sanitize_tree(skill)
-            SKILL_LIBRARY.append(skill)
+        sanitize_tree(skill)
+        SKILL_LIBRARY.append(skill)
 
-            file_name = Path(path).stem
+        print(f" - {path.stem} ({path}): {tree_to_str(skill)}")
 
-            print(
-                f" - {file_name}: {skill}"
-            )
+    if failed and strict:
+        raise RuntimeError(
+            f"Could not load {len(failed)} of {len(skill_refs)} requested "
+            f"skill(s): {', '.join(failed)}. See messages above."
+        )
 
 
 # ============================================================
@@ -1446,8 +1666,11 @@ def tree_to_str(node):
         if hasattr(node, "message") and node.message not in ("", None):
             params.append(f'"{node.message}"')
 
-        if hasattr(node, "message_content") and node.message_content not in ("", None):
-            params.append(f'"{node.message_content}"')
+        if hasattr(node, "message_prefix") and node.message_prefix not in ("", None):
+            params.append(f'"{node.message_prefix}"')
+
+        if hasattr(node, "target_prefix") and node.target_prefix not in ("", None):
+            params.append(f'"{node.target_prefix}"')
 
         if hasattr(node, "yaw_mode") and node.yaw_mode not in ("", None):
             params.append(f'"{node.yaw_mode}"')
