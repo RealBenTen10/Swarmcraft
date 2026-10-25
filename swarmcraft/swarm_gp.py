@@ -1505,9 +1505,8 @@ def ea_mu_plus_lambda(
 
     if resume_from is not None:
         print("Loading old population")
-        start_gen, population, loaded_meta = load_population(Path(resume_from))
+        start_gen, population, _ = load_population(Path(resume_from))
         # meta is stored to help you verify consistency on resume
-        meta.update({"loaded_meta": loaded_meta, "resumed_from": str(resume_from)})
         gen0 = start_gen + 1
     else:
         print("Initializing new population")
