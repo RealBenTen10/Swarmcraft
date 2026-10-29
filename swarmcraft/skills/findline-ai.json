@@ -11,7 +11,7 @@
         "class": "SequenceNode",
         "children": [
           {
-            "type": "condition",
+            "type": "action",
             "class": "SenseBlockRight",
             "parameters": {
               "color": "blue_wool"
@@ -33,7 +33,7 @@
                 "class": "SequenceNode",
                 "children": [
                   {
-                    "type": "condition",
+                    "type": "action",
                     "class": "SenseBlockRight",
                     "parameters": {
                       "color": "blue_wool"
@@ -71,7 +71,7 @@
             "class": "SequenceNode",
             "children": [
               {
-                "type": "condition",
+                "type": "action",
                 "class": "SenseBlockFront",
                 "parameters": {
                   "color": "blue_wool"

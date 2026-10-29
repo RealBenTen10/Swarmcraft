@@ -11,7 +11,7 @@
         "class": "SequenceNode",
         "children": [
           {
-            "type": "condition",
+            "type": "action",
             "class": "SenseBlockRight",
             "parameters": {
               "color": "blue_wool"
@@ -33,7 +33,7 @@
                 "class": "SequenceNode",
                 "children": [
                   {
-                    "type": "condition",
+                    "type": "action",
                     "class": "SenseBlockRight",
                     "parameters": {
                       "color": "blue_wool"
@@ -55,7 +55,7 @@
                         "class": "SequenceNode",
                         "children": [
                           {
-                            "type": "condition",
+                            "type": "action",
                             "class": "SenseBlockRight",
                             "parameters": {
                               "color": "air"
@@ -97,7 +97,7 @@
             "class": "SequenceNode",
             "children": [
               {
-                "type": "condition",
+                "type": "action",
                 "class": "SenseBlockRight",
                 "parameters": {
                   "color": "blue_wool"
@@ -121,7 +121,7 @@
                 "class": "SequenceNode",
                 "children": [
                   {
-                    "type": "condition",
+                    "type": "action",
                     "class": "SenseBlock",
                     "parameters": {
                       "color": "blue_wool"

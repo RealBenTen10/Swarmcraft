@@ -11,7 +11,7 @@
         "class": "SequenceNode",
         "children": [
           {
-            "type": "condition",
+            "type": "action",
             "class": "SenseBlock",
             "parameters": {
               "color": "blue_wool"
@@ -33,7 +33,7 @@
                 "class": "FallbackNode",
                 "children": [
                   {
-                    "type": "condition",
+                    "type": "action",
                     "class": "IsHoldingItem"
                   },
                   {
