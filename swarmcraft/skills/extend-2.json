@@ -1,0 +1,32 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "extend-2",
+  "tree": {
+    "type": "control",
+    "class": "FallbackNode",
+    "children": [
+      {
+        "type": "action",
+        "class": "Rotate",
+        "parameters": {}
+      },
+      {
+        "type": "control",
+        "class": "FallbackNode",
+        "children": [
+          {
+            "type": "action",
+            "class": "BroadcastLocation",
+            "parameters": {}
+          },
+          {
+            "type": "action",
+            "class": "Rotate",
+            "parameters": {}
+          }
+        ]
+      }
+    ]
+  }
+}

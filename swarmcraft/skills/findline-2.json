@@ -1,0 +1,7 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "findline-2",
+  "tree":
+          Fallback(Sequence(Fallback(Stop, Fallback(MoveToReceivedCoordinate, SenseBlock("blue_wool"))), Sequence(Sequence(SenseBlockRight, Fallback(SenseBlockRight, SenseBlock("blue_wool"))), StartDig("blue_wool"))), Fallback(Sequence(Fallback(NavigateOneBlock("random"), Sequence(Fallback(Fallback(Rotate("left"), ReleaseDir("forward")), Fallback(MoveToReceivedCoordinate, SenseBlock("blue_wool"))), Sequence(Sequence(SenseBlockRight, Fallback(SenseBlockRight, Sequence(Fallback(NavigateOneBlock("random"), Sequence(Fallback(Fallback(Rotate("left"), ReleaseDir("forward")), Fallback(MoveToReceivedCoordinate, SenseBlock("blue_wool"))), Sequence(Sequence(SenseBlockRight, Fallback(SenseBlockRight, SenseBlock("blue_wool"))), StartDig("blue_wool")))), Sequence(SenseBlockRight, PlaceForward)))), StartDig("blue_wool")))), Fallback(Sequence(Fallback(NavigateOneBlock("random"), Sequence(Sequence(Fallback(Fallback(MoveToReceivedCoordinate, SenseBlock("blue_wool")), SenseBlockFront), Fallback(ReleaseDir("forward"), PressDir("forward"))), ReleaseDir("forward"))), Sequence(SenseBlockRight, PlaceForward)), Fallback(SenseBlockRight, Stop))), Fallback(Fallback(SenseBlockRight, IsHoldingItem), Stop)))
+}
