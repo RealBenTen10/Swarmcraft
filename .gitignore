@@ -26,5 +26,9 @@ logs
 swarmcraft/server_install
 testing.ipynb
 stats
-logging
+run_*
+!run_93
+experiments
+test_curriculum
 swarmcraft/swarm_gp_test.py
+*.ipynb
