@@ -1,0 +1,36 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "forage-human",
+  "tree": {
+    "type": "control",
+    "class": "FallbackNode",
+    "children": [
+      {
+        "type": "action",
+        "class": "IsHoldingItem"
+      },
+      {
+        "type": "control",
+        "class": "SequenceNode",
+        "children": [
+          {
+            "type": "action",
+            "class": "MoveOneBlock",
+            "parameters": {
+              "direction": "random"
+            }
+          },
+          {
+            "type": "action",
+            "class": "StartDig",
+            "parameters": {
+              "color": "blue_wool"
+            }
+          }
+        ]
+      }
+    ]
+  }
+
+}
