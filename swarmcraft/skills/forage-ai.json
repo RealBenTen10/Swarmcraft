@@ -14,7 +14,7 @@
             "type": "action",
             "class": "SenseBlock",
             "parameters": {
-              "color": "blue_wool"
+              "block_type": "blue_wool"
             }
           },
           {

@@ -1674,6 +1674,9 @@ def tree_to_str(node):
         if hasattr(node, "yaw_mode") and node.yaw_mode not in ("", None):
             params.append(f'"{node.yaw_mode}"')
 
+        if hasattr(node, "block_type") and node.block_type not in ("", None):
+            params.append(f'"{node.block_type}"')
+
         return f"{name}({', '.join(params)})" if params else name
 
     return str(node)

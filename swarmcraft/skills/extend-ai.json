@@ -14,7 +14,7 @@
             "type": "action",
             "class": "SenseBlockRight",
             "parameters": {
-              "color": "blue_wool"
+              "block_type": "blue_wool"
             }
           },
           {
@@ -36,7 +36,7 @@
                     "type": "action",
                     "class": "SenseBlockRight",
                     "parameters": {
-                      "color": "blue_wool"
+                      "block_type": "blue_wool"
                     }
                   },
                   {
@@ -58,7 +58,7 @@
                             "type": "action",
                             "class": "SenseBlockRight",
                             "parameters": {
-                              "color": "air"
+                              "block_type": "air"
                             }
                           },
                           {
@@ -100,7 +100,7 @@
                 "type": "action",
                 "class": "SenseBlockRight",
                 "parameters": {
-                  "color": "blue_wool"
+                  "block_type": "blue_wool"
                 }
               },
               {
@@ -124,7 +124,7 @@
                     "type": "action",
                     "class": "SenseBlock",
                     "parameters": {
-                      "color": "blue_wool"
+                      "block_type": "blue_wool"
                     }
                   },
                   {

@@ -240,7 +240,7 @@
                                 "type": "action",
                                 "class": "StartDig",
                                 "parameters": {
-                                  "block_type": "blue_wool"
+                                  "target": "blue_wool"
                                 }
                               },
                               {
