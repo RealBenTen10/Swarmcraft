@@ -25,7 +25,7 @@
                 "type": "action",
                 "class": "StartDig",
                 "parameters": {
-                  "target": "blue_wool"
+                  "color": "blue_wool"
                 }
               },
               {

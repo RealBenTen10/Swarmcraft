@@ -16,8 +16,7 @@
             "children": [
               {
                 "type": "action",
-                "class": "PlaceForward",
-                "parameters": {}
+                "class": "PlaceForward"
               },
               {
                 "type": "action",
@@ -35,7 +34,9 @@
               {
                 "type": "action",
                 "class": "Rotate",
-                "parameters": {}
+                "parameters": {
+                  "direction": "random"
+                }
               },
               {
                 "type": "action",
@@ -61,8 +62,7 @@
           },
           {
             "type": "action",
-            "class": "PressDir",
-            "parameters": {}
+            "class": "PressDir"
           }
         ]
       }
