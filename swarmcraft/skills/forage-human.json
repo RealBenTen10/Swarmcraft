@@ -16,7 +16,7 @@
         "children": [
           {
             "type": "action",
-            "class": "MoveOneBlock",
+            "class": "NavigateOneBlock",
             "parameters": {
               "direction": "random"
             }
