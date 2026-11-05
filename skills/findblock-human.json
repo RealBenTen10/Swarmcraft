@@ -23,7 +23,7 @@
           },
           {
             "type": "action",
-            "class": "MoveOneBlock",
+            "class": "NavigateOneBlock",
             "parameters": {
               "direction": "front"
             }

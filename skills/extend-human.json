@@ -23,7 +23,7 @@
             "children": [
               {
                 "type": "action",
-                "class": "MoveOneBlock",
+                "class": "NavigateOneBlock",
                 "parameters": {
                   "direction": "front"
                 }
@@ -45,7 +45,7 @@
                     "children": [
                       {
                         "type": "action",
-                        "class": "MoveOneBlock",
+                        "class": "NavigateOneBlock",
                         "parameters": {
                           "direction": "front"
                         }
@@ -114,7 +114,7 @@
           },
           {
             "type": "action",
-            "class": "MoveOneBlock",
+            "class": "NavigateOneBlock",
             "parameters": {
               "direction": "random"
             }
