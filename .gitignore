@@ -28,6 +28,7 @@ testing.ipynb
 stats
 run_*
 !run_93
+!run_96
 experiments
 test_curriculum
 swarmcraft/swarm_gp_test.py
