@@ -1219,8 +1219,8 @@ class Actuation(object):
             return False
 
         yaw, _ = self.heading()
-        off_x = int(round(-math.sin(yaw)))
-        off_z = int(round(math.cos(yaw)))
+        off_x = -math.sin(yaw)
+        off_z = -math.cos(yaw)
 
         # Target position in front of the agent
         front_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)

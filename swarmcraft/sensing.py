@@ -428,14 +428,14 @@ class Sensing(object):
 
     def get_block_in_front(self):
         """
-        Calculates the block position directly in front of the agent
-        based on current yaw and returns the Block object at that coordinate.
+        Returns the Block directly in front of the agent based on its current yaw.
+        Mineflayer convention: yaw 0 = north (-Z), yaw +π/2 = west (-X).
         """
         yaw, _ = self.agent.actuation.heading()
 
-        # Mineflayer yaw directional offsets
-        off_x = int(round(-math.sin(yaw)))
-        off_z = int(round(math.cos(yaw)))
+        off_x = -math.sin(yaw)
+        off_z = -math.cos(yaw)
+
 
         target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
         return self.agent.bot.blockAt(target_pos)
