@@ -700,11 +700,15 @@ class Sensing(object):
         return block.position
 
     def get_distance_to_next_block(self, block_name="blue_wool"):
-        return self.distance_to_block(
+        try:
+            return self.distance_to_block(
             block = self.find_nearest_block(
             block_name,
             32
-        ))
+            ))
+        except:
+            print("get_distance_to_next_block failed")
+            return None
 
     def is_path_possible(self,
                          block_name,

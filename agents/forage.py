@@ -126,19 +126,10 @@ class ForageAgent(Agent):
     # ----------------------------------------------------------------------
 
     def set_tree(self, tree):
-        tree = FallbackNode([
-            SequenceNode([
-                SenseBlock(self, "blue_wool"),
-                Stop(self)
-            ]),
-            FallbackNode([
-                SequenceNode([
-                    FaceNearestBlock(self),
-                    NavigateOneBlock(self, "front")
-                ]),
+        tree = SequenceNode([
+                NavigateOneBlock(self, "random"),
                 NavigateOneBlock(self, "random")
             ])
-        ])
         # tree = SequenceNode([
         #         IsHoldingItem(self),
         #         FallbackNode([
@@ -359,7 +350,7 @@ class ForageAgent(Agent):
 
         # Convert the continuous distance to the corresponding grid
         # distance, keeping the existing distance definition.
-        distance = min(int(math.floor(distance)) - 1, 0)
+        distance = max(int(math.floor(distance)) - 1, 0)
 
         # Store the best distance observed during the entire run.
         if (
@@ -492,7 +483,7 @@ class ForageAgent(Agent):
 
         # Convert the continuous distance to the corresponding grid
         # distance, matching the S1 distance handling.
-        distance = min(int(math.floor(distance)) - 1, 0)
+        distance = max(int(math.floor(distance)) - 1, 0)
 
         # Store the best distance observed during the entire run.
         if (
@@ -652,7 +643,7 @@ class ForageAgent(Agent):
         final_distance = self.sensing.get_distance_to_next_block(
             BlockTypes.BLUE_WOOL.value
         )
-        final_distance = min(int(math.floor(final_distance)) - 1, 0)
+        final_distance = max(int(math.floor(final_distance)) - 1, 0)
         self._s1_final_bonus = 0.0
 
         if final_distance is not None:
@@ -705,7 +696,7 @@ class ForageAgent(Agent):
             self.environment.size,
             block_name=BlockTypes.BLUE_WOOL.value,
         )
-        final_distance = min(int(math.floor(final_distance)) - 1, 0)
+        final_distance = max(int(math.floor(final_distance)) - 1, 0)
 
         self._s3_final_bonus = 0.0
 
