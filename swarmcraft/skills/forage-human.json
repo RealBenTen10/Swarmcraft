@@ -12,20 +12,20 @@
       },
       {
         "type": "control",
-        "class": "SequenceNode",
+        "class": "FallbackNode",
         "children": [
-          {
-            "type": "action",
-            "class": "NavigateOneBlock",
-            "parameters": {
-              "direction": "random"
-            }
-          },
           {
             "type": "action",
             "class": "StartDig",
             "parameters": {
-              "color": "blue_wool"
+              "color": "random"
+            }
+          },
+          {
+            "type": "action",
+            "class": "NavigateOneBlock",
+            "parameters": {
+              "direction": "blue_wool"
             }
           }
         ]
