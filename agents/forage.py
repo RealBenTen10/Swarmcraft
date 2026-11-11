@@ -652,7 +652,7 @@ class ForageAgent(Agent):
         final_distance = self.sensing.get_distance_to_next_block(
             BlockTypes.BLUE_WOOL.value
         )
-
+        final_distance = min(int(math.floor(final_distance)) - 1, 0)
         self._s1_final_bonus = 0.0
 
         if final_distance is not None:
@@ -705,6 +705,7 @@ class ForageAgent(Agent):
             self.environment.size,
             block_name=BlockTypes.BLUE_WOOL.value,
         )
+        final_distance = min(int(math.floor(final_distance)) - 1, 0)
 
         self._s3_final_bonus = 0.0
 
