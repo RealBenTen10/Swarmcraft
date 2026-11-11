@@ -359,9 +359,7 @@ class ForageAgent(Agent):
 
         # Convert the continuous distance to the corresponding grid
         # distance, keeping the existing distance definition.
-        print(distance)
-        distance = int(math.floor(distance)) - 1
-        print(distance)
+        distance = min(int(math.floor(distance)) - 1, 0)
 
         # Store the best distance observed during the entire run.
         if (
@@ -494,7 +492,7 @@ class ForageAgent(Agent):
 
         # Convert the continuous distance to the corresponding grid
         # distance, matching the S1 distance handling.
-        distance = int(math.floor(distance)) - 1
+        distance = min(int(math.floor(distance)) - 1, 0)
 
         # Store the best distance observed during the entire run.
         if (
