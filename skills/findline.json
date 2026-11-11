@@ -109,7 +109,10 @@
                             "children": [
                               {
                                 "type": "action",
-                                "class": "SenseBlockRight"
+                                "class": "SenseBlockRight",
+                                "parameters": {
+                                  "block_type": "air"
+                                }
                               },
                               {
                                 "type": "action",
@@ -122,7 +125,10 @@
                           },
                           {
                             "type": "action",
-                            "class": "SenseBlockLeft"
+                            "class": "SenseBlockLeft",
+                            "parameters": {
+                              "block_type": "blue_wool"
+                            }
                           }
                         ]
                       },
@@ -225,7 +231,10 @@
                                           },
                                           {
                                             "type": "action",
-                                            "class": "SenseBlockBack"
+                                            "class": "SenseBlockBack",
+                                            "parameters": {
+                                              "block_type": "blue_wool"
+                                            }
                                           }
                                         ]
                                       }
@@ -233,7 +242,10 @@
                                   },
                                   {
                                     "type": "action",
-                                    "class": "SenseBlockBack"
+                                    "class": "SenseBlockBack",
+                                    "parameters": {
+                                      "block_type": "blue_wool"
+                                    }
                                   }
                                 ]
                               },
@@ -254,7 +266,10 @@
                         "children": [
                           {
                             "type": "action",
-                            "class": "SenseBlockFront"
+                            "class": "SenseBlockFront",
+                            "parameters": {
+                              "block_type": "blue_wool"
+                            }
                           },
                           {
                             "type": "control",
@@ -269,7 +284,10 @@
                               },
                               {
                                 "type": "action",
-                                "class": "SenseBlockFront"
+                                "class": "SenseBlockFront",
+                                "parameters": {
+                                  "block_type": "blue_wool"
+                                }
                               }
                             ]
                           }
@@ -298,7 +316,10 @@
                             "children": [
                               {
                                 "type": "action",
-                                "class": "SenseBlockFront"
+                                "class": "SenseBlockFront",
+                                "parameters": {
+                                  "block_type": "blue_wool"
+                                }
                               },
                               {
                                 "type": "control",
@@ -340,7 +361,10 @@
                                                   },
                                                   {
                                                     "type": "action",
-                                                    "class": "SenseBlockBack"
+                                                    "class": "SenseBlockBack",
+                                                    "parameters": {
+                                                      "block_type": "air"
+                                                    }
                                                   }
                                                 ]
                                               }
@@ -350,7 +374,10 @@
                                       },
                                       {
                                         "type": "action",
-                                        "class": "SenseBlockLeft"
+                                        "class": "SenseBlockLeft",
+                                        "parameters": {
+                                          "block_type": "blue_wool"
+                                        }
                                       }
                                     ]
                                   },
@@ -379,7 +406,10 @@
                                                 "children": [
                                                   {
                                                     "type": "action",
-                                                    "class": "SenseBlockLeft"
+                                                    "class": "SenseBlockLeft",
+                                                    "parameters": {
+                                                      "block_type": "blue_wool"
+                                                    }
                                                   },
                                                   {
                                                     "type": "control",
@@ -391,7 +421,10 @@
                                                       },
                                                       {
                                                         "type": "action",
-                                                        "class": "SenseBlockBack"
+                                                        "class": "SenseBlockBack",
+                                                        "parameters": {
+                                                          "block_type": "blue_wool"
+                                                        }
                                                       }
                                                     ]
                                                   }
@@ -401,7 +434,10 @@
                                           },
                                           {
                                             "type": "action",
-                                            "class": "SenseBlockLeft"
+                                            "class": "SenseBlockLeft",
+                                            "parameters": {
+                                              "block_type": "blue_wool"
+                                            }
                                           }
                                         ]
                                       },
@@ -422,7 +458,10 @@
                       },
                       {
                         "type": "action",
-                        "class": "SenseBlockFront"
+                        "class": "SenseBlockFront",
+                        "parameters": {
+                          "block_type": "blue_wool"
+                        }
                       }
                     ]
                   }

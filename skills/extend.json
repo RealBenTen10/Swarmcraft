@@ -1,0 +1,58 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "extend",
+  "tree": {
+    "type": "control",
+    "class": "SequenceNode",
+    "children": [
+      {
+        "type": "control",
+        "class": "FallbackNode",
+        "children": [
+          {
+            "type": "control",
+            "class": "SequenceNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "SenseBlock",
+                "parameters": {
+                  "block_type": "bedrock"
+                }
+              },
+              {
+                "type": "control",
+                "class": "FallbackNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "PressDir"
+                  },
+                  {
+                    "type": "action",
+                    "class": "SenseBlock",
+                    "parameters": {
+                      "block_type": "bedrock"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "class": "BroadcastLocation",
+            "parameters": {
+              "message_prefix": "0"
+            }
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "class": "ReleaseDir"
+      }
+    ]
+  }
+}

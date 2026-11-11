@@ -1,7 +1,7 @@
 {
   "format": "swarm_gp_skill",
   "version": 1,
-  "skill_name": "forage",
+  "skill_name": "findline-human",
   "tree": {
     "type": "control",
     "class": "FallbackNode",
@@ -51,11 +51,24 @@
                         }
                       },
                       {
-                        "type": "action",
-                        "class": "SenseBlockRight",
-                        "parameters": {
-                          "block_type": "air"
-                        }
+                        "type": "control",
+                        "class": "SequenceNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "SenseBlockRight",
+                            "parameters": {
+                              "block_type": "air"
+                            }
+                          },
+                          {
+                            "type": "action",
+                            "class": "BroadcastLocation",
+                            "parameters": {
+                              "message_prefix": "1"
+                            }
+                          }
+                        ]
                       }
                     ]
                   }
@@ -69,6 +82,17 @@
         "type": "control",
         "class": "FallbackNode",
         "children": [
+          {
+            "type": "action",
+            "class": "MoveToReceivedCoordinate",
+            "parameters": {
+              "target_prefix": "1"
+            }
+          },
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
           {
             "type": "control",
             "class": "SequenceNode",
@@ -94,11 +118,12 @@
             "class": "NavigateOneBlock",
             "parameters": {
               "direction": "random"
+              }
             }
+            ]
           }
         ]
       }
     ]
   }
-
 }

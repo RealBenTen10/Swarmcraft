@@ -1,7 +1,7 @@
 {
   "format": "swarm_gp_skill",
   "version": 1,
-  "skill_name": "forage",
+  "skill_name": "findline-human",
   "tree": {
     "type": "control",
     "class": "FallbackNode",
