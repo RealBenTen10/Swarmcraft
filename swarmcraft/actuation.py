@@ -1248,6 +1248,43 @@ class Actuation(object):
             print("place_block_in_front failed:", e)
             return False
 
+    def place_block_right(self, target_pos) -> bool:
+        """
+        Places a block in front of the agent by attaching it to the top
+        face of the support block directly beneath the target position.
+
+        The support position must contain a non-air block, and the target
+        position itself must be air.
+        """
+
+
+        # Block that should be placed at the target position
+        target_block = self.agent.bot.blockAt(target_pos)
+        print("target block: ", target_block.name)
+
+        # Target position must be air
+        if target_block is None or target_block.name != "air":
+            print("block not air for placement in place_block_right")
+            return False
+
+        # Support block directly beneath the target position
+        support_pos = target_pos.offset(0, -1, 0)
+        support_block = self.agent.bot.blockAt(support_pos)
+
+        # Support block must exist and must not be air
+        if support_block is None or support_block.name == "air":
+            print("support block is not air somehow")
+            return False
+
+        try:
+            # Place the equipped block on the top face of the support block
+            self.agent.bot.placeBlock(support_block, Vec3(0, 1, 0))
+            print("block placed: ", support_block)
+            return True
+        except Exception as e:
+            print("place_block_in_front failed:", e)
+            return False
+
     # ------------------------------------------------------------------
     # Inventory
     # ------------------------------------------------------------------

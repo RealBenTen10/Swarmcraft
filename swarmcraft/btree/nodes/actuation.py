@@ -431,6 +431,43 @@ class PlaceForward(ActionNode):
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
 
+class PlaceRight(ActionNode):
+    """
+    Action Node to place a block directly in front of the agent.
+    Checks:
+    1. Front block space is empty ('air').
+    2. Agent has a placeable block in inventory.
+    """
+    def __init__(self, agent, *args):
+        super().__init__(agent)
+
+    def tick(self) -> str:
+        # Step 1: Check if space in front is loaded and is "air"
+        yaw, _ = self.agent.actuation.heading()
+
+        # Calculate right offset (90 degrees clockwise)
+        dx = -math.cos(yaw)
+        dz = -math.sin(yaw)
+
+        off_x = int(round(dx))
+        off_z = int(round(dz))
+
+        target_pos = self.agent.bot.entity.position.offset(off_x, 0, off_z)
+
+        # Step 2: Check if agent has a block in inventory to place
+        if not self.agent.sensing.has_placeable_block():
+            print("agent has no block to place")
+            return "failure"
+
+        # Step 3: Place block
+        if self.agent.actuation.place_block_right(target_pos):
+            return "success"
+
+        return "failure"
+
+    def __repr__(self) -> str:
+        return f"{__class__.__name__}()"
+
 
 class FaceBlockType(ActionNode):
 

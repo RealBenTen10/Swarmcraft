@@ -15,11 +15,20 @@ from swarmcraft.btree.nodes.actuation import (
     NavigateOneBlock,
     MoveToReceivedCoordinate,
     BroadcastLocation,
+NavigateOneBlock,
+Stop,
+FaceNearestBlock,
+PlaceRight
 )
 from swarmcraft.btree.nodes.sensing import (
     SenseBlock,
     GotMessage,
     SenseBlockFront,
+    IsHoldingItem,
+SenseBlockBack,
+SenseBlockLeft,
+SenseBlockRight,
+
 )
 from swarmcraft import BlockTypes
 
@@ -117,6 +126,47 @@ class ForageAgent(Agent):
     # ----------------------------------------------------------------------
 
     def set_tree(self, tree):
+        tree = FallbackNode([
+            SequenceNode([
+                SenseBlock(self, "blue_wool"),
+                Stop(self)
+            ]),
+            FallbackNode([
+                SequenceNode([
+                    FaceNearestBlock(self),
+                    NavigateOneBlock(self, "front")
+                ]),
+                NavigateOneBlock(self, "random")
+            ])
+        ])
+        # tree = SequenceNode([
+        #         IsHoldingItem(self),
+        #         FallbackNode([
+        #             SequenceNode([
+        #                 SenseBlockRight(self, "blue_wool"),
+        #                 SequenceNode([
+        #                     NavigateOneBlock(self, "front"),
+        #                     SequenceNode([
+        #                         SenseBlockRight(self, "blue_wool"),
+        #                         SequenceNode([
+        #                             NavigateOneBlock(self, "front"),
+        #                             SequenceNode([
+        #                                 SenseBlockRight(self, "air"),
+        #                                 PlaceRight(self)
+        #                             ])
+        #                         ])
+        #                     ])
+        #                 ])
+        #             ]),
+        #             FallbackNode([
+        #                 SequenceNode([
+        #                     SenseBlock(self, "blue_wool"),
+        #                     Rotate(self, "left")
+        #                 ]),
+        #                 NavigateOneBlock(self, "random")
+        #             ])
+        #         ])
+        #     ])
         self.tree = tree
 
     def update(self):
@@ -302,10 +352,6 @@ class ForageAgent(Agent):
             BlockTypes.BLUE_WOOL.value
         )
 
-        if distance is None:
-            self._fitness_tick_count += 1
-            return
-
         if distance < 0:
             raise ValueError(
                 f"Distance to nearest block cannot be negative: {distance}"
@@ -322,7 +368,6 @@ class ForageAgent(Agent):
         ):
             self._s1_min_distance = distance
 
-        self._fitness_tick_count += 1
 
     # ----------------------------------------------------------------------
     # S2 - Destroy and collect blocks
