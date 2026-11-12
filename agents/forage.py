@@ -126,10 +126,25 @@ class ForageAgent(Agent):
     # ----------------------------------------------------------------------
 
     def set_tree(self, tree):
-        tree = SequenceNode([
-                NavigateOneBlock(self, "random"),
-                NavigateOneBlock(self, "random")
-            ])
+        # tree = FallbackNode([
+        #     SequenceNode([
+        #         SenseBlock(self, "blue_wool"),
+        #         SequenceNode([
+        #             StartDig(self, "blue_wool"),
+        #             FallbackNode([
+        #                 IsHoldingItem(self),
+        #                 NavigateOneBlock(self, "front")
+        #             ])
+        #         ])
+        #     ]),
+        #     FallbackNode([
+        #         SequenceNode([
+        #             FaceNearestBlock(self),
+        #             NavigateOneBlock(self, "front")
+        #         ]),
+        #         NavigateOneBlock(self, "random")
+        #     ])
+        # ])
         # tree = SequenceNode([
         #         IsHoldingItem(self),
         #         FallbackNode([
