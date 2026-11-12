@@ -7,30 +7,55 @@
     "class": "FallbackNode",
     "children": [
       {
-        "type": "action",
-        "class": "IsHoldingItem"
-      },
-      {
         "type": "control",
-        "class": "FallbackNode",
+        "class": "SequenceNode",
         "children": [
           {
             "type": "action",
-            "class": "StartDig",
+            "class": "SenseBlock",
             "parameters": {
-              "color": "random"
+              "block_type": "blue_wool"
             }
+          },
+          {
+            "type": "control",
+            "class": "SequenceNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "StartDig",
+                "parameters": {
+                  "color": "blue_wool"
+                }
+              },
+              {
+                "type": "action",
+                "class": "NavigateOneBlock",
+                "parameters": {
+                  "direction": "front"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "control",
+        "class": "SequenceNode",
+        "children": [
+          {
+            "type": "action",
+            "class": "FaceNearestBlock"
           },
           {
             "type": "action",
             "class": "NavigateOneBlock",
             "parameters": {
-              "direction": "blue_wool"
+              "direction": "front"
             }
           }
         ]
       }
     ]
   }
-
 }
