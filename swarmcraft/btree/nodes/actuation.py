@@ -370,16 +370,15 @@ class FaceNearestBlock(ActionNode):
         self.block = BlockTypes.BLUE_WOOL.value
 
     def tick(self):
-
-        pos = self.agent.sensing.find_nearest_block(
+        block = self.agent.sensing.find_nearest_block(
             self.block
         )
 
-        if pos is None:
+        if block is None:
             return "failure"
 
         self.agent.actuation.face_position(
-            pos
+            block
         )
 
         return "success"
@@ -531,16 +530,16 @@ class NavigateOneBlock(ActionNode):
         if direction == "front":
             # Forward vector
             dx = -math.sin(yaw)
-            dz = math.cos(yaw)
+            dz = -math.cos(yaw)
 
         elif direction == "left":
             # Left vector (90 degrees counter-clockwise)
-            dx = math.cos(yaw)
+            dx = -math.cos(yaw)
             dz = math.sin(yaw)
 
         elif direction == "right":
             # Right vector (90 degrees clockwise)
-            dx = -math.cos(yaw)
+            dx = math.cos(yaw)
             dz = -math.sin(yaw)
 
         else:

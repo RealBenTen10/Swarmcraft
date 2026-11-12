@@ -1055,17 +1055,17 @@ class Actuation(object):
             return False
 
 
-    def face_position(self, position):
+    def face_position(self, block):
         """
         Face an arbitrary world coordinate.
         """
-
+        position = block.position
         if position is None:
             return False
 
         try:
             self.agent.bot.lookAt(
-                Vec3(position[0], position[1], position[2]),
+                position,
                 True
             )
             return True

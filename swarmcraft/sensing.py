@@ -484,13 +484,18 @@ class Sensing(object):
 
             # 2. Extract the numerical ID
             block_id = block_data.id
+            # Get current agent position
+            pos = self.agent.bot.entity.position
 
             # 3. Find the block using the numerical ID for the matching parameter
+
+            # Find nearest matching block
             block = self.agent.bot.findBlock({
-                "matching": block_id,
-                "maxDistance": max_distance,
-                "count": 1
+                "point": pos,
+                "matching": block_data.id,
+                "maxDistance": max_distance
             })
+
 
             return block
         except Exception as e:
