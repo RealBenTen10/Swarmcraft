@@ -1,0 +1,10 @@
+used findblock-human.json
+tree = FallbackNode([
+    SenseBlock(self, "blue_wool"),
+    SequenceNode([
+        FaceNearestBlock(self),
+        NavigateOneBlock(self, "front")
+    ])
+])
+
+ai and human tree always get reward 3.0

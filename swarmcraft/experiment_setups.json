@@ -320,8 +320,8 @@
     ],
     "skill_injection_prob": 0.0
   },
-  "Test-S1": {
-    "name": "Test trees (manual) S1",
+  "Test-S2": {
+    "name": "Test trees (manual) S2",
     "swarm_size": 3,
     "population_count": 1,
     "offspring_multiplier": 2.0,
@@ -335,7 +335,7 @@
     "number_repetitions": 1,
     "tournsize": 3,
     "n_elites": 1,
-    "fitness_function": "S1",
+    "fitness_function": "S2",
     "construction": false,
     "arena_size": [30, 10, 30],
     "exp_name": "ForageExperiment",

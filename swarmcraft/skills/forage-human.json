@@ -12,30 +12,17 @@
         "children": [
           {
             "type": "action",
-            "class": "SenseBlock",
+            "class": "StartDig",
             "parameters": {
-              "block_type": "blue_wool"
+              "color": "blue_wool"
             }
           },
           {
-            "type": "control",
-            "class": "SequenceNode",
-            "children": [
-              {
-                "type": "action",
-                "class": "StartDig",
-                "parameters": {
-                  "color": "blue_wool"
-                }
-              },
-              {
-                "type": "action",
-                "class": "NavigateOneBlock",
-                "parameters": {
-                  "direction": "front"
-                }
-              }
-            ]
+            "type": "action",
+            "class": "NavigateOneBlock",
+            "parameters": {
+              "direction": "front"
+            }
           }
         ]
       },

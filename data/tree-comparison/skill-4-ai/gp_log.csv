@@ -1,0 +1,121 @@
+generation,individual,tree_length,max_depth,fitness
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(SenseBlockBack(""air""), StartDig(""blue_wool""))))",11,4,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+1,"Sequence(Sequence(Sequence(Fallback(MoveToReceivedCoordinate(""0""), BroadcastLocation(""0"")), MoveToReceivedCoordinate(""0"")), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",13,5,0.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+2,"Fallback(Rotate(""right""), Fallback(Sequence(BroadcastLocation(""1""), Fallback(SenseBlockLeft(""air""), StartDig(""blue_wool""))), Rotate(""left"")))",10,5,0.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+3,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+4,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+4,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+4,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+4,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+4,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+4,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+5,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+5,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+5,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+5,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+5,"Fallback(Rotate(""right""), Fallback(Sequence(ReleaseDir(""forward""), Rotate(""left"")), Rotate(""left"")))",8,4,0.0
+5,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+6,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+7,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(Fallback(SenseBlockBack(""blue_wool""), SenseBlockLeft(""bedrock"")), StartDig(""blue_wool""))))",10,5,0.0
+8,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+9,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+9,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+9,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+9,"Fallback(Sequence(Stop, SenseBlock(""blue_wool"")), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",12,4,0.0
+9,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(Rotate(""left""), StartDig(""blue_wool""))))",8,4,0.0
+9,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+10,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+11,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Fallback(PressDir(""forward""), StartDig(""blue_wool""))))",9,4,0.0
+12,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+12,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+12,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+12,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+12,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+12,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+13,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+14,"Fallback(Rotate(""right""), Fallback(Rotate(""left""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+15,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+16,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+17,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+18,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+19,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+19,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+19,"Fallback(Rotate(""right""), Fallback(PressDir(""forward""), Sequence(SenseBlockLeft(""bedrock""), NavigateOneBlock(""random""))))",9,4,0.0
+19,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+19,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+19,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0

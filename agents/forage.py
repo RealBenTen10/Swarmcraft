@@ -126,53 +126,6 @@ class ForageAgent(Agent):
     # ----------------------------------------------------------------------
 
     def set_tree(self, tree):
-        # tree = FallbackNode([
-        #     SequenceNode([
-        #         SenseBlock(self, "blue_wool"),
-        #         SequenceNode([
-        #             StartDig(self, "blue_wool"),
-        #             FallbackNode([
-        #                 IsHoldingItem(self),
-        #                 NavigateOneBlock(self, "front")
-        #             ])
-        #         ])
-        #     ]),
-        #     FallbackNode([
-        #         SequenceNode([
-        #             FaceNearestBlock(self),
-        #             NavigateOneBlock(self, "front")
-        #         ]),
-        #         NavigateOneBlock(self, "random")
-        #     ])
-        # ])
-        # tree = SequenceNode([
-        #         IsHoldingItem(self),
-        #         FallbackNode([
-        #             SequenceNode([
-        #                 SenseBlockRight(self, "blue_wool"),
-        #                 SequenceNode([
-        #                     NavigateOneBlock(self, "front"),
-        #                     SequenceNode([
-        #                         SenseBlockRight(self, "blue_wool"),
-        #                         SequenceNode([
-        #                             NavigateOneBlock(self, "front"),
-        #                             SequenceNode([
-        #                                 SenseBlockRight(self, "air"),
-        #                                 PlaceRight(self)
-        #                             ])
-        #                         ])
-        #                     ])
-        #                 ])
-        #             ]),
-        #             FallbackNode([
-        #                 SequenceNode([
-        #                     SenseBlock(self, "blue_wool"),
-        #                     Rotate(self, "left")
-        #                 ]),
-        #                 NavigateOneBlock(self, "random")
-        #             ])
-        #         ])
-        #     ])
         self.tree = tree
 
     def update(self):

@@ -1,0 +1,121 @@
+generation,individual,tree_length,max_depth,fitness
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.1429
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1667
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.125
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.3333
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0667
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0769
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0667
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0667
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0667
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.125
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1429
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1429
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.125
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.125
+2,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1429
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.1111
+3,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.2
+3,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1111
+3,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1429
+3,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(Fallback(ReleaseDir(""forward""), FaceNearestBlock), SenseBlock(""air""))))",14,5,0.1
+4,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.125
+4,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0769
+4,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1
+4,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.125
+4,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0909
+4,"Sequence(BroadcastLocation(""1""), Fallback(Fallback(SenseBlockLeft(""air""), Sequence(NavigateOneBlock(""front""), SenseBlock(""air""))), PressDir(""forward"")))",12,5,0.0769
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+5,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.2
+6,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.2
+6,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+6,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1111
+6,"Sequence(BroadcastLocation(""1""), Fallback(Fallback(SenseBlockLeft(""air""), Rotate(""right"")), PressDir(""forward"")))",8,4,0.1111
+6,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1
+6,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.1111
+7,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0909
+7,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+7,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0833
+7,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0769
+7,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.125
+7,"Sequence(BroadcastLocation(""1""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,0.0714
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0667
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0667
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(StartDig(""blue_wool""), PressDir(""forward""))))",14,4,0.0588
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0769
+8,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0714
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0667
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0625
+9,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0625
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0588
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0625
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0714
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+10,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0588
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1429
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0667
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0769
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0667
+11,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0769
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0909
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1667
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.125
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.125
+12,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+13,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.5
+13,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.5
+13,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,3.0
+13,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,1.0
+13,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.5
+13,"Sequence(StartDig(""blue_wool""), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",8,3,1.0
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.0833
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0769
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.25
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.0833
+14,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1
+15,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1667
+15,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,0.1667
+15,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,3.0
+15,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1429
+15,"Sequence(Fallback(StartDig(""blue_wool""), Sequence(PressDir(""forward""), SenseBlockRight(""bedrock""))), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",14,4,0.3333
+15,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), Fallback(Rotate(""random""), SenseBlock(""air"")))))",15,5,0.1429
+16,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1111
+16,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.0909
+16,"Sequence(Fallback(StartDig(""blue_wool""), Fallback(StartDig(""blue_wool""), PressDir(""forward""))), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",15,4,0.1
+16,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1111
+16,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1667
+16,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), Fallback(MoveToReceivedCoordinate(""1""), SenseBlockRight(""blue_wool""))))",12,4,0.1
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1111
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0909
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0909
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0909
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0909
+17,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0833
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0625
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1111
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0769
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0714
+18,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.0833
+19,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1111
+19,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1111
+19,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1429
+19,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.125
+19,"Fallback(NavigateOneBlock(""left""), Sequence(MoveToReceivedCoordinate(""1""), PlaceForward))",6,3,0.1111
+19,"Sequence(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Fallback(StartDig(""blue_wool""), MoveToReceivedCoordinate(""1"")))",10,3,0.1429

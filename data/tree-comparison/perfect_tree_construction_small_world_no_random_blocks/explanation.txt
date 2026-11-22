@@ -1,0 +1,54 @@
+This experiment tested a manual tree over 60 runs in a small arena with only 2 blocks in a line inside the arena.
+manual tree:
+tree = FallbackNode([
+            SequenceNode([
+                IsHoldingItem(self),
+                FallbackNode([
+                    SequenceNode([
+                        SenseBlockRight(self, "blue_wool"),
+                        SequenceNode([
+                            NavigateOneBlock(self, "front"),
+                            SequenceNode([
+                                SenseBlockRight(self, "blue_wool"),
+                                SequenceNode([
+                                    NavigateOneBlock(self, "front"),
+                                    SequenceNode([
+                                        SenseBlockRight(self, "air"),
+                                        SequenceNode([
+                                            Rotate(self, "right"),
+                                            PlaceForward(self)
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ]),
+                    FallbackNode([
+                        SequenceNode([
+                            SenseBlock(self, "blue_wool"),
+                            Rotate(self, "left")
+                        ]),
+                        NavigateOneBlock(self, "random")
+                    ])
+                ])
+            ]),
+            SequenceNode([
+                NavigateOneBlock(self, "random"),
+                FallbackNode([
+                    SequenceNode([
+                        SenseBlockRight(self, "blue_wool"),
+                        SequenceNode([
+                            NavigateOneBlock(self, "front"),
+                            SequenceNode([
+                                SenseBlockRight(self, "blue_wool"),
+                                SequenceNode([
+                                    NavigateOneBlock(self, "front"),
+                                    SenseBlockRight(self, "air")
+                                ])
+                            ])
+                        ])
+                    ]),
+                    StartDig(self, "blue_wool")
+                ])
+            ])
+        ])

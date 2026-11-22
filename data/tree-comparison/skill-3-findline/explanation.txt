@@ -1,0 +1,118 @@
+used findline.json skill
+tested 20 gen 6 ind
+tree:
+SequenceNode([
+    BroadcastLocation(self, "0"),
+    SequenceNode([
+        FallbackNode([
+            NavigateOneBlock(self, "random"),
+            SequenceNode([
+                FallbackNode([
+                    ReleaseDir(self),
+                    SequenceNode([
+                        SequenceNode([
+                            FallbackNode([
+                                IsHoldingItem(self),
+                                BroadcastLocation(self, "0")
+                            ]),
+                            FallbackNode([
+                                MoveToReceivedCoordinate(self, "0"),
+                                Stop(self)
+                            ])
+                        ]),
+                        SenseBlockFront(self)
+                    ])
+                ]),
+                FallbackNode([
+                    FallbackNode([
+                        FallbackNode([
+                            SenseBlockRight(self, "air"),
+                            ReleaseDir(self)
+                        ]),
+                        SenseBlockLeft(self, "blue_wool")
+                    ]),
+                    FallbackNode([
+                        FaceNearestBlock(self),
+                        MoveToReceivedCoordinate(self, "0")
+                    ])
+                ])
+            ])
+        ]),
+        FallbackNode([
+            SequenceNode([
+                PlaceForward(self),
+                SequenceNode([
+                    Stop(self),
+                    IsHoldingItem(self)
+                ])
+            ]),
+            SequenceNode([
+                FallbackNode([
+                    SequenceNode([
+                        PlaceForward(self),
+                        FallbackNode([
+                            SequenceNode([
+                                SequenceNode([
+                                    BroadcastLocation(self, "1"),
+                                    SequenceNode([
+                                        BroadcastLocation(self, "1"),
+                                        SenseBlockBack(self, "blue_wool")
+                                    ])
+                                ]),
+                                SenseBlockBack(self, "blue_wool")
+                            ]),
+                            MoveToReceivedCoordinate(self, "1")
+                        ])
+                    ]),
+                    FallbackNode([
+                        SenseBlockFront(self, "blue_wool"),
+                        SequenceNode([
+                            StartDig(self, "blue_wool"),
+                            SenseBlockFront(self, "blue_wool")
+                        ])
+                    ])
+                ]),
+                FallbackNode([
+                    FallbackNode([
+                        NavigateOneBlock(self, "random"),
+                        SequenceNode([
+                            SenseBlockFront(self, "blue_wool"),
+                            SequenceNode([
+                                SequenceNode([
+                                    SequenceNode([
+                                        BroadcastLocation(self, "1"),
+                                        SequenceNode([
+                                            BroadcastLocation(self, "1"),
+                                            FallbackNode([
+                                                PlaceForward(self),
+                                                SenseBlockBack(self, "air")
+                                            ])
+                                        ])
+                                    ]),
+                                    SenseBlockLeft(self, "blue_wool")
+                                ]),
+                                FallbackNode([
+                                    SequenceNode([
+                                        SequenceNode([
+                                            BroadcastLocation(self, "1"),
+                                            SequenceNode([
+                                                SenseBlockLeft(self, "blue_wool"),
+                                                FallbackNode([
+                                                    PlaceForward(self),
+                                                    SenseBlockBack(self, "blue_wool")
+                                                ])
+                                            ])
+                                        ]),
+                                        SenseBlockLeft(self, "blue_wool")
+                                    ]),
+                                    MoveToReceivedCoordinate(self, "1")
+                                ])
+                            ])
+                        ])
+                    ]),
+                    SenseBlockFront(self, "blue_wool")
+                ])
+            ])
+        ])
+    ])
+])

@@ -1,0 +1,30 @@
+skill 3
+human tree:
+FallbackNode([
+    SequenceNode([
+        SenseBlockRight(self, "blue_wool"),
+        SequenceNode([
+            NavigateOneBlock(self, "front"),
+            SequenceNode([
+                SenseBlockRight(self, "blue_wool"),
+                SequenceNode([
+                    NavigateOneBlock(self, "front"),
+                    SequenceNode([
+                        SenseBlockRight(self, "air"),
+                        BroadcastLocation(self, "1")
+                    ])
+                ])
+            ])
+        ])
+    ]),
+    FallbackNode([
+        MoveToReceivedCoordinate(self, "1"),
+        FallbackNode([
+            SequenceNode([
+                SenseBlock(self, "blue_wool"),
+                Rotate(self, "left")
+            ]),
+            NavigateOneBlock(self, "random")
+        ])
+    ])
+])
