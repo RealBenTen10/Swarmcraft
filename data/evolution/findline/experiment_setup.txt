@@ -1,0 +1,49 @@
+{
+  "arena_count": 1,
+  "arena_origin": [
+    10,
+    -60,
+    10
+  ],
+  "arena_size": [
+    30,
+    10,
+    30
+  ],
+  "blocks": {
+    "blue_wool": 9,
+    "brown_wool": 0,
+    "green_wool": 0,
+    "orange_wool": 0
+  },
+  "construction": false,
+  "crossover_rate": 0.3,
+  "exp_name": "ForageExperiment",
+  "fitness_function": "S3",
+  "generations": 100,
+  "lambda_": 90,
+  "max_depth": 2,
+  "min_depth": 1,
+  "mutation_prob": 0.3,
+  "n_elites": 1,
+  "name": "Skill 3 (Find line with Skills 1&2)",
+  "number_repetitions": 1,
+  "offspring_multiplier": 3.0,
+  "pop_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_87/populations",
+  "population_count": 30,
+  "preset_id": "S3",
+  "resume_from": null,
+  "run_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_87",
+  "run_duration": 100,
+  "run_id": 87,
+  "save_skill": true,
+  "skill_injection_prob": 0.0,
+  "skill_library": [
+    "findblock",
+    "forage"
+  ],
+  "skill_name": "findline",
+  "swarm_size": 3,
+  "timestamp": "2026-10-08T10:49:47.169317",
+  "tournsize": 3
+}

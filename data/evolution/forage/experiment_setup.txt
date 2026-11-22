@@ -1,0 +1,48 @@
+{
+  "arena_count": 1,
+  "arena_origin": [
+    10,
+    -60,
+    10
+  ],
+  "arena_size": [
+    30,
+    10,
+    30
+  ],
+  "blocks": {
+    "blue_wool": 9,
+    "brown_wool": 0,
+    "green_wool": 0,
+    "orange_wool": 0
+  },
+  "construction": false,
+  "crossover_rate": 0.3,
+  "exp_name": "ForageExperiment",
+  "fitness_function": "S2",
+  "generations": 100,
+  "lambda_": 60,
+  "max_depth": 2,
+  "min_depth": 1,
+  "mutation_prob": 0.3,
+  "n_elites": 1,
+  "name": "Skill 2 (Forage with Skill 1)",
+  "number_repetitions": 1,
+  "offspring_multiplier": 3.0,
+  "pop_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_85/populations",
+  "population_count": 20,
+  "preset_id": "S2",
+  "resume_from": null,
+  "run_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_85",
+  "run_duration": 60,
+  "run_id": 85,
+  "save_skill": true,
+  "skill_injection_prob": 0.0,
+  "skill_library": [
+    "findblock"
+  ],
+  "skill_name": "forage",
+  "swarm_size": 3,
+  "timestamp": "2026-09-29T20:39:16.598323",
+  "tournsize": 3
+}
