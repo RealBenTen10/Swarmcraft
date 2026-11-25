@@ -1,0 +1,61 @@
+generation,individual,tree_length,max_depth,fitness
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+0,"Sequence(SenseBlockRight(""air""), NavigateOneBlock(""right""))",4,2,-6.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,2.0
+0,"Sequence(SenseBlockRight(""air""), NavigateOneBlock(""right""))",4,2,-2.0
+0,"Sequence(SenseBlockRight(""air""), NavigateOneBlock(""right""))",4,2,-6.0
+0,"Sequence(SenseBlockRight(""air""), NavigateOneBlock(""right""))",4,2,-2.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+1,"Sequence(Sequence(Sequence(Fallback(PlaceForward, ReleaseDir(""forward"")), StartDig(""blue_wool"")), PressDir(""forward"")), Stop)",12,5,-4.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-6.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+2,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-6.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-6.0
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,2.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+4,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-6.0
+5,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+5,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+5,"Sequence(IsHoldingItem, PlaceForward)",3,2,-6.0
+5,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,2.0
+5,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+5,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-6.0
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+6,"Sequence(PressDir(""forward""), Stop)",4,2,-4.0
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+7,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+7,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+7,"Sequence(Fallback(Sequence(IsHoldingItem, SenseBlockLeft(""air"")), ReleaseDir(""forward"")), Stop)",8,4,-6.0
+7,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+7,"Sequence(SenseBlockBack(""air""), StartDig(""blue_wool""))",4,2,-2.0
+7,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+8,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-2.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,0.0
+9,"Sequence(Sequence(MoveToReceivedCoordinate(""1""), PressDir(""forward"")), Stop)",6,3,-4.0

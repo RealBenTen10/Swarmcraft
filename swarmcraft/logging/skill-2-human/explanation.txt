@@ -1,0 +1,12 @@
+skill 2
+human tree:
+tree = FallbackNode([
+                SequenceNode([
+                    StartDig(self, "blue_wool"),
+                    NavigateOneBlock(self, "front")
+                ]),
+                SequenceNode([
+                    FaceNearestBlock(self),
+                    NavigateOneBlock(self, "front")
+                ])
+            ])

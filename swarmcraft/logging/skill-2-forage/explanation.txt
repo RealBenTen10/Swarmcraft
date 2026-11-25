@@ -1,0 +1,9 @@
+used forage.json skill
+
+tree = SequenceNode([
+            FallbackNode([
+                NavigateOneBlock(self, "random"),
+                StartDig(self, "blue_wool")
+            ]),
+            StartDig(self, "blue_wool")
+        ])

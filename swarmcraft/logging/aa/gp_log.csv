@@ -1,0 +1,121 @@
+generation,individual,tree_length,max_depth,fitness
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,0.0
+0,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,1.5
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,1.5
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,2.5
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(ReleaseDir(""forward""), Fallback(Rotate(""random""), IsHoldingItem))))",13,5,2.0
+1,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,1.0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,1.0
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,4.5
+2,"Fallback(FaceNearestBlock, Stop)",3,2,4.0
+2,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""bedrock"")))",6,3,4.5
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+2,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,1.0
+3,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""bedrock"")))",6,3,1.0
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+3,"Fallback(Rotate(""right""), Fallback(BroadcastLocation(""1""), Rotate(""left"")))",5,3,0.5
+3,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.0
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.5
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,-9.0
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.5
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+4,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,-0.5
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+5,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+6,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+6,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+6,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+6,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+6,"Fallback(Rotate(""right""), SenseBlock(""blue_wool""))",4,2,1.0
+6,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), Fallback(PlaceForward, PlaceForward)))",7,4,1.0
+7,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+7,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.5
+7,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+7,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+7,"Fallback(Rotate(""right""), SenseBlockBack(""bedrock""))",3,2,0.5
+7,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,5.5
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,6.5
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+8,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+9,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+9,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+9,"Fallback(SenseBlock(""blue_wool""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",7,3,1.0
+9,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+9,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+9,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+10,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,-3.0
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,-2.5
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,4.5
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+11,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+12,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+13,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.5
+13,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.5
+13,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""blue_wool""), SenseBlock(""blue_wool"")))",6,3,3.0
+13,"Fallback(Fallback(Rotate(""random""), NavigateOneBlock(""right"")), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",9,3,12.5
+13,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+13,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.0
+14,"Fallback(Fallback(Rotate(""random""), NavigateOneBlock(""right"")), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",9,3,2.0
+14,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.5
+14,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,5.5
+14,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.0
+14,"Fallback(Fallback(Rotate(""random""), NavigateOneBlock(""right"")), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",9,3,3.0
+14,"Fallback(Fallback(Rotate(""random""), NavigateOneBlock(""right"")), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",9,3,-0.5
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,-2.0
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.0
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.0
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+15,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,9.0
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,6.0
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.5
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,5.0
+16,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,6.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+17,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,0.0
+18,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+18,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+18,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,6.5
+18,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.5
+18,"Fallback(Rotate(""right""), Rotate(""right""))",3,2,2.0
+18,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.5
+19,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.0
+19,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,3.0
+19,"Fallback(Rotate(""right""), Sequence(Fallback(MoveToReceivedCoordinate(""1""), MoveToReceivedCoordinate(""0"")), SenseBlock(""blue_wool"")))",8,4,2.5
+19,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,1.0
+19,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.5
+19,"Fallback(Rotate(""right""), Sequence(SenseBlockBack(""bedrock""), SenseBlock(""blue_wool"")))",6,3,2.0

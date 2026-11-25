@@ -1,0 +1,33 @@
+skill 3
+ai tree:
+FallbackNode([
+    SequenceNode([
+        SenseBlockRight(self, "blue_wool"),
+        SequenceNode([
+            NavigateOneBlock(self, "front"),
+            SequenceNode([
+                SenseBlockRight(self, "blue_wool"),
+                SequenceNode([
+                    Stop(self),
+                    BroadcastLocation(self, "1")
+                ])
+            ])
+        ])
+    ]),
+    FallbackNode([
+        SequenceNode([
+            SenseBlockFront(self, "blue_wool"),
+            Rotate(self, "left")
+        ]),
+        FallbackNode([
+            MoveToReceivedCoordinate(self, "1"),
+            FallbackNode([
+                SequenceNode([
+                    FaceNearestBlock(self),
+                    NavigateOneBlock(self, "front")
+                ]),
+                NavigateOneBlock(self, "random")
+            ])
+        ])
+    ])
+])

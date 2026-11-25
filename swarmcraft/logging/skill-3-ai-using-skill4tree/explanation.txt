@@ -1,0 +1,42 @@
+fitness function 3 but ai generated skill 4:
+ai tree:
+FallbackNode([
+    SequenceNode([
+        SenseBlockRight(self, "blue_wool"),
+        SequenceNode([
+            NavigateOneBlock(self, "front"),
+            SequenceNode([
+                SenseBlockRight(self, "blue_wool"),
+                SequenceNode([
+                    NavigateOneBlock(self, "front"),
+                    SequenceNode([
+                        SenseBlockRight(self, "air"),
+                        SequenceNode([
+                            Rotate(self, "right"),
+                            PlaceForward(self)
+                        ])
+                    ])
+                ])
+            ])
+        ])
+    ]),
+    FallbackNode([
+        SequenceNode([
+            SenseBlockRight(self, "blue_wool"),
+            NavigateOneBlock(self, "front")
+        ]),
+        FallbackNode([
+            SequenceNode([
+                SenseBlock(self, "blue_wool"),
+                Rotate(self, "left")
+            ]),
+            FallbackNode([
+                SequenceNode([
+                    FaceNearestBlock(self),
+                    NavigateOneBlock(self, "front")
+                ]),
+                NavigateOneBlock(self, "random")
+            ])
+        ])
+    ])
+])

@@ -1,0 +1,19 @@
+used forage-2.json skill
+
+tree:
+SequenceNode([
+    SequenceNode([
+        FallbackNode([
+            PlaceForward(self),
+            NavigateOneBlock(self, "front")
+        ]),
+        FallbackNode([
+            Rotate(self, "random"),
+            SenseBlock(self, "air")
+        ])
+    ]),
+    FallbackNode([
+        StartDig(self, "blue_wool"),
+        PressDir(self)
+    ])
+])

@@ -1,0 +1,9 @@
+used findblock.json skill
+tested 20 gen 6 ind
+tree:
+tree = SequenceNode([
+    NavigateOneBlock(self, "random"),
+    NavigateOneBlock(self, "random")
+])
+
+ai and human tree always get reward 3.0

@@ -1,0 +1,22 @@
+skill 2
+ai tree
+manual tree:
+tree = FallbackNode([
+            SequenceNode([
+                SenseBlock(self, "blue_wool"),
+                SequenceNode([
+                    StartDig(self, "blue_wool"),
+                    FallbackNode([
+                        IsHoldingItem(self),
+                        NavigateOneBlock(self, "front")
+                    ])
+                ])
+            ]),
+            FallbackNode([
+                SequenceNode([
+                    FaceNearestBlock(self),
+                    NavigateOneBlock(self, "front")
+                ]),
+                NavigateOneBlock(self, "random")
+            ])
+        ])
