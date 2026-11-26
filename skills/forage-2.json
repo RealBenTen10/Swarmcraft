@@ -7,62 +7,36 @@
     "class": "SequenceNode",
     "children": [
       {
-        "type": "control",
-        "class": "SequenceNode",
-        "children": [
-          {
-            "type": "control",
-            "class": "FallbackNode",
-            "children": [
-              {
-                "type": "action",
-                "class": "PlaceForward"
-              },
-              {
-                "type": "action",
-                "class": "NavigateOneBlock",
-                "parameters": {
-                  "direction": "front"
-                }
-              }
-            ]
-          },
-          {
-            "type": "control",
-            "class": "FallbackNode",
-            "children": [
-              {
-                "type": "action",
-                "class": "Rotate",
-                "parameters": {
-                  "direction": "random"
-                }
-              },
-              {
-                "type": "action",
-                "class": "SenseBlock",
-                "parameters": {
-                  "color": "air"
-                }
-              }
-            ]
-          }
-        ]
+        "type": "action",
+        "class": "Rotate"
       },
       {
         "type": "control",
         "class": "FallbackNode",
         "children": [
           {
-            "type": "action",
-            "class": "StartDig",
-            "parameters": {
-              "color": "blue_wool"
-            }
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "StartDig",
+                "parameters": {
+                  "color": "blue_wool"
+                }
+              },
+              {
+                "type": "action",
+                "class": "PressDir",
+                "parameters": {
+                  "key": "forward"
+                }
+              }
+            ]
           },
           {
             "type": "action",
-            "class": "PressDir"
+            "class": "Rotate"
           }
         ]
       }

@@ -360,7 +360,7 @@
     "number_repetitions": 1,
     "tournsize": 3,
     "n_elites": 1,
-    "fitness_function": "S4",
+    "fitness_function": "S2",
     "construction": true,
     "arena_size": [10, 10, 10],
     "exp_name": "ForageExperiment",

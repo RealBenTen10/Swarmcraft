@@ -6,8 +6,8 @@ generation,individual,tree_length,max_depth,fitness
 0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,3.0
 0,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,2.0
 1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Rotate(""left""))",5,3,1.5
-1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,0.5
-1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Rotate(""left""))",5,3,0.5
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,0
+1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Rotate(""left""))",5,3,0
 1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,4.0
 1,"Sequence(FaceNearestBlock, Stop)",3,2,1.5
 1,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,1.5
@@ -20,7 +20,7 @@ generation,individual,tree_length,max_depth,fitness
 3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), PlaceForward)))",11,4,1.0
 3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,3.0
 3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,3.0
-3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), Fallback(Stop, PlaceForward))))",13,5,0.5
+3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), Fallback(Stop, PlaceForward))))",13,5,0
 3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,3.0
 3,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,2.0
 4,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,2.0
@@ -36,7 +36,7 @@ generation,individual,tree_length,max_depth,fitness
 5,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,2.5
 5,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(Sequence(Fallback(SenseBlockLeft(""blue_wool""), MoveToReceivedCoordinate(""0"")), FaceNearestBlock), BroadcastLocation(""1"")))",11,5,3.0
 6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,2.0
-6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,0.5
+6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,0
 6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,3.0
 6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,3.0
 6,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), BroadcastLocation(""1"")), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",8,3,1.0
@@ -64,7 +64,7 @@ generation,individual,tree_length,max_depth,fitness
 10,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(NavigateOneBlock(""random""), IsHoldingItem)), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",11,4,4.5
 10,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(IsHoldingItem, NavigateOneBlock(""front""))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",11,4,2.5
 10,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.0
-10,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0.5
+10,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0
 11,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,3.5
 11,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,3.0
 11,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.5
@@ -81,7 +81,7 @@ generation,individual,tree_length,max_depth,fitness
 13,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,1.5
 13,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.5
 13,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.0
-13,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0.5
+13,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0
 13,"Sequence(Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1""))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",10,4,1.0
 14,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,4.0
 14,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,5.5
@@ -93,7 +93,7 @@ generation,individual,tree_length,max_depth,fitness
 15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.0
 15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,1.5
 15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,2.5
-15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0.5
+15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,0
 15,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,3.5
 16,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,1.5
 16,"Sequence(Sequence(MoveToReceivedCoordinate(""0""), Sequence(Stop, Sequence(FaceNearestBlock, MoveToReceivedCoordinate(""1"")))), Fallback(StartDig(""blue_wool""), BroadcastLocation(""1"")))",12,5,1.0
