@@ -1,0 +1,46 @@
+{
+  "arena_count": 1,
+  "arena_origin": [
+    10,
+    -60,
+    10
+  ],
+  "arena_size": [
+    30,
+    10,
+    30
+  ],
+  "blocks": {
+    "blue_wool": 9,
+    "brown_wool": 0,
+    "green_wool": 0,
+    "orange_wool": 0
+  },
+  "construction": false,
+  "crossover_rate": 0.1,
+  "exp_name": "ForageExperiment",
+  "fitness_function": "S2",
+  "generations": 20,
+  "lambda_": 4,
+  "max_depth": 2,
+  "min_depth": 1,
+  "mutation_prob": 0.1,
+  "n_elites": 1,
+  "name": "Test trees (manual) S2",
+  "number_repetitions": 1,
+  "offspring_multiplier": 2.0,
+  "pop_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_188/populations",
+  "population_count": 2,
+  "preset_id": "Test-S2",
+  "resume_from": null,
+  "run_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_188",
+  "run_duration": 100,
+  "run_id": 188,
+  "save_skill": false,
+  "skill_injection_prob": 0.0,
+  "skill_library": [],
+  "skill_name": "",
+  "swarm_size": 3,
+  "timestamp": "2026-11-26T13:56:13.206139",
+  "tournsize": 3
+}
