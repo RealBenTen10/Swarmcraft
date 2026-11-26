@@ -3463,7 +3463,7 @@ generation,individual,tree_length,max_depth,fitness
 43,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,2.43
 43,"Sequence(PressDir(""forward""), Sequence(StartDig(""blue_wool""), FaceNearestBlock))",7,3,-0.07
 43,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,2.93
-43,"Sequence(Rotate, Fallback(Sequence(Sequence(PlaceForward, SenseBlockRight), Fallback(SenseBlockBack, BroadcastLocation)), PressDir(""forward"")))",12,5,-36.12
+43,"Sequence(Rotate, Fallback(Sequence(Sequence(PlaceForward, SenseBlockRight), Fallback(SenseBlockBack, BroadcastLocation)), PressDir(""forward"")))",12,5,-6.12
 43,"Sequence(Rotate, Sequence(Fallback(IsHoldingItem, StartDig(""blue_wool"")), MoveToReceivedCoordinate))",8,4,-0.08
 43,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,3.93
 43,"Sequence(Sequence(PlaceForward, SenseBlockFront), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,-0.09
@@ -4151,7 +4151,7 @@ generation,individual,tree_length,max_depth,fitness
 51,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,3.43
 51,"Sequence(Sequence(PlaceForward, BroadcastLocation), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",9,3,-0.09
 51,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",7,3,3.43
-51,"Sequence(Rotate, Fallback(Sequence(Sequence(PlaceForward, SenseBlockFront), Sequence(SenseBlockBack, SenseBlockFront)), PressDir(""forward"")))",12,5,-36.12
+51,"Sequence(Rotate, Fallback(Sequence(Sequence(PlaceForward, SenseBlockFront), Sequence(SenseBlockBack, SenseBlockFront)), PressDir(""forward"")))",12,5,-6.12
 51,"Sequence(PlaceForward, SenseBlock(""air""))",4,2,-1.04
 51,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), Fallback(PressDir(""forward""), Fallback(PressDir(""forward""), SenseBlockBack))))",12,5,3.38
 51,"Sequence(Rotate, Sequence(BroadcastLocation, SenseBlockRight))",5,3,-0.05
@@ -4772,7 +4772,7 @@ generation,individual,tree_length,max_depth,fitness
 59,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), Rotate))",6,3,-0.06
 59,"Sequence(Fallback(StartDig(""blue_wool""), Fallback(NavigateOneBlock(""right""), Sequence(SenseBlockRight, SenseBlock(""air"")))), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",16,5,0.33999999999999997
 59,"Sequence(Rotate, Fallback(StartDig(""blue_wool""), Fallback(SenseBlockRight, Fallback(PressDir(""forward""), Fallback(StartDig(""blue_wool""), Sequence(SenseBlockLeft, SenseBlockFront))))))",16,7,2.84
-59,"Sequence(NavigateOneBlock(""right""), PlaceForward)",4,2,-26.54
+59,"Sequence(NavigateOneBlock(""right""), PlaceForward)",4,2,-6.54
 59,"Sequence(Sequence(NavigateOneBlock(""left""), SenseBlock(""air"")), Fallback(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), PressDir(""forward"")))",14,4,-0.14
 59,"Sequence(Rotate, Fallback(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Sequence(Fallback(BroadcastLocation, NavigateOneBlock(""right"")), SenseBlockFront)))",14,5,2.36
 59,"Sequence(Rotate, Sequence(SenseBlock(""bedrock""), MoveToReceivedCoordinate))",6,3,-0.06
@@ -6605,7 +6605,7 @@ generation,individual,tree_length,max_depth,fitness
 82,"Sequence(Fallback(Fallback(Rotate, PressDir(""forward"")), Fallback(NavigateOneBlock(""right""), Fallback(Stop, Fallback(Stop, SenseBlockLeft)))), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",19,6,3.31
 82,"Sequence(Rotate, Fallback(Fallback(StartDig(""blue_wool""), PressDir(""forward"")), Rotate))",9,4,2.41
 82,"Sequence(Fallback(PressDir(""forward""), StartDig(""blue_wool"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",11,3,-0.11
-82,"Sequence(Rotate, Fallback(Fallback(Sequence(PlaceForward, Sequence(NavigateOneBlock(""right""), FaceNearestBlock)), PressDir(""forward"")), Rotate))",13,6,-56.13
+82,"Sequence(Rotate, Fallback(Fallback(Sequence(PlaceForward, Sequence(NavigateOneBlock(""right""), FaceNearestBlock)), PressDir(""forward"")), Rotate))",13,6,-6.13
 82,"Sequence(Fallback(SenseBlockLeft, PressDir(""forward"")), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",10,3,-0.1
 82,"Sequence(Fallback(Fallback(Rotate, PressDir(""forward"")), Fallback(NavigateOneBlock(""right""), Fallback(Stop, Fallback(Stop, SenseBlockLeft)))), Fallback(StartDig(""blue_wool""), PressDir(""forward"")))",19,6,2.31
 82,"Sequence(Rotate, StartDig(""blue_wool""))",4,2,-0.04

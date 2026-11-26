@@ -34,7 +34,7 @@
   "preset_id": "Test-S1",
   "resume_from": null,
   "run_dir": "/home/ben/PycharmProjects/swarmcraft/swarmcraft/logging/run_161",
-  "run_duration": 100,
+  "run_duration": 60,
   "run_id": 161,
   "save_skill": false,
   "skill_injection_prob": 0.0,
