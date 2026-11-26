@@ -1733,7 +1733,7 @@ generation,individual,tree_length,max_depth,fitness
 21,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.21
 21,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.21
 21,"Sequence(MoveToReceivedCoordinate, Sequence(SenseBlock(""blue_wool""), SenseBlockLeft))",6,3,0.04000000000000001
-21,"Sequence(Fallback(Fallback(FaceNearestBlock, PressDir(""forward"")), Sequence(SenseBlockFront, Rotate(""random""))), SenseBlock(""blue_wool""))",11,4,-0.009999999999999995
+21,"Sequence(Fallback(Fallback(FaceNearestBlock, PressDir(""forward"")), Sequence(SenseBlockFront, Rotate(""random""))), SenseBlock(""blue_wool""))",11,4,0.0
 21,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.2933
 21,"Sequence(MoveToReceivedCoordinate, MoveToReceivedCoordinate)",3,2,0.07
 21,"Sequence(SenseBlock(""blue_wool""), Sequence(BroadcastLocation, SenseBlockLeft))",6,3,0.04000000000000001
@@ -2984,7 +2984,7 @@ generation,individual,tree_length,max_depth,fitness
 37,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.46
 37,"Fallback(FaceNearestBlock, Stop)",3,2,0.0533
 37,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.21
-37,"Sequence(Fallback(MoveToReceivedCoordinate, Fallback(SenseBlock(""bedrock""), ReleaseDir(""forward""))), MoveToReceivedCoordinate)",9,4,-0.006699999999999998
+37,"Sequence(Fallback(MoveToReceivedCoordinate, Fallback(SenseBlock(""bedrock""), ReleaseDir(""forward""))), MoveToReceivedCoordinate)",9,4,0.0
 37,"Sequence(MoveToReceivedCoordinate, MoveToReceivedCoordinate)",3,2,0.0533
 37,"Sequence(NavigateOneBlock(""random""), MoveToReceivedCoordinate)",4,2,0.46
 37,"Sequence(NavigateOneBlock(""random""), Sequence(PressDir(""forward""), Stop))",7,3,0.0411
@@ -5626,7 +5626,7 @@ generation,individual,tree_length,max_depth,fitness
 70,"Sequence(NavigateOneBlock(""random""), NavigateOneBlock(""random""))",5,2,0.15000000000000002
 70,"Sequence(NavigateOneBlock(""random""), NavigateOneBlock(""random""))",5,2,0.45
 70,"Sequence(NavigateOneBlock(""random""), NavigateOneBlock(""random""))",5,2,0.45
-70,"Sequence(Sequence(NavigateOneBlock(""front""), BroadcastLocation), Fallback(Fallback(NavigateOneBlock(""right""), StartDig(""blue_wool"")), PressDir(""forward"")))",13,4,-0.0050000000000000044
+70,"Sequence(Sequence(NavigateOneBlock(""front""), BroadcastLocation), Fallback(Fallback(NavigateOneBlock(""right""), StartDig(""blue_wool"")), PressDir(""forward"")))",13,4,0.0
 70,"Sequence(NavigateOneBlock(""random""), NavigateOneBlock(""random""))",5,2,0.2
 70,"Sequence(MoveToReceivedCoordinate, StartDig(""blue_wool""))",4,2,0.0711
 70,"Sequence(NavigateOneBlock(""random""), Sequence(IsHoldingItem, SenseBlock(""air"")))",7,3,0.2633
