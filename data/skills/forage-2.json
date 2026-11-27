@@ -1,0 +1,45 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "forage-2",
+  "tree": {
+    "type": "control",
+    "class": "SequenceNode",
+    "children": [
+      {
+        "type": "action",
+        "class": "Rotate"
+      },
+      {
+        "type": "control",
+        "class": "FallbackNode",
+        "children": [
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "StartDig",
+                "parameters": {
+                  "color": "blue_wool"
+                }
+              },
+              {
+                "type": "action",
+                "class": "PressDir",
+                "parameters": {
+                  "key": "forward"
+                }
+              }
+            ]
+          },
+          {
+            "type": "action",
+            "class": "Rotate"
+          }
+        ]
+      }
+    ]
+  }
+}

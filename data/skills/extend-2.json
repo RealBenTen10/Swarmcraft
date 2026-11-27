@@ -1,0 +1,33 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "extend-2",
+  "tree": {
+    "type": "control",
+    "class": "SequenceNode",
+    "children": [
+      {
+        "type": "control",
+        "class": "FallbackNode",
+        "children": [
+          {
+            "type": "action",
+            "class": "Rotate",
+            "parameters": {
+              "direction": "random"
+            }
+          },
+          {
+            "type": "action",
+            "class": "SenseBlockRight"
+          }
+        ]
+      },
+      {
+        "type": "action",
+        "class": "SenseBlockLeft"
+      }
+    ]
+  }
+
+}

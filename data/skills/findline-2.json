@@ -1,0 +1,459 @@
+{
+  "format": "swarm_gp_skill",
+  "version": 1,
+  "skill_name": "findline-2",
+  "tree": {
+    "type": "control",
+    "class": "FallbackNode",
+    "children": [
+      {
+        "type": "control",
+        "class": "SequenceNode",
+        "children": [
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "action",
+                "class": "Stop"
+              },
+              {
+                "type": "control",
+                "class": "FallbackNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "MoveToReceivedCoordinate",
+                    "parameters": {
+                      "target_prefix": "1"
+                    }
+                  },
+                  {
+                    "type": "action",
+                    "class": "SenseBlock",
+                    "parameters": {
+                      "block_type": "blue_wool"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "control",
+            "class": "SequenceNode",
+            "children": [
+              {
+                "type": "control",
+                "class": "SequenceNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "SenseBlockRight",
+                    "parameters": {
+                      "block_type": "blue_wool"
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "action",
+                        "class": "SenseBlockRight",
+                      "parameters": {
+                        "block_type": "blue_wool"
+                      }
+                      },
+                      {
+                        "type": "action",
+                        "class": "SenseBlock",
+                        "parameters": {
+                          "block_type": "blue_wool"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "class": "StartDig",
+                "parameters": {
+                  "color": "blue_wool"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "control",
+        "class": "FallbackNode",
+        "children": [
+          {
+            "type": "control",
+            "class": "SequenceNode",
+            "children": [
+              {
+                "type": "control",
+                "class": "FallbackNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "NavigateOneBlock",
+                    "parameters": {
+                      "direction": "random"
+                    }
+                  },
+                  {
+                    "type": "control",
+                    "class": "SequenceNode",
+                    "children": [
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "control",
+                            "class": "FallbackNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "Rotate",
+                                "parameters": {
+                                  "direction": "left"
+                                }
+                              },
+                              {
+                                "type": "action",
+                                "class": "ReleaseDir"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "control",
+                            "class": "FallbackNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "MoveToReceivedCoordinate",
+                                "parameters": {
+                                  "target_prefix": "1"
+                                }
+                              },
+                              {
+                                "type": "action",
+                                "class": "SenseBlock",
+                                "parameters": {
+                                  "block_type": "blue_wool"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "control",
+                        "class": "SequenceNode",
+                        "children": [
+                          {
+                            "type": "control",
+                            "class": "SequenceNode",
+                            "children": [
+                              {
+                                "type": "action",
+                                "class": "SenseBlockRight"
+                              },
+                              {
+                                "type": "control",
+                                "class": "FallbackNode",
+                                "children": [
+                                  {
+                                    "type": "action",
+                                    "class": "SenseBlockRight"
+                                  },
+                                  {
+                                    "type": "control",
+                                    "class": "SequenceNode",
+                                    "children": [
+                                      {
+                                        "type": "control",
+                                        "class": "FallbackNode",
+                                        "children": [
+                                          {
+                                            "type": "action",
+                                            "class": "NavigateOneBlock",
+                                            "parameters": {
+                                              "direction": "random"
+                                            }
+                                          },
+                                          {
+                                            "type": "control",
+                                            "class": "SequenceNode",
+                                            "children": [
+                                              {
+                                                "type": "control",
+                                                "class": "FallbackNode",
+                                                "children": [
+                                                  {
+                                                    "type": "control",
+                                                    "class": "FallbackNode",
+                                                    "children": [
+                                                      {
+                                                        "type": "action",
+                                                        "class": "Rotate",
+                                                        "parameters": {
+                                                          "direction": "left"
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "action",
+                                                        "class": "ReleaseDir"
+                                                      }
+                                                    ]
+                                                  },
+                                                  {
+                                                    "type": "control",
+                                                    "class": "FallbackNode",
+                                                    "children": [
+                                                      {
+                                                        "type": "action",
+                                                        "class": "MoveToReceivedCoordinate",
+                                                        "parameters": {
+                                                          "target_prefix": "0"
+                                                        }
+                                                      },
+                                                      {
+                                                        "type": "action",
+                                                        "class": "SenseBlock",
+                                                        "parameters": {
+                                                          "block_type": "blue_wool"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "type": "control",
+                                                "class": "SequenceNode",
+                                                "children": [
+                                                  {
+                                                    "type": "control",
+                                                    "class": "SequenceNode",
+                                                    "children": [
+                                                      {
+                                                        "type": "action",
+                                                        "class": "SenseBlockRight"
+                                                      },
+                                                      {
+                                                        "type": "control",
+                                                        "class": "FallbackNode",
+                                                        "children": [
+                                                          {
+                                                            "type": "action",
+                                                            "class": "SenseBlockRight"
+                                                          },
+                                                          {
+                                                            "type": "action",
+                                                            "class": "SenseBlock",
+                                                            "parameters": {
+                                                              "block_type": "blue_wool"
+                                                            }
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  },
+                                                  {
+                                                    "type": "action",
+                                                    "class": "StartDig",
+                                                    "parameters": {
+                                                      "color": "blue_wool"
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "control",
+                                        "class": "SequenceNode",
+                                        "children": [
+                                          {
+                                            "type": "action",
+                                            "class": "SenseBlockRight"
+                                          },
+                                          {
+                                            "type": "action",
+                                            "class": "PlaceForward"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "action",
+                            "class": "StartDig",
+                            "parameters": {
+                              "color": "blue_wool"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "control",
+                "class": "FallbackNode",
+                "children": [
+                  {
+                    "type": "control",
+                    "class": "SequenceNode",
+                    "children": [
+                      {
+                        "type": "control",
+                        "class": "FallbackNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "NavigateOneBlock",
+                            "parameters": {
+                              "direction": "random"
+                            }
+                          },
+                          {
+                            "type": "control",
+                            "class": "SequenceNode",
+                            "children": [
+                              {
+                                "type": "control",
+                                "class": "SequenceNode",
+                                "children": [
+                                  {
+                                    "type": "control",
+                                    "class": "FallbackNode",
+                                    "children": [
+                                      {
+                                        "type": "control",
+                                        "class": "FallbackNode",
+                                        "children": [
+                                          {
+                                            "type": "action",
+                                            "class": "MoveToReceivedCoordinate",
+                                            "parameters": {
+                                              "target_prefix": "1"
+                                            }
+                                          },
+                                          {
+                                            "type": "action",
+                                            "class": "SenseBlock",
+                                            "parameters": {
+                                              "block_type": "blue_wool"
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "type": "action",
+                                        "class": "SenseBlockFront"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "type": "control",
+                                    "class": "FallbackNode",
+                                    "children": [
+                                      {
+                                        "type": "action",
+                                        "class": "ReleaseDir"
+                                      },
+                                      {
+                                        "type": "action",
+                                        "class": "PressDir"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "action",
+                                "class": "ReleaseDir"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "control",
+                        "class": "SequenceNode",
+                        "children": [
+                          {
+                            "type": "action",
+                            "class": "SenseBlockRight"
+                          },
+                          {
+                            "type": "action",
+                            "class": "PlaceForward"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "control",
+                    "class": "FallbackNode",
+                    "children": [
+                      {
+                        "type": "action",
+                        "class": "SenseBlockRight"
+                      },
+                      {
+                        "type": "action",
+                        "class": "Stop"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "control",
+            "class": "FallbackNode",
+            "children": [
+              {
+                "type": "control",
+                "class": "FallbackNode",
+                "children": [
+                  {
+                    "type": "action",
+                    "class": "SenseBlockRight"
+                  },
+                  {
+                    "type": "action",
+                    "class": "IsHoldingItem"
+                  }
+                ]
+              },
+              {
+                "type": "action",
+                "class": "Stop"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
